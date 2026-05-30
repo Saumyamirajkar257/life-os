@@ -51,7 +51,7 @@ export default function LifeProfile() {
   const maxStreak = useMemo(() => habits.reduce((max, h) => h.currentStreak > max ? h.currentStreak : max, 0), [habits]);
   const focusHours = useMemo(() => {
     const taskHours = completedTasksCount * 0.5;
-    const habitHours = habits.reduce((acc, h) => acc + h.completedDates.length * 0.3, 0);
+    const habitHours = habits.reduce((acc, h) => acc + (h.completedDates?.length || 0) * 0.3, 0);
     return Number((taskHours + habitHours).toFixed(1));
   }, [completedTasksCount, habits]);
 
@@ -61,7 +61,7 @@ export default function LifeProfile() {
       styleSync: Math.min(95, 60 + Math.min(35, completedTasksCount + nodes.length)),
       notesAnalyzed: nodes.length,
       goalsTracked: tasks.length + habits.length,
-      scheduleMatch: Math.min(99, 75 + Math.min(24, habits.filter(h => h.completedDates.length > 0).length * 3))
+      scheduleMatch: Math.min(99, 75 + Math.min(24, habits.filter(h => (h.completedDates?.length || 0) > 0).length * 3))
     };
   }, [completedTasksCount, nodes.length, tasks.length, habits]);
 
@@ -312,7 +312,7 @@ export default function LifeProfile() {
                       <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/15 shrink-0 shadow-lg shadow-primary/20 relative">
                         <User className="w-12 h-12 text-black" />
                         <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-black border border-primary text-[10px] text-primary font-bold font-mono">
-                          LVL {Math.floor((completedTasksCount * 50 + habits.reduce((acc, h) => acc + h.completedDates.length * 30, 0)) / 1000) + 1}
+                          LVL {Math.floor((completedTasksCount * 50 + habits.reduce((acc, h) => acc + (h.completedDates?.length || 0) * 30, 0)) / 1000) + 1}
                         </div>
                       </div>
 

@@ -38,7 +38,7 @@ export default function LifeVision() {
   const completedTasksCount = useMemo(() => tasks.filter(t => t.completed).length, [tasks]);
   const focusHours = useMemo(() => {
     const taskHours = completedTasksCount * 0.5;
-    const habitHours = habits.reduce((acc, h) => acc + h.completedDates.length * 0.3, 0);
+    const habitHours = habits.reduce((acc, h) => acc + (h.completedDates?.length || 0) * 0.3, 0);
     return Number((taskHours + habitHours).toFixed(1));
   }, [completedTasksCount, habits]);
 

@@ -547,7 +547,7 @@ export function DashboardGrid() {
         h.title.toLowerCase().includes(kw) || h.description.toLowerCase().includes(kw)
       )
     );
-    const totalSessions = fitnessHabits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    const totalSessions = fitnessHabits.reduce((acc, h) => acc + (h.completedDates?.length || 0), 0);
     return totalSessions > 0 ? `${totalSessions} Session${totalSessions === 1 ? '' : 's'}` : '4 Sessions';
   }, [habits]);
 
@@ -558,14 +558,14 @@ export function DashboardGrid() {
         h.title.toLowerCase().includes(kw) || h.description.toLowerCase().includes(kw)
       )
     );
-    const totalSessions = studyHabits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    const totalSessions = studyHabits.reduce((acc, h) => acc + (h.completedDates?.length || 0), 0);
     const calculatedHrs = totalSessions * 0.5; // 30m per session
     return calculatedHrs > 0 ? `${calculatedHrs.toFixed(1)}h` : '42.5h';
   }, [habits]);
 
   // 6. Dynamic XP & Level Progression
   const dynamicProgression = useMemo(() => {
-    const totalHabitsCompletions = habits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    const totalHabitsCompletions = habits.reduce((acc, h) => acc + (h.completedDates?.length || 0), 0);
     const calculatedXP = (completedTasksCount * 50) + (totalHabitsCompletions * 30);
     const baseScore = lifeScore?.score || 84;
     // Add baseScore weight to XP so users have a healthy baseline
@@ -583,7 +583,7 @@ export function DashboardGrid() {
 
   // 7. Dynamic Sleep Quality based on AI Memory mainWeakness
   const sleepQuality = useMemo(() => {
-    const isLateSleeper = memory.mainWeakness?.toLowerCase().includes('sleep') || memory.mainWeakness?.toLowerCase().includes('night');
+    const isLateSleeper = memory?.mainWeakness?.toLowerCase().includes('sleep') || memory?.mainWeakness?.toLowerCase().includes('night');
     const score = isLateSleeper ? 68 : 86;
     const hours = isLateSleeper ? '6h 12m' : '7h 48m';
     const status = isLateSleeper 

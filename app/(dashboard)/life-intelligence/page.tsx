@@ -34,7 +34,7 @@ export default function LifeIntelligence() {
 
   const unfinishedTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
   const highPriorityTasks = useMemo(() => unfinishedTasks.filter(t => t.priority === 'high'), [unfinishedTasks]);
-  const strongHabit = memory.strongHabit || 'none';
+  const strongHabit = memory?.strongHabit || 'none';
   const strongHabitStreak = useMemo(() => {
     const habit = habits.find(h => h.title.toLowerCase().includes(strongHabit.toLowerCase()));
     return habit ? habit.currentStreak : 0;
@@ -52,7 +52,7 @@ export default function LifeIntelligence() {
 
   // Pattern Discovery States
   const [patterns, setPatterns] = useState([
-    { title: 'Peak Performance Time', desc: `You complete coding sessions 3x faster and with 40% higher focus index between ${memory.bestFocusTime || '9:00 PM and 11:30 PM'}.`, type: 'strength' },
+    { title: 'Peak Performance Time', desc: `You complete coding sessions 3x faster and with 40% higher focus index between ${memory?.bestFocusTime || '9:00 PM and 11:30 PM'}.`, type: 'strength' },
     { title: 'Habit Abandonment Hazard', desc: `You consistently abandon new languages or habits after exactly 6 days. Let us set a micro-goal for day 7.`, type: 'hazard' },
     { title: 'Physical Synergy', desc: `Your focus session duration increases by average 28 minutes when completed within 3 hours after a workout.`, type: 'strength' }
   ]);
