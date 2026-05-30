@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Award, BarChart3, Network, MessageSquare, Compass,
@@ -10,6 +10,13 @@ import {
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAppStore } from '@/store/useAppStore';
 
+import { useTasksStore } from '@/store/useTasksStore';
+import { useHabitsStore } from '@/store/useHabitsStore';
+import { useFinanceStore } from '@/store/useFinanceStore';
+import { useAIStore } from '@/store/useAIStore';
+import { useBrainStore } from '@/store/useBrainStore';
+import { auth } from '@/lib/firebase';
+
 type MainTab = 'profile' | 'analytics' | 'clone';
 type SubTab = string;
 
@@ -17,6 +24,13 @@ export default function LifeProfile() {
   const [mounted, setMounted] = useState(false);
   const { userName } = useAppStore();
   const [activeTab, setActiveTab] = useState<MainTab>('profile');
+
+  // Hydrate local stores
+  const { tasks } = useTasksStore();
+  const { habits } = useHabitsStore();
+  const { transactions } = useFinanceStore();
+  const { memory, lifeScore } = useAIStore();
+  const { nodes } = useBrainStore();
 
   useEffect(() => {
     setMounted(true);
@@ -32,18 +46,42 @@ export default function LifeProfile() {
   const [newProjTech, setNewProjTech] = useState('');
   const [showProjModal, setShowProjModal] = useState(false);
 
-  // Digital Clone States
-  const [cloneMessages, setCloneMessages] = useState([
-    { sender: 'clone', text: "Hello! I am your Digital Clone sync-module. I learn your writing style, goals, notes, and schedules. What would you like to test?", time: 'Just now' }
-  ]);
+  // Dynamic aggregates
+  const completedTasksCount = useMemo(() => tasks.filter(t => t.completed).length, [tasks]);
+  const maxStreak = useMemo(() => habits.reduce((max, h) => h.currentStreak > max ? h.currentStreak : max, 0), [habits]);
+  const focusHours = useMemo(() => {
+    const taskHours = completedTasksCount * 0.5;
+    const habitHours = habits.reduce((acc, h) => acc + h.completedDates.length * 0.3, 0);
+    return Number((taskHours + habitHours).toFixed(1));
+  }, [completedTasksCount, habits]);
+
+  // Clone status parameters linked directly to store sizes
+  const cloneStatus = useMemo(() => {
+    return {
+      styleSync: Math.min(95, 60 + Math.min(35, completedTasksCount + nodes.length)),
+      notesAnalyzed: nodes.length,
+      goalsTracked: tasks.length + habits.length,
+      scheduleMatch: Math.min(99, 75 + Math.min(24, habits.filter(h => h.completedDates.length > 0).length * 3))
+    };
+  }, [completedTasksCount, nodes.length, tasks.length, habits]);
+
+  // Interactive Digital Clone Chat States
+  const [cloneMessages, setCloneMessages] = useState<any[]>([]);
   const [cloneInput, setCloneInput] = useState('');
   const [cloneTyping, setCloneTyping] = useState(false);
-  const [cloneStatus, setCloneStatus] = useState({
-    styleSync: 65,
-    notesAnalyzed: 24,
-    goalsTracked: 12,
-    scheduleMatch: 82
-  });
+
+  // Hydrate dynamic clone welcome greeting on mount
+  useEffect(() => {
+    if (mounted) {
+      setCloneMessages([
+        { 
+          sender: 'clone', 
+          text: `Hello! I am your Digital Clone sync-module. I learn your writing style from your ${nodes.length} Second Brain nodes, your ${tasks.length} workspace objectives, and active habit routines. I'm currently holding a style sync index of ${cloneStatus.styleSync}%. Go ahead and test my responses!`, 
+          time: 'Just now' 
+        }
+      ]);
+    }
+  }, [mounted, nodes.length, tasks.length, cloneStatus.styleSync]);
 
   // Actions
   const handleAddProject = (e: React.FormEvent) => {
@@ -61,24 +99,58 @@ export default function LifeProfile() {
     setShowProjModal(false);
   };
 
-  const handleSendClone = () => {
+  const handleSendClone = async () => {
     if (!cloneInput.trim()) return;
     const userMsg = { sender: 'user', text: cloneInput, time: 'Just now' };
     setCloneMessages(prev => [...prev, userMsg]);
+    const currentInput = cloneInput;
     setCloneInput('');
     setCloneTyping(true);
 
-    setTimeout(() => {
-      setCloneTyping(false);
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat',
+          message: `[Digital Clone Simulation - You are the user's digital clone. Respond in first person "I" exactly as the user would. Mimic their style, limitations, tasks, and notes context. Keep it highly relevant, under 3 sentences.] User asks clone: ${currentInput}`,
+          context: { tasks, habits, transactions, memory },
+          uid: auth.currentUser?.uid
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCloneMessages(prev => [...prev, { sender: 'clone', text: data.response, time: 'Just now' }]);
+      } else {
+        throw new Error('Sync lag');
+      }
+    } catch (e) {
       const responses = [
-        "Analyzing prompt query. Based on your writing style index (65% accuracy), I predict you would say: 'Let us optimize compile timings first and rest tomorrow.'",
-        "Checked scheduler constraints. We usually complete assignment submissions with a 1.2-day safety margin. So I'll draft the roadmap email now.",
-        "Refining note synthesis. You have written 24 notes on Distributed systems. The recurring core concept is: content-addressable memory."
+        `Analyzing prompt query. Based on your writing style index (${cloneStatus.styleSync}% accuracy), I predict you would say: 'Let us optimize compile timings first and rest tomorrow.'`,
+        `Checked scheduler constraints. We usually complete assignment submissions with a 1.2-day safety margin. So I'll draft the roadmap email now.`,
+        `Refining note synthesis. You have written ${nodes.length} notes in Second Brain. The recurring core concept is: content-addressable memory.`
       ];
       const randomReply = responses[Math.floor(Math.random() * responses.length)];
       setCloneMessages(prev => [...prev, { sender: 'clone', text: randomReply, time: 'Just now' }]);
-    }, 1200);
+    } finally {
+      setCloneTyping(false);
+    }
   };
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[60vh] flex items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-white/30 font-display text-lg"
+        >
+          Initializing Life Profile & Analytics...
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -240,7 +312,7 @@ export default function LifeProfile() {
                       <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/15 shrink-0 shadow-lg shadow-primary/20 relative">
                         <User className="w-12 h-12 text-black" />
                         <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-black border border-primary text-[10px] text-primary font-bold font-mono">
-                          LVL 24
+                          LVL {Math.floor((completedTasksCount * 50 + habits.reduce((acc, h) => acc + h.completedDates.length * 30, 0)) / 1000) + 1}
                         </div>
                       </div>
 
@@ -249,7 +321,7 @@ export default function LifeProfile() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-white/5 pb-4">
                           <div className="text-center md:text-left">
                             <h4 className="text-2xl font-display font-extrabold text-white">
-                              {mounted ? userName : 'Alex Commander'}
+                              {mounted ? (userName || 'Alex Commander') : 'Alex Commander'}
                             </h4>
                             <span className="text-xs text-white/50 block mt-0.5">Systems Engineering & UI Design</span>
                           </div>
@@ -257,26 +329,26 @@ export default function LifeProfile() {
                           {/* Life score */}
                           <div className="p-3 bg-black/45 border border-white/5 rounded-xl text-center shrink-0">
                             <span className="text-[9px] text-white/40 font-mono block">OVERALL LIFE SCORE</span>
-                            <span className="text-2xl font-display font-extrabold text-primary block mt-0.5">92 / 100</span>
+                            <span className="text-2xl font-display font-extrabold text-primary block mt-0.5">{lifeScore?.score || 84} / 100</span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center md:text-left">
                           <div>
-                            <span className="text-[10px] text-white/40 block font-mono">STUDY STREAK</span>
-                            <span className="text-base font-bold text-white block mt-0.5">42 Days</span>
+                            <span className="text-[10px] text-white/40 block font-mono">MAX ROUTINE STREAK</span>
+                            <span className="text-base font-bold text-white block mt-0.5">{maxStreak} Days</span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-white/40 block font-mono">FOCUS HOURS</span>
-                            <span className="text-base font-bold text-white block mt-0.5">142.5 hrs</span>
+                            <span className="text-[10px] text-white/40 block font-mono">FOCUS HOURS LOGGED</span>
+                            <span className="text-base font-bold text-white block mt-0.5">{focusHours} hrs</span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-white/40 block font-mono">TASKS DONE</span>
-                            <span className="text-base font-bold text-white block mt-0.5">87 Items</span>
+                            <span className="text-[10px] text-white/40 block font-mono">TASKS COMPLETED</span>
+                            <span className="text-base font-bold text-white block mt-0.5">{completedTasksCount} Items</span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-white/40 block font-mono">ACTIVE CLONE</span>
-                            <span className="text-base font-bold text-emerald-400 block mt-0.5">Ready (65%)</span>
+                            <span className="text-[10px] text-white/40 block font-mono">ACTIVE CLONE READY</span>
+                            <span className="text-base font-bold text-emerald-400 block mt-0.5">Ready ({cloneStatus.styleSync}%)</span>
                           </div>
                         </div>
 

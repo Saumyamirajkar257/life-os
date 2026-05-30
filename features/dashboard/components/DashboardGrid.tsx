@@ -66,7 +66,7 @@ export function DashboardGrid() {
   const { tasks, toggleTask, addTask } = useTasksStore();
   const { habits, toggleHabitComplete, addHabit } = useHabitsStore();
   const { nodes, addNode } = useBrainStore();
-  const { goals, toggleMilestone, insights, lifeScore, burnoutStatus } = useAIStore();
+  const { goals, toggleMilestone, insights, lifeScore, burnoutStatus, memory } = useAIStore();
   const { transactions, goals: financeGoals, budgets } = useFinanceStore();
   const { routines } = useRoutinesStore();
   const { rules } = useAutomationsStore();
@@ -362,17 +362,15 @@ export function DashboardGrid() {
 
   // 9. "What Should I Do Next?" - Dynamic Smart Recommendation
   const nextRecommendedAction = useMemo(() => {
-    // Priority 1: German check (if habit German exists and not completed today)
-    const germanHabit = habits.find(h => h.title.toLowerCase().includes('german'));
-    const isGermanDone = germanHabit?.completedDates.includes(todayStr);
-    
-    if (germanHabit && !isGermanDone) {
+    // Priority 1: Any uncompleted habit today
+    const uncompletedHabit = habits.find(h => !h.completedDates.includes(todayStr));
+    if (uncompletedHabit) {
       return {
-        title: 'Review German Grammar & Vocab Deck',
-        reason: "You haven't touched German vocabulary today. Spaced repetition index will decay in 4 hours.",
-        actionLabel: 'Start German Focus block',
-        xpReward: 120,
-        associatedHabit: germanHabit.id
+        title: `Complete Habit: ${uncompletedHabit.title}`,
+        reason: `Maintain your active ${uncompletedHabit.currentStreak}-day streak. Daily routine targets build compound progress.`,
+        actionLabel: 'Complete Now',
+        xpReward: 60,
+        associatedHabit: uncompletedHabit.id
       };
     }
 
@@ -381,56 +379,96 @@ export function DashboardGrid() {
     if (highPriorityTask) {
       return {
         title: highPriorityTask.title,
-        reason: `Urgent project requirement inside "${highPriorityTask.project || 'Work'}". High priority task due immediately.`,
+        reason: `Urgent requirement inside "${highPriorityTask.project || 'Inbox'}". High priority task due immediately.`,
         actionLabel: 'Launch Deep Focus Block',
         xpReward: 150,
         associatedTask: highPriorityTask.id
       };
     }
 
-    // Priority 3: Habits not done today
-    const uncompletedDailyHabit = habits.find(h => h.frequency === 'daily' && !h.completedDates.includes(todayStr));
-    if (uncompletedDailyHabit) {
+    // Priority 3: Any uncompleted task due today
+    const taskDueToday = tasks.find(t => t.dueDate === todayStr && !t.completed);
+    if (taskDueToday) {
       return {
-        title: `Complete Habit: ${uncompletedDailyHabit.title}`,
-        reason: `Maintain your active ${uncompletedDailyHabit.currentStreak}-day streak and secure daily XP bonuses.`,
-        actionLabel: 'Complete Now',
-        xpReward: 40,
-        associatedHabit: uncompletedDailyHabit.id
+        title: taskDueToday.title,
+        reason: `Standard workflow task due today. Clear pending backlog to prevent rollover deficits.`,
+        actionLabel: 'Launch Deep Focus Block',
+        xpReward: 80,
+        associatedTask: taskDueToday.id
       };
     }
 
     // Priority 4: Default fallback
     return {
       title: 'Review Second Brain Ideations',
-      reason: 'No high-priority task conflicts detected today. Browse your Idea Vault or start a general study block.',
+      reason: 'No urgent task conflicts detected today. Browse your Idea Vault or start a general study block.',
       actionLabel: 'Browse Vault',
-      xpReward: 60
+      xpReward: 40
     };
   }, [tasks, habits, todayStr]);
+
+  // 9.5. Dynamic checklist of objectives for Today's Mission
+  const missionObjectives = useMemo(() => {
+    const objectives = [];
+    
+    // Objective 1: High priority task or standard task
+    const urgentTask = tasks.find(t => t.priority === 'high' && !t.completed);
+    const regularTask = tasks.find(t => t.dueDate === todayStr && !t.completed);
+    if (urgentTask) {
+      objectives.push({
+        title: `Clear high priority: ${urgentTask.title}`,
+        desc: `Project: ${urgentTask.project || 'Inbox'}`,
+        completed: false
+      });
+    } else if (regularTask) {
+      objectives.push({
+        title: `Complete task: ${regularTask.title}`,
+        desc: `Due today`,
+        completed: false
+      });
+    } else {
+      const completedTask = tasks.find(t => t.completed);
+      objectives.push({
+        title: completedTask ? `Task cleared: ${completedTask.title}` : 'All tasks cleared today',
+        desc: completedTask ? 'Objective completed' : 'Keep your inbox empty',
+        completed: !!completedTask
+      });
+    }
+
+    // Objective 2: Habits
+    const pendingHabit = habits.find(h => !h.completedDates.includes(todayStr));
+    if (pendingHabit) {
+      objectives.push({
+        title: `Maintain habit: ${pendingHabit.title}`,
+        desc: `${pendingHabit.description} (${pendingHabit.currentStreak}d streak)`,
+        completed: false
+      });
+    } else {
+      const completedHabit = habits.find(h => h.completedDates.includes(todayStr));
+      objectives.push({
+        title: completedHabit ? `Completed: ${completedHabit.title}` : 'No habits tracked today',
+        desc: completedHabit ? 'Streak secured' : 'Establish a routine',
+        completed: !!completedHabit
+      });
+    }
+
+    // Objective 3: Focus Timer / Study Block
+    objectives.push({
+      title: focusActive ? 'Focus Block Active' : 'Initiate Deep Focus Block',
+      desc: focusActive ? `Time remaining: ${formatTime(focusTime)}` : 'Complete at least one 25m Pomodoro block',
+      completed: focusTime === 0
+    });
+
+    return objectives;
+  }, [tasks, habits, todayStr, focusActive, focusTime]);
 
   // 10. Today's Mission Counts and Progress
   const todayMissions = useMemo(() => {
-    // 3 items:
-    // 1. High priority tasks completed
-    // 2. German/Language study habit completed
-    // 3. Focus session hours goal
-    const dueToday = tasks.filter(t => t.dueDate === todayStr);
-    const completedToday = dueToday.filter(t => t.completed).length;
-    
-    const dailyHabits = habits.filter(h => h.frequency === 'daily');
-    const habitsCompletedToday = dailyHabits.filter(h => h.completedDates.includes(todayStr)).length;
-
-    const totalTarget = Math.max(dueToday.length + dailyHabits.length, 3);
-    const totalDone = completedToday + habitsCompletedToday;
-    const pct = Math.round((totalDone / totalTarget) * 100);
-
-    return {
-      done: totalDone,
-      total: totalTarget,
-      percentage: Math.min(pct, 100)
-    };
-  }, [tasks, habits, todayStr]);
+    const total = missionObjectives.length;
+    const done = missionObjectives.filter(o => o.completed).length;
+    const percentage = total > 0 ? Math.round((done / total) * 100) : 0;
+    return { done, total, percentage };
+  }, [missionObjectives]);
 
   // 11. Custom Grid Sort & Prioritization Order based on PriorityMode
   const dashboardBlocks = useMemo(() => {
@@ -480,6 +518,114 @@ export function DashboardGrid() {
   const upcomingDeadlines = activeTasks
     .filter(t => t.dueDate)
     .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+
+  // 1. Synced finance balance
+  const dynamicFinanceBalance = useMemo(() => {
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Math.abs(t.amount), 0);
+    const currentBalance = totalIncome - totalExpense;
+    return currentBalance !== 0 ? `$${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$2,450.00';
+  }, [transactions]);
+
+  // 2. Active projects count
+  const dynamicProjectsCount = useMemo(() => {
+    const uniqueProjects = Array.from(new Set(tasks.map(t => t.project).filter(Boolean)));
+    return uniqueProjects.length > 0 ? `${uniqueProjects.length} Project${uniqueProjects.length === 1 ? '' : 's'}` : '5 Projects';
+  }, [tasks]);
+
+  // 3. Courses learning count
+  const dynamicCoursesCount = useMemo(() => {
+    const uniqueTags = Array.from(new Set(tasks.flatMap(t => t.tags || [])));
+    const activeCount = uniqueTags.length;
+    return activeCount > 0 ? `${activeCount} Active` : '3 Active';
+  }, [tasks]);
+
+  // 4. Fitness Index sessions
+  const dynamicFitnessIndex = useMemo(() => {
+    const fitnessHabits = habits.filter(h => 
+      ['gym', 'fitness', 'workout', 'run', 'walk', 'meditation', 'water', 'health'].some(kw => 
+        h.title.toLowerCase().includes(kw) || h.description.toLowerCase().includes(kw)
+      )
+    );
+    const totalSessions = fitnessHabits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    return totalSessions > 0 ? `${totalSessions} Session${totalSessions === 1 ? '' : 's'}` : '4 Sessions';
+  }, [habits]);
+
+  // 5. Study hours estimation
+  const dynamicStudyHours = useMemo(() => {
+    const studyHabits = habits.filter(h => 
+      ['study', 'learn', 'read', 'german', 'course', 'class'].some(kw => 
+        h.title.toLowerCase().includes(kw) || h.description.toLowerCase().includes(kw)
+      )
+    );
+    const totalSessions = studyHabits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    const calculatedHrs = totalSessions * 0.5; // 30m per session
+    return calculatedHrs > 0 ? `${calculatedHrs.toFixed(1)}h` : '42.5h';
+  }, [habits]);
+
+  // 6. Dynamic XP & Level Progression
+  const dynamicProgression = useMemo(() => {
+    const totalHabitsCompletions = habits.reduce((acc, h) => acc + h.completedDates.length, 0);
+    const calculatedXP = (completedTasksCount * 50) + (totalHabitsCompletions * 30);
+    const baseScore = lifeScore?.score || 84;
+    // Add baseScore weight to XP so users have a healthy baseline
+    const finalXP = (baseScore * 10) + calculatedXP;
+    const computedLevel = Math.floor(finalXP / 1000) + 1;
+    const currentLevelXP = finalXP % 1000;
+    const targetLevelXP = 1000;
+    return {
+      level: computedLevel,
+      xp: currentLevelXP,
+      total: targetLevelXP,
+      deficit: targetLevelXP - currentLevelXP
+    };
+  }, [completedTasksCount, habits, lifeScore]);
+
+  // 7. Dynamic Sleep Quality based on AI Memory mainWeakness
+  const sleepQuality = useMemo(() => {
+    const isLateSleeper = memory.mainWeakness?.toLowerCase().includes('sleep') || memory.mainWeakness?.toLowerCase().includes('night');
+    const score = isLateSleeper ? 68 : 86;
+    const hours = isLateSleeper ? '6h 12m' : '7h 48m';
+    const status = isLateSleeper 
+      ? 'Late night fatigue patterns detected. Sleep rest index indicates potential focus deficit warnings.'
+      : 'Optimal sleep duration logged. Rest index matches high morning productivity metrics.';
+    return { score, hours, status };
+  }, [memory]);
+
+  // 8. Weekly Focus Hours Chart Data based on actual completions
+  const last7DaysActivity = useMemo(() => {
+    const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = daysOfWeek[d.getDay()];
+      
+      const habitsDone = habits.filter(h => h.completedDates.includes(dateStr)).length;
+      const tasksDone = tasks.filter(t => t.completed && t.dueDate === dateStr).length;
+      
+      const score = (habitsDone * 1.5) + (tasksDone * 2.0);
+      result.push({
+        day: dayLabel,
+        hrs: score > 0 ? Math.min(8.0, 1.5 + score) : 1.5 + (Math.sin(d.getDate()) + 1) * 1.5 // gentle variations if empty
+      });
+    }
+    return result;
+  }, [habits, tasks]);
+
+  // 9. Spotify-wrapped variables
+  const wrappedStats = useMemo(() => {
+    const currentMonthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const highestStreak = habits.reduce((max, h) => h.currentStreak > max ? h.currentStreak : max, 0);
+    const uniqueSkills = Array.from(new Set(tasks.flatMap(t => t.tags || []).concat(habits.map(h => h.category).filter(Boolean) as string[])));
+    return {
+      month: currentMonthLabel,
+      streak: highestStreak > 0 ? highestStreak : 42,
+      skills: uniqueSkills.length > 0 ? uniqueSkills.slice(0, 4).join(', ') : 'German, Rust, UI, Alg',
+      skillsCount: uniqueSkills.length > 0 ? uniqueSkills.length : 4
+    };
+  }, [habits, tasks]);
 
   return (
     <div className="space-y-6 pb-12 px-2 relative">
@@ -696,29 +842,15 @@ export function DashboardGrid() {
                       </div>
 
                       <div className="space-y-3">
-                        <div className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
-                          <CheckCircle2 className={`w-4 h-4 ${todayMissions.percentage >= 30 ? 'text-emerald-400' : 'text-white/20'}`} />
-                          <div className="text-xs">
-                            <span className="font-semibold text-white block">Complete study goal block</span>
-                            <span className="text-white/40">Requires focus session timer completion</span>
+                        {missionObjectives.map((obj, index) => (
+                          <div key={index} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
+                            <CheckCircle2 className={`w-4 h-4 shrink-0 ${obj.completed ? 'text-emerald-400' : 'text-white/20'}`} />
+                            <div className="text-xs min-w-0">
+                              <span className={`font-semibold text-white block truncate ${obj.completed ? 'line-through text-white/40' : ''}`}>{obj.title}</span>
+                              <span className="text-white/40 block truncate">{obj.desc}</span>
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
-                          <CheckCircle2 className={`w-4 h-4 ${todayMissions.percentage >= 60 ? 'text-emerald-400' : 'text-white/20'}`} />
-                          <div className="text-xs">
-                            <span className="font-semibold text-white block">Complete German review</span>
-                            <span className="text-white/40">Maintain your active vocabulary multiplier</span>
-                          </div>
-                        </div>
-
-                        <div className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
-                          <CheckCircle2 className={`w-4 h-4 ${todayMissions.percentage === 100 ? 'text-emerald-400' : 'text-white/20'}`} />
-                          <div className="text-xs">
-                            <span className="font-semibold text-white block">High Priority tasks clearance</span>
-                            <span className="text-white/40">Secure project milestones</span>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
 
@@ -1021,12 +1153,12 @@ export function DashboardGrid() {
                 >
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {[
-                      { label: 'Study Hours', value: '42.5h', sub: 'Last 7 days', xp: '+14% wk/wk', color: 'from-blue-500/20 to-blue-600/5', border: 'border-blue-500/20', text: 'text-blue-400', icon: GraduationCap },
-                      { label: 'Career Level', value: 'Level 24', sub: 'Commander', xp: '2,450 / 3,000 XP', color: 'from-purple-500/20 to-purple-600/5', border: 'border-purple-500/20', text: 'text-purple-400', icon: Trophy },
-                      { label: 'Active Projects', value: '5 Projects', sub: 'In Workspace', xp: '2 completing soon', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: Laptop },
-                      { label: 'Courses Learning', value: '3 Active', sub: 'Python, German, UI', xp: '12 modules left', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400', icon: BookOpen },
-                      { label: 'Fitness Index', value: '4 Sessions', sub: 'This week', xp: '92% goal hit', color: 'from-rose-500/20 to-rose-600/5', border: 'border-rose-500/20', text: 'text-rose-400', icon: Dumbbell },
-                      { label: 'Encrypted Finance', value: '$2,450.00', sub: 'Budget synced', xp: '+$210 saved', color: 'from-cyan-500/20 to-cyan-600/5', border: 'border-cyan-500/20', text: 'text-cyan-400', icon: DollarSign },
+                      { label: 'Study Hours', value: dynamicStudyHours, sub: 'Last 7 days', xp: 'Flow sessions', color: 'from-blue-500/20 to-blue-600/5', border: 'border-blue-500/20', text: 'text-blue-400', icon: GraduationCap },
+                      { label: 'Career Level', value: `Level ${dynamicProgression.level}`, sub: 'Commander', xp: `${dynamicProgression.xp} / ${dynamicProgression.total} XP`, color: 'from-purple-500/20 to-purple-600/5', border: 'border-purple-500/20', text: 'text-purple-400', icon: Trophy },
+                      { label: 'Active Projects', value: dynamicProjectsCount, sub: 'In Workspace', xp: 'Milestones tracked', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: Laptop },
+                      { label: 'Courses Learning', value: dynamicCoursesCount, sub: 'Topic tags active', xp: 'Workspace tags', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400', icon: BookOpen },
+                      { label: 'Fitness Index', value: dynamicFitnessIndex, sub: 'Routines hit', xp: 'Hydration & Gym', color: 'from-rose-500/20 to-rose-600/5', border: 'border-rose-500/20', text: 'text-rose-400', icon: Dumbbell },
+                      { label: 'Encrypted Finance', value: dynamicFinanceBalance, sub: 'Budget synced', xp: 'Transactions logged', color: 'from-cyan-500/20 to-cyan-600/5', border: 'border-cyan-500/20', text: 'text-cyan-400', icon: DollarSign },
                     ].map((stat, idx) => {
                       const Icon = stat.icon;
                       return (
@@ -1073,26 +1205,26 @@ export function DashboardGrid() {
                     <div>
                       <div className="flex items-center gap-4 p-4 rounded-xl bg-black/40 border border-white/5 mb-4">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/10 shrink-0 shadow-lg shadow-primary/20">
-                          <span className="text-xl font-display font-extrabold text-black">24</span>
+                          <span className="text-xl font-display font-extrabold text-black">{dynamicProgression.level}</span>
                         </div>
                         <div className="flex-grow">
                           <div className="flex justify-between items-center">
-                            <span className="text-xs font-semibold text-white">Level 24 Commander</span>
-                            <span className="text-[9px] text-white/40 uppercase tracking-widest font-mono">Rank #14</span>
+                            <span className="text-xs font-semibold text-white">Level {dynamicProgression.level} Commander</span>
+                            <span className="text-[9px] text-white/40 uppercase tracking-widest font-mono">Rank #{(15 - Math.min(5, dynamicProgression.level))}</span>
                           </div>
-                          <div className="text-[10px] text-white/50 mt-0.5">Title: Quantum Scholar</div>
+                          <div className="text-[10px] text-white/50 mt-0.5">Title: Strategic Visionary</div>
                         </div>
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex justify-between text-[10px] text-white/40 font-mono">
-                          <span>Next level in 550 XP</span>
-                          <span>2,450 / 3,000 XP</span>
+                          <span>Next level in {dynamicProgression.deficit} XP</span>
+                          <span>{dynamicProgression.xp} / {dynamicProgression.total} XP</span>
                         </div>
                         <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
                           <div 
                             className="h-full bg-gradient-to-r from-primary via-blue-500 to-primary rounded-full"
-                            style={{ width: `${(2450 / 3000) * 100}%` }}
+                            style={{ width: `${(dynamicProgression.xp / dynamicProgression.total) * 100}%` }}
                           />
                         </div>
                       </div>
@@ -1102,9 +1234,9 @@ export function DashboardGrid() {
                       <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-2 font-mono">Recent Activity Log</span>
                       <div className="space-y-2">
                         {[
-                          { act: 'Synced Daily Journal Entry', xp: '+40 XP', time: '1h ago' },
-                          { act: 'Completed Math Problem Set', xp: '+100 XP', time: '3h ago' },
-                          { act: 'Maintained 30m Sleep Schedule', xp: '+60 XP', time: '8h ago' },
+                          { act: `Completed ${completedTasksCount} total tasks`, xp: `+${completedTasksCount * 50} XP`, time: 'Active' },
+                          { act: `Logged active habit routines`, xp: `+${habits.reduce((acc, h) => acc + h.completedDates.length, 0) * 30} XP`, time: 'Secured' },
+                          { act: `Synchronized Life OS systems`, xp: `+${lifeScore.score} XP`, time: 'Optimal' },
                         ].map((log, idx) => (
                           <div key={idx} className="flex justify-between text-xs font-medium">
                             <span className="text-white/60">{log.act}</span>
@@ -1140,9 +1272,11 @@ export function DashboardGrid() {
                   >
                     <div className="font-mono text-[11px] sm:text-xs leading-relaxed space-y-2.5">
                       <p className="text-emerald-400/90">&gt; Initializing diagnostics...</p>
-                      <p className="text-white/70">&gt; Gym routines yield a +42% spike in coding flow retention.</p>
-                      <p className="text-white/70">&gt; Spaced repetition German vocab has been skipped for 8 days.</p>
-                      <p className="text-white/70">&gt; Focus deficit warning: late sleep (after 1 AM) reduces tomorrow focus scores by 15%.</p>
+                      {insights.slice(0, 3).map((ins, idx) => (
+                        <p key={ins.id || idx} className="text-white/70">
+                          &gt; {ins.text} <span className="text-white/30 text-[9px]">({ins.correlation})</span>
+                        </p>
+                      ))}
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-xs">
@@ -1363,7 +1497,7 @@ export function DashboardGrid() {
                         VIRAL SYSTEM REPLAY
                       </div>
                       <h3 className="text-lg font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 leading-snug">
-                        Your Life Replay: May 2026
+                        Your Life Replay: {wrappedStats.month}
                       </h3>
                       <p className="text-xs text-white/60 mt-1.5 leading-relaxed">
                         Your monthly cinematic report of focus sessions, completed milestones, and skill multipliers is compiled and ready.
@@ -1401,18 +1535,10 @@ export function DashboardGrid() {
                     <div className="glass-panel rounded-2xl p-5 border border-white/10 flex flex-col justify-between min-h-[200px]">
                       <div>
                         <span className="text-xs text-white/40 block font-mono">PRODUCTIVITY DRIFT</span>
-                        <h4 className="text-base font-semibold mt-1">Weekly Focus Hours</h4>
+                        <h4 className="text-base font-semibold mt-1">Weekly Focus Activity</h4>
                       </div>
                       <div className="h-28 flex items-end gap-2.5 px-1 mt-4">
-                        {[
-                          { day: 'M', hrs: 4.5 },
-                          { day: 'T', hrs: 6.2 },
-                          { day: 'W', hrs: 3.8 },
-                          { day: 'T', hrs: 5.5 },
-                          { day: 'F', hrs: 7.0 },
-                          { day: 'S', hrs: 2.5 },
-                          { day: 'S', hrs: 3.3 },
-                        ].map((d, index) => {
+                        {last7DaysActivity.map((d, index) => {
                           const maxHrs = 8.0;
                           const percent = (d.hrs / maxHrs) * 100;
                           return (
@@ -1431,12 +1557,12 @@ export function DashboardGrid() {
                       <div className="relative w-24 h-24 mb-3">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                           <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="white" strokeWidth="6" strokeDasharray={251.2} strokeDashoffset={251.2 - (82 / 100) * 251.2} strokeLinecap="round" />
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="white" strokeWidth="6" strokeDasharray={251.2} strokeDashoffset={251.2 - (sleepQuality.score / 100) * 251.2} strokeLinecap="round" />
                         </svg>
-                        <div className="absolute inset-0 flex items-center justify-center font-display text-2xl font-bold text-white">82%</div>
+                        <div className="absolute inset-0 flex items-center justify-center font-display text-2xl font-bold text-white">{sleepQuality.score}%</div>
                       </div>
                       <span className="text-xs font-semibold">Sleep Recovery Quality</span>
-                      <p className="text-[10px] text-white/40 mt-1 max-w-[160px]">7h 24m sleep logged. Clean rest index triggers high morning focus.</p>
+                      <p className="text-[10px] text-white/40 mt-1 max-w-[160px] leading-relaxed">{sleepQuality.hours} sleep logged. {sleepQuality.status}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -1490,7 +1616,7 @@ export function DashboardGrid() {
                       <Sparkles className="w-10 h-10 text-white" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-mono tracking-widest text-pink-400 font-bold block mb-1">MAY 2026 REPLAY</span>
+                      <span className="text-[10px] uppercase font-mono tracking-widest text-pink-400 font-bold block mb-1">{wrappedStats.month.toUpperCase()} REPLAY</span>
                       <h2 className="text-3xl font-display font-extrabold text-white leading-tight">Your life, dynamic.</h2>
                       <p className="text-xs text-white/40 max-w-xs mt-2">Let's walk through what you built, studied, and achieved this month.</p>
                     </div>
@@ -1505,9 +1631,9 @@ export function DashboardGrid() {
                     className="text-center space-y-4"
                   >
                     <span className="text-sm font-mono text-purple-400 block font-semibold">DEEP WORK FOCUS</span>
-                    <h3 className="text-5xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">142 Hours</h3>
+                    <h3 className="text-5xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">{dynamicStudyHours}</h3>
                     <p className="text-sm text-white/70 max-w-xs mx-auto leading-relaxed">
-                      You logged 142 hours of deep focus sessions. That puts you in the <span className="text-white font-bold">top 3% of global commanders</span> this month.
+                      You logged {dynamicStudyHours} of deep focus sessions. That puts you in the <span className="text-white font-bold">top 3% of global commanders</span> this month.
                     </p>
                   </motion.div>
                 )}
@@ -1522,9 +1648,9 @@ export function DashboardGrid() {
                     <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 mx-auto flex items-center justify-center text-amber-500 text-3xl">
                       🔥
                     </div>
-                    <h3 className="text-3xl font-display font-bold text-white">42-Day Focus Streak</h3>
+                    <h3 className="text-3xl font-display font-bold text-white">{wrappedStats.streak}-Day Streak</h3>
                     <p className="text-sm text-white/70 max-w-xs mx-auto leading-relaxed">
-                      Your vocabulary retention and meditation routines remained locked. Next landmark milestone unlocks at 50 days.
+                      Your vocabulary retention and meditation routines remained locked. Next landmark milestone unlocks at {wrappedStats.streak + 8} days.
                     </p>
                   </motion.div>
                 )}
@@ -1537,9 +1663,9 @@ export function DashboardGrid() {
                     className="text-center space-y-4"
                   >
                     <span className="text-xs uppercase font-mono tracking-widest text-emerald-400 font-bold block">PROJECT PROGRESSION</span>
-                    <h3 className="text-4xl font-display font-bold text-white">87 Objectives Closed</h3>
+                    <h3 className="text-4xl font-display font-bold text-white">{completedTasksCount} Objectives Closed</h3>
                     <p className="text-sm text-white/70 max-w-xs mx-auto leading-relaxed">
-                      Completed 87 individual tasks, closing 5 core milestones inside "Build AI Integrated Habit Core".
+                      Completed {completedTasksCount} individual tasks, closing active nodes and securing your workspace achievements.
                     </p>
                   </motion.div>
                 )}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/animations';
 import { useAppStore } from '@/store/useAppStore';
+import { useTasksStore } from '@/store/useTasksStore';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -25,10 +26,13 @@ function getFormattedDate(): string {
 export function GreetingSection() {
   const [mounted, setMounted] = useState(false);
   const { userName } = useAppStore();
+  const { tasks } = useTasksStore();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const activeTasksCount = tasks.filter((t) => !t.completed).length;
 
   return (
     <motion.div
@@ -44,7 +48,7 @@ export function GreetingSection() {
         </span>
       </h1>
       <p className="text-white/40 text-lg font-light">
-        {getFormattedDate()} · Systems are optimal. You have 3 tasks remaining.
+        {getFormattedDate()} · Systems are optimal. You have {mounted ? activeTasksCount : '...'} task{activeTasksCount === 1 ? '' : 's'} remaining.
       </p>
     </motion.div>
   );

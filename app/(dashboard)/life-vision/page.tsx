@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
@@ -11,12 +11,43 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 
+import { useTasksStore } from '@/store/useTasksStore';
+import { useHabitsStore } from '@/store/useHabitsStore';
+import { useAIStore } from '@/store/useAIStore';
+import { auth } from '@/lib/firebase';
+
 type MainTab = 'replay' | 'radar' | 'build';
 type SubTab = string;
 
 export default function LifeVision() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [activeTab, setActiveTab] = useState<MainTab>('replay');
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('monthly-wrapped');
+
+  // Hydrate local stores
+  const { tasks } = useTasksStore();
+  const { habits } = useHabitsStore();
+  const { memory, lifeScore } = useAIStore();
+
+  // Computations
+  const completedTasksCount = useMemo(() => tasks.filter(t => t.completed).length, [tasks]);
+  const focusHours = useMemo(() => {
+    const taskHours = completedTasksCount * 0.5;
+    const habitHours = habits.reduce((acc, h) => acc + h.completedDates.length * 0.3, 0);
+    return Number((taskHours + habitHours).toFixed(1));
+  }, [completedTasksCount, habits]);
+
+  const uniqueTags = useMemo(() => {
+    const allTags = new Set<string>();
+    tasks.forEach(t => t.tags?.forEach(tag => allTags.add(tag)));
+    habits.forEach(h => h.category && allTags.add(h.category));
+    return Array.from(allTags);
+  }, [tasks, habits]);
 
   // Interactive Monthly Wrapped State
   const [wrappedMonth, setWrappedMonth] = useState('May 2026');
@@ -176,9 +207,23 @@ export default function LifeVision() {
 
   const handleShareWrapped = () => {
     setCopiedWrapped(true);
-    navigator.clipboard.writeText("My Life OS May Wrapped 🚀\n🔥 Studied 142.5 hrs\n🏆 Completed 87 tasks\n🧠 Current Life Score: 92/100\nJoin me on Life OS!");
+    navigator.clipboard.writeText(`My LIFE OS Wrapped 🚀\n🔥 Deep Focus Hours: ${focusHours} hrs\n🏆 Objectives Completed: ${completedTasksCount} items\n🧠 Cognitive Life Score: ${lifeScore?.score || 84}/100\nJoin me on LIFE OS!`);
     setTimeout(() => setCopiedWrapped(false), 2000);
   };
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[60vh] flex items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-white/30 font-display text-lg"
+        >
+          Initializing Life Vision & Replay...
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -336,20 +381,20 @@ export default function LifeVision() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="p-4 rounded-xl bg-black/45 border border-white/5 text-center">
                             <span className="text-[10px] text-white/40 font-mono block">DEEP FOCUS HOURS</span>
-                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">142.5 hrs</span>
+                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">{focusHours} hrs</span>
                             <span className="text-[9px] text-emerald-400 font-mono font-semibold block mt-1">Top 3% of Students</span>
                           </div>
 
                           <div className="p-4 rounded-xl bg-black/45 border border-white/5 text-center">
                             <span className="text-[10px] text-white/40 font-mono block">TASKS COMPLETED</span>
-                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">87 Items</span>
+                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">{completedTasksCount} Items</span>
                             <span className="text-[9px] text-primary font-mono font-semibold block mt-1">94% consistency</span>
                           </div>
 
                           <div className="p-4 rounded-xl bg-black/45 border border-white/5 text-center">
                             <span className="text-[10px] text-white/40 font-mono block">SKILLS REFINED</span>
-                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">4 Topics</span>
-                            <span className="text-[9px] text-purple-400 font-mono font-semibold block mt-1">German, Rust, UI, Alg</span>
+                            <span className="text-3xl font-display font-extrabold text-white block mt-1.5">{uniqueTags.length} Topics</span>
+                            <span className="text-[9px] text-purple-400 font-mono font-semibold block mt-1">{uniqueTags.slice(0, 4).join(', ') || 'General'}</span>
                           </div>
                         </div>
 
@@ -357,9 +402,9 @@ export default function LifeVision() {
                         <div className="p-4.5 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div>
                             <span className="text-[10px] text-white/40 font-mono uppercase">AI Vibe Analysis</span>
-                            <span className="text-base font-semibold text-white block mt-0.5">Focus Mode Dominance: The Rust Compiler Architect</span>
+                            <span className="text-base font-semibold text-white block mt-0.5">Focus Mode Dominance: The {memory.strongHabit || 'Productivity'} Architect</span>
                             <p className="text-xs text-white/60 mt-1 leading-relaxed max-w-xl">
-                              You spent most of your study session in uninterrupted deep work phases, peaking on Wednesday evenings with low context switching.
+                              You spent most of your study session in uninterrupted deep work phases, peaking around your best focus block of {memory.bestFocusTime || 'evening'} with low context switching, while successfully overcoming your prime weakness of "{memory.mainWeakness || 'fatigue'}".
                             </p>
                           </div>
                           

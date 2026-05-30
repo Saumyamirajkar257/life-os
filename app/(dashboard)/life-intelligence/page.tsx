@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, Sparkles, Eye, Dna, MessageSquare, Compass, ShieldAlert,
@@ -9,6 +9,13 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 
+import { useTasksStore } from '@/store/useTasksStore';
+import { useHabitsStore } from '@/store/useHabitsStore';
+import { useFinanceStore } from '@/store/useFinanceStore';
+import { useAIStore } from '@/store/useAIStore';
+import { useBrainStore } from '@/store/useBrainStore';
+import { auth } from '@/lib/firebase';
+
 type MainTab = 'coach' | 'future' | 'dna';
 type SubTab = string;
 
@@ -16,25 +23,38 @@ export default function LifeIntelligence() {
   const [activeTab, setActiveTab] = useState<MainTab>('coach');
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('coach-chat');
 
+  const [mounted, setMounted] = useState(false);
+
+  // Hydrate local stores
+  const { tasks } = useTasksStore();
+  const { habits } = useHabitsStore();
+  const { transactions } = useFinanceStore();
+  const { memory, insights } = useAIStore();
+  const { nodes } = useBrainStore();
+
+  const unfinishedTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
+  const highPriorityTasks = useMemo(() => unfinishedTasks.filter(t => t.priority === 'high'), [unfinishedTasks]);
+  const strongHabit = memory.strongHabit || 'none';
+  const strongHabitStreak = useMemo(() => {
+    const habit = habits.find(h => h.title.toLowerCase().includes(strongHabit.toLowerCase()));
+    return habit ? habit.currentStreak : 0;
+  }, [habits, strongHabit]);
+
   // Interactive Coach Chat States
-  const [coachMessages, setCoachMessages] = useState([
-    { sender: 'ai', text: "Systems sync complete. Here is what I notice this week:\n• You wasted 6 hours on distraction sites compared to last week.\n• You haven't reviewed German vocabulary for 8 days.\n• Your system design exam is in 12 days, and based on study logs, you are only 35% prepared.", time: '10:02 AM' }
-  ]);
+  const [coachMessages, setCoachMessages] = useState<any[]>([]);
   const [coachInput, setCoachInput] = useState('');
   const [coachTyping, setCoachTyping] = useState(false);
 
   // Interactive Future Self Chat States
-  const [futureMessages, setFutureMessages] = useState([
-    { sender: 'future', text: "Hello from 2030. I'm the digital projection of who you'll become based on your current trajectory and accomplishments. What would you like to ask your future self?", time: 'Now' }
-  ]);
+  const [futureMessages, setFutureMessages] = useState<any[]>([]);
   const [futureInput, setFutureInput] = useState('');
   const [futureTyping, setFutureTyping] = useState(false);
 
   // Pattern Discovery States
   const [patterns, setPatterns] = useState([
-    { title: 'Peak Performance Time', desc: 'You complete coding sessions 3x faster and with 40% higher focus index between 9:00 PM and 11:30 PM.', type: 'strength' },
-    { title: 'Habit Abandonment Hazard', desc: 'You consistently abandon new languages or habits after exactly 6 days. Let us set a micro-goal for day 7.', type: 'hazard' },
-    { title: 'Physical Synergy', desc: 'Your focus session duration increases by average 28 minutes when completed within 3 hours after a workout.', type: 'strength' }
+    { title: 'Peak Performance Time', desc: `You complete coding sessions 3x faster and with 40% higher focus index between ${memory.bestFocusTime || '9:00 PM and 11:30 PM'}.`, type: 'strength' },
+    { title: 'Habit Abandonment Hazard', desc: `You consistently abandon new languages or habits after exactly 6 days. Let us set a micro-goal for day 7.`, type: 'hazard' },
+    { title: 'Physical Synergy', desc: `Your focus session duration increases by average 28 minutes when completed within 3 hours after a workout.`, type: 'strength' }
   ]);
   const [discoveringPatterns, setDiscoveringPatterns] = useState(false);
 
@@ -52,60 +72,142 @@ export default function LifeIntelligence() {
   const [searchingMemory, setSearchingMemory] = useState(false);
 
   // Actions
-  const handleSendCoach = () => {
+  const handleSendCoach = async () => {
     if (!coachInput.trim()) return;
     const userMsg = { sender: 'user', text: coachInput, time: 'Just now' };
     setCoachMessages(prev => [...prev, userMsg]);
+    const currentInput = coachInput;
     setCoachInput('');
     setCoachTyping(true);
 
-    setTimeout(() => {
-      setCoachTyping(false);
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat',
+          message: currentInput,
+          context: { tasks, habits, transactions, memory },
+          uid: auth.currentUser?.uid
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCoachMessages(prev => [...prev, { sender: 'ai', text: data.response, time: 'Just now' }]);
+      } else {
+        throw new Error('Sync lag');
+      }
+    } catch (e) {
       const responses = [
-        "Analyzing priority targets... Let's adjust your schedule to fit 30 minutes of German focus today to break this 8-day drought.",
-        "Understood. Your system design exam preparation index has been flagged. If we focus on mock architectures for 45 minutes today, preparedness will rise to 42%.",
-        "Habit calibration updated. I will notify your companion pet to nudge you if you remain inactive during your peak coding window tonight."
+        "Analyzing priority targets... Let's adjust your schedule to fit 30 minutes of focus today.",
+        "Understood. If we focus on mock architectures for 45 minutes today, preparedness will rise.",
+        "Habit calibration updated. I will notify your companion pet to nudge you if you remain inactive tonight."
       ];
       const randomReply = responses[Math.floor(Math.random() * responses.length)];
       setCoachMessages(prev => [...prev, { sender: 'ai', text: randomReply, time: 'Just now' }]);
-    }, 1500);
+    } finally {
+      setCoachTyping(false);
+    }
   };
 
-  const handleSendFuture = () => {
+  const handleSendFuture = async () => {
     if (!futureInput.trim()) return;
     const userMsg = { sender: 'user', text: futureInput, time: 'Just now' };
     setFutureMessages(prev => [...prev, userMsg]);
+    const currentInput = futureInput;
     setFutureInput('');
     setFutureTyping(true);
 
-    setTimeout(() => {
-      setFutureTyping(false);
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat',
+          message: `[Future Self Simulation - Respond in character as the user's successful Future Self in the year 2030. Provide vision, advice, and hope based on their current tasks/habits/notes.] User says: ${currentInput}`,
+          context: { tasks, habits, transactions, memory },
+          uid: auth.currentUser?.uid
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFutureMessages(prev => [...prev, { sender: 'future', text: data.response, time: 'Just now' }]);
+      } else {
+        throw new Error('Sync lag');
+      }
+    } catch (e) {
       const responses = [
-        "In 2030, that decision you made to stick through the hard study cycles paid off. The consistency built our foundation as a lead architect. Keep going.",
-        "Our journey to Japan wasn't straight, but every hour you spent studying coding at night made it possible. Yes, it was worth it.",
-        "Don't worry about the short-term setbacks. The habit streaks you are building right now in 2026 are what kept us stable during the 2028 startup build."
+        "In 2030, that decision you made to stick through the hard study cycles paid off. The consistency built our foundation. Keep going.",
+        "Yes, every hour you spent studying coding at night made it possible. Yes, it was worth it.",
+        "Don't worry about short-term setbacks. The habit streaks you are building right now are what kept us stable."
       ];
       const randomReply = responses[Math.floor(Math.random() * responses.length)];
       setFutureMessages(prev => [...prev, { sender: 'future', text: randomReply, time: 'Just now' }]);
-    }, 1600);
+    } finally {
+      setFutureTyping(false);
+    }
   };
 
-  const handleDiscoverPatterns = () => {
+  const handleDiscoverPatterns = async () => {
     setDiscoveringPatterns(true);
-    setTimeout(() => {
-      setDiscoveringPatterns(false);
-      setPatterns([
-        ...patterns,
+    try {
+      const insightsRes = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'insights', context: { tasks, habits, transactions, memory } }),
+      });
+      if (insightsRes.ok) {
+        const data = await insightsRes.json();
+        const newPatterns = data.map((insight: any) => ({
+          title: insight.correlation || 'Focus Dynamic Pattern',
+          desc: insight.text,
+          type: insight.category === 'wellness' || insight.category === 'finance' ? 'hazard' : 'strength'
+        }));
+        setPatterns(newPatterns);
+      } else {
+        throw new Error('Sync lag');
+      }
+    } catch (e) {
+      setPatterns(prev => [
+        ...prev,
         { title: 'Sleep-Focus Link', desc: 'When sleep index falls below 60%, your focus session decay rate increases by 2.2x the following morning.', type: 'hazard' }
       ]);
-    }, 1200);
+    } finally {
+      setDiscoveringPatterns(false);
+    }
   };
 
-  const handleGenerateDream = () => {
+  const handleGenerateDream = async () => {
     if (!dreamInput.trim()) return;
     setDreamGenerating(true);
-    setTimeout(() => {
-      setDreamGenerating(false);
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'milestones',
+          goalName: dreamInput.trim(),
+          goalType: 'long-term',
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDreamOutput({
+          title: dreamInput,
+          timeline: data.timeline || '2.5 Years Plan',
+          milestones: data.milestones.map((m: any, idx: number) => ({
+            phase: `Phase ${idx + 1}: ${m.name}`,
+            desc: `Target Date: ${m.targetDate}. Complete this step to advance your career blueprint.`
+          })),
+          obstacles: `Primary hazard is potential setback from: ${memory.mainWeakness || 'fatigue'}. Mitigate by locking focus limits and prioritizing core ${memory.strongHabit || 'routine'} routine.`
+        });
+      } else {
+        throw new Error('Sync lag');
+      }
+    } catch (e) {
       setDreamOutput({
         title: dreamInput,
         timeline: '2.5 Years Plan',
@@ -116,21 +218,87 @@ export default function LifeIntelligence() {
         ],
         obstacles: 'Primary hazard is burnout from parallel university projects. Mitigate by locking focus limits to 3 hours/day maximum.'
       });
-    }, 1500);
+    } finally {
+      setDreamGenerating(false);
+    }
   };
 
   const handleSearchMemory = () => {
     if (!memoryQuery.trim()) return;
     setSearchingMemory(true);
+    
+    const query = memoryQuery.toLowerCase();
+    const matches = nodes.filter(n => 
+      n.title.toLowerCase().includes(query) || 
+      n.content.toLowerCase().includes(query) || 
+      n.tags.some(t => t.toLowerCase().includes(query))
+    );
+
     setTimeout(() => {
       setSearchingMemory(false);
-      setMemoryResults([
-        { date: 'Feb 12, 2026', type: 'Focus Session', detail: 'Studied Advanced Compiler Design for 2h 45m. Average heart rate 72bpm.' },
-        { date: 'Feb 18, 2026', type: 'Goal Complete', detail: 'Achieved Level 2 in Programming. Unlocked Dark Glassmorphic Theme.' },
-        { date: 'Feb 24, 2026', type: 'Journal Entry', detail: 'Recorded thoughts on systems project failure. "We must optimize memory safety early."' }
-      ]);
-    }, 1000);
+      if (matches.length > 0) {
+        setMemoryResults(matches.map(n => ({
+          date: new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          type: n.type.toUpperCase(),
+          detail: `${n.title}: ${n.content}`
+        })));
+      } else {
+        setMemoryResults([
+          { date: 'Index Log', type: 'AI SEARCH', detail: `No local Second Brain nodes matched "${memoryQuery}". Add nodes to your Second Brain vault to embed them semantically!` },
+          { date: 'Feb 12, 2026', type: 'Focus Session', detail: 'Studied Advanced Compiler Design for 2h 45m. Average heart rate 72bpm.' },
+          { date: 'Feb 24, 2026', type: 'Journal Entry', detail: 'Recorded thoughts on systems project failure. "We must optimize memory safety early."' }
+        ]);
+      }
+    }, 800);
   };
+
+  // Prevent SSR Hydration discrepancies
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Hydrate personalized message configurations once mounted
+  useEffect(() => {
+    if (mounted) {
+      const activeStreakMsg = strongHabitStreak > 0
+        ? `• Your strongest habit "${strongHabit}" is holding a solid ${strongHabitStreak}-day streak.`
+        : `• Establish a consistent habit loop for "${strongHabit}" to stabilize discipline.`;
+      
+      const priorityMsg = highPriorityTasks.length > 0
+        ? `• You have ${highPriorityTasks.length} pending high priority objectives needing direct focus.`
+        : `• Excellent, no high priority tasks are backing up in your queue.`;
+
+      setCoachMessages([
+        { 
+          sender: 'ai', 
+          text: `Cognitive systems synchronized. Here is what I analyze from your personal data matrix:\n• You have ${unfinishedTasks.length} active objectives in your queue.\n${priorityMsg}\n${activeStreakMsg}\n• AI Memory identifies your main threshold as "${memory.mainWeakness}". Maintain strict work logs to override fatigue decay.`, 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        }
+      ]);
+
+      setFutureMessages([
+        { 
+          sender: 'future', 
+          text: `Hello, this is your digital projection from 2030. I'm synthesized from your actual study habits, closed goals, and second brain nodes. With your current trajectory of ${tasks.filter(t => t.completed).length} closed tasks and habit streaks, we've laid an incredible foundation. Ask me anything about our journey.`, 
+          time: 'Now' 
+        }
+      ]);
+    }
+  }, [mounted, unfinishedTasks.length, highPriorityTasks.length, strongHabit, strongHabitStreak, memory.mainWeakness, tasks]);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[60vh] flex items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-white/30 font-display text-lg"
+        >
+          Initializing Life Intelligence Core...
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -389,9 +557,9 @@ export default function LifeIntelligence() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { title: 'System Architecture', val: 88, stat: 'Top 5% of Students', desc: 'Identified through rapid node graph connections in Second Brain and structure modeling in compiler projects.' },
-                        { title: 'Visual UI Design', val: 76, stat: 'Top 15% of Students', desc: 'Corresponds with low styling edits during CSS configuration and active Tailwind layouts.' },
-                        { title: 'Information Synthesis', val: 92, stat: 'Top 2% of Students', desc: 'Indicated by high efficiency in PDF summary reads and flashcard generation volumes.' }
+                        { title: 'System Architecture & Infrastructure', val: Math.min(99, 75 + Math.min(24, tasks.filter(t => t.completed).length * 2)), stat: 'Top 5% of Engineers', desc: `Derived from your execution on ${tasks.length} active workspace nodes and structured Second Brain tags.` },
+                        { title: 'Discipline & Habits Streak Endurance', val: Math.min(98, 60 + Math.min(38, habits.reduce((acc, h) => acc + h.currentStreak, 0) * 4)), stat: 'Top 10% of Disciplined Users', desc: `Corresponds with active daily routine checkups for "${strongHabit}" and your maximum habit streak duration.` },
+                        { title: 'Cognitive Synthesis & Research', val: Math.min(99, 70 + Math.min(29, nodes.length * 3)), stat: 'Top 2% of Academic Synthesizers', desc: `Indicated by your high Second Brain density consisting of ${nodes.length} connected knowledge nodes.` }
                       ].map((t, idx) => (
                         <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between">
                           <div>
@@ -579,9 +747,9 @@ export default function LifeIntelligence() {
                           <span className="text-xs font-semibold text-white block">Skills Gap:</span>
                           <div className="space-y-2">
                             {[
-                              { label: 'Rust Compiler Mechanics', percent: 35 },
-                              { label: 'Distributed Systems & Consensuses', percent: 45 },
-                              { label: 'UI/UX Visual Prototyping', percent: 60 }
+                              { label: 'Systems & Compiler Mechanics', percent: Math.min(95, 30 + tasks.filter(t => t.completed && (t.title.toLowerCase().includes('system') || t.title.toLowerCase().includes('rust'))).length * 15) },
+                              { label: 'Distributed Computing & Database Systems', percent: Math.min(95, 40 + nodes.filter(n => n.tags.some(t => t.toLowerCase().includes('system')) || n.title.toLowerCase().includes('system')).length * 10) },
+                              { label: 'Modern UX & Interface Synthesis', percent: Math.min(95, 50 + tasks.filter(t => t.completed && t.title.toLowerCase().includes('ui')).length * 10) }
                             ].map((s, idx) => (
                               <div key={idx}>
                                 <div className="flex justify-between text-[10px] text-white/40 mb-1">
@@ -643,16 +811,16 @@ export default function LifeIntelligence() {
                         </div>
 
                         <p className="text-xs text-white/60 leading-relaxed pt-2 border-t border-white/5">
-                          Your focus style is highly concentrated but has high fatigue decay. You optimize codebases efficiently but require hard reset intervals to prevent burnout.
+                          Your focus style is highly concentrated but has high fatigue decay. You optimize codebases efficiently but require hard reset intervals to prevent burnout. Your best focus time is ${memory.bestFocusTime || '8 PM'} and your primary fatigue factor is "${memory.mainWeakness || 'fatigue'}".
                         </p>
                       </div>
 
                       <div className="p-5 rounded-2xl bg-white/5 border border-white/10 grid grid-cols-2 gap-4">
                         {[
-                          { style: 'Focus Style', label: 'Hyperfocused Deep Work', value: 85 },
-                          { style: 'Learning Style', label: 'Spaced Recurrence', value: 72 },
-                          { style: 'Work Style', label: 'Concurrent Sprinting', value: 68 },
-                          { style: 'Motivation Style', label: 'Rank Leaderboard XP', value: 91 }
+                          { style: 'Focus Style', label: 'Hyperfocused Deep Work', value: Math.min(99, 80 + Math.min(15, tasks.filter(t => t.completed).length)) },
+                          { style: 'Learning Style', label: 'Spaced Recurrence', value: Math.min(98, 70 + Math.min(25, habits.filter(h => h.completedDates.length > 0).length * 4)) },
+                          { style: 'Work Style', label: 'Concurrent Sprinting', value: Math.min(95, 65 + Math.min(30, tasks.length * 2)) },
+                          { style: 'Motivation Style', label: 'Rank Leaderboard XP', value: Math.min(99, 85 + Math.min(12, habits.reduce((acc, h) => acc + h.currentStreak, 0))) }
                         ].map((blueprint, idx) => (
                           <div key={idx} className="flex flex-col justify-between p-3.5 bg-black/35 rounded-xl border border-white/5">
                             <div>
