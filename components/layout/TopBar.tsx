@@ -1,9 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Search, Bell, User, Menu } from 'lucide-react';
+import { Search, Bell, User, Menu, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
+import { useState, useEffect } from 'react';
 import { fadeInDown } from '@/animations';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +33,16 @@ export function TopBar() {
     userHandle
   } = useAppStore();
 
+  const { notifications, markAllAsRead, clearAll, removeNotification } = useNotificationStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    useNotificationStore.persist.rehydrate();
+    setIsHydrated(true);
+  }, []);
+
+  const unreadCount = isHydrated ? notifications.filter((n) => !n.read).length : 0;
   const pageTitle = capitalizeFirst(activePage || 'dashboard');
 
   return (
@@ -95,14 +107,107 @@ export function TopBar() {
         </button>
 
         {/* Notification bell */}
-        <button className="relative p-2 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200">
-          <Bell className="w-5 h-5" />
-          {/* Pulsing green dot */}
-          <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border border-black/50" />
-          </span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => {
+              setIsOpen(!isOpen);
+              if (!isOpen) {
+                markAllAsRead();
+              }
+            }}
+            className={cn(
+              "relative p-2 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200",
+              isOpen && "text-white/70 bg-white/5"
+            )}
+          >
+            <Bell className="w-5 h-5" />
+            {/* Pulsing green dot */}
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border border-black/50" />
+              </span>
+            )}
+          </button>
+
+          {/* Dropdown panel */}
+          {isOpen && (
+            <>
+              {/* Clicking outside closes the panel */}
+              <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsOpen(false)} />
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 glass-panel rounded-2xl p-4 shadow-2xl z-50 border border-white/10 max-h-[400px] overflow-y-auto space-y-3">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-semibold text-white tracking-wide uppercase">Notifications</h4>
+                    {unreadCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                  {isHydrated && notifications.length > 0 && (
+                    <button
+                      onClick={clearAll}
+                      className="text-[10px] text-white/40 hover:text-red-400 transition-colors flex items-center gap-1 font-medium"
+                    >
+                      <Trash2 className="w-3 h-3" /> Clear all
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {!isHydrated || notifications.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-white/20">
+                      No notifications yet
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={cn(
+                          "p-3 rounded-xl border transition-all duration-200 text-left relative group",
+                          notif.read ? "bg-white/[0.01] border-white/5" : "bg-white/[0.03] border-white/10"
+                        )}
+                      >
+                        <button
+                          onClick={() => removeNotification(notif.id)}
+                          className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 text-white/20 hover:text-white/60 transition-opacity p-0.5 rounded-md hover:bg-white/5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        <div className="flex items-start gap-2.5 pr-5">
+                          <span className="mt-0.5 text-xs select-none">
+                            {notif.type === 'success' && '✅'}
+                            {notif.type === 'info' && 'ℹ️'}
+                            {notif.type === 'warning' && '⚠️'}
+                            {notif.type === 'error' && '❌'}
+                            {notif.type === 'github' && '🐙'}
+                            {notif.type === 'calendar' && '📅'}
+                          </span>
+                          <div className="space-y-0.5">
+                            <h5 className={cn(
+                              "text-xs font-semibold text-white/90",
+                              !notif.read && "text-emerald-300"
+                            )}>
+                              {notif.title}
+                            </h5>
+                            <p className="text-[10px] leading-relaxed text-white/50">
+                              {notif.description}
+                            </p>
+                            <span className="text-[8px] text-white/25 block">
+                              {notif.timestamp}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* User avatar & Handle */}
         <Link href="/settings" className="p-1.5 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200 flex items-center gap-2">

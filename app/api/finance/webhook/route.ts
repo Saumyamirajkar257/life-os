@@ -1,6 +1,41 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocFromServer } from 'firebase/firestore';
+
+async function addServerNotification(uid: string, title: string, description: string, type: 'info' | 'success' | 'warning' | 'error' | 'github' | 'calendar') {
+  try {
+    const notifDocRef = doc(db, 'users', uid, 'store', 'life-os-notifications');
+    const notifSnap = await getDocFromServer(notifDocRef);
+    
+    let storeData = { state: { notifications: [] as any[] }, version: 0 };
+    if (notifSnap.exists()) {
+      try {
+        storeData = JSON.parse(notifSnap.data().value || '{"state":{"notifications":[]},"version":0}');
+      } catch (e) {}
+    }
+    
+    const newNotif = {
+      id: `notif-${Date.now()}`,
+      title,
+      description,
+      timestamp: 'Just now',
+      type,
+      read: false,
+    };
+    
+    if (!storeData.state) storeData.state = { notifications: [] };
+    if (!Array.isArray(storeData.state.notifications)) storeData.state.notifications = [];
+    
+    storeData.state.notifications.unshift(newNotif);
+    if (storeData.state.notifications.length > 50) {
+      storeData.state.notifications = storeData.state.notifications.slice(0, 50);
+    }
+    
+    await setDoc(notifDocRef, { value: JSON.stringify(storeData) });
+  } catch (error) {
+    console.error('Error adding server-side notification:', error);
+  }
+}
 
 const getGeminiKey = () => {
   return process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
@@ -112,6 +147,14 @@ export async function POST(request: Request) {
     };
 
     await setDoc(txDocRef, transactionData);
+
+    // Add server-side notification
+    await addServerNotification(
+      uid,
+      'Transaction Synced',
+      `Logged expense ₹${parsedTx.amount} for "${parsedTx.name}" under ${parsedTx.category}.`,
+      'success'
+    );
 
     return NextResponse.json({ success: true, transaction: transactionData });
   } catch (error: any) {
