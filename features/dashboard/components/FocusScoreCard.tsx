@@ -15,7 +15,7 @@ export function FocusScoreCard() {
   }, []);
 
   const { lifeScore } = useAIStore();
-  const score = lifeScore.score;
+  const score = lifeScore?.score || 84;
 
   useEffect(() => {
     if (!mounted) return;

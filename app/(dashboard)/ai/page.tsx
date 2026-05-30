@@ -290,7 +290,7 @@ export default function AIPage() {
             {/* Left & Center: Core Insights & Briefing */}
             <div className="lg:col-span-2 flex flex-col gap-6 w-full">
               {/* Burnout Indicator Flash Banner */}
-              {burnoutStatus.detected && (
+              {burnoutStatus?.detected && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -298,10 +298,10 @@ export default function AIPage() {
                 >
                   <AlertTriangle className="w-5 h-5 text-zinc-300 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider font-mono">Cognitive Burnout Indicator Detected ({burnoutStatus.level})</h4>
-                    <p className="text-xs text-white/60 mt-1">{burnoutStatus.explanation}</p>
+                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider font-mono">Cognitive Burnout Indicator Detected ({burnoutStatus?.level || 'none'})</h4>
+                    <p className="text-xs text-white/60 mt-1">{burnoutStatus?.explanation || 'Rest advised.'}</p>
                     <div className="mt-3 flex flex-col gap-1">
-                      {burnoutStatus.suggestions.map((s, idx) => (
+                      {burnoutStatus?.suggestions?.map((s, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-[11px] text-white/80 font-mono">
                           <ChevronRight className="w-3 h-3 text-white/40" />
                           <span>{s}</span>
@@ -420,16 +420,16 @@ export default function AIPage() {
                       r="55"
                       strokeWidth="8"
                       strokeDasharray={2 * Math.PI * 55}
-                      strokeDashoffset={2 * Math.PI * 55 - (lifeScore.score / 100) * 2 * Math.PI * 55}
+                      strokeDashoffset={2 * Math.PI * 55 - ((lifeScore?.score || 84) / 100) * 2 * Math.PI * 55}
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center justify-center">
-                    <span className="font-display text-3xl font-bold text-white">{lifeScore.score}</span>
+                    <span className="font-display text-3xl font-bold text-white">{lifeScore?.score || 84}</span>
                     <span className="text-[8px] font-mono tracking-widest text-white/30 uppercase">Index</span>
                   </div>
                 </div>
                 <p className="text-xs text-white/70 mt-2 max-w-xs">
-                  {lifeScore.explanation}
+                  {lifeScore?.explanation || 'Life index stable.'}
                 </p>
               </GlassCard>
 

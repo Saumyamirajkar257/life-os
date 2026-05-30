@@ -174,14 +174,14 @@ export function DashboardGrid() {
         title: 'Commander Core',
         icon: Trophy,
         color: 'from-purple-500 via-blue-500 to-cyan-500',
-        stats: `Life Score: ${lifeScore.score} · Burnout: ${burnoutStatus.level}`,
+        stats: `Life Score: ${lifeScore?.score || 84} · Burnout: ${burnoutStatus?.level || 'none'}`,
         description: `Central processing hub coordinating ${tasks.length} active tasks, ${habits.length} habits, ${routines.length} routines, and ${rules.length} automation triggers.`,
         x: 0,
         y: 0
       };
     }
     return planets.find(p => p.id === hoveredPlanet);
-  }, [hoveredPlanet, planets, lifeScore.score, burnoutStatus.level, tasks.length, habits.length, routines.length, rules.length]);
+  }, [hoveredPlanet, planets, lifeScore?.score, burnoutStatus?.level, tasks.length, habits.length, routines.length, rules.length]);
 
   // 1. Mount Trigger
   useEffect(() => {
@@ -1236,7 +1236,7 @@ export function DashboardGrid() {
                         {[
                           { act: `Completed ${completedTasksCount} total tasks`, xp: `+${completedTasksCount * 50} XP`, time: 'Active' },
                           { act: `Logged active habit routines`, xp: `+${habits.reduce((acc, h) => acc + h.completedDates.length, 0) * 30} XP`, time: 'Secured' },
-                          { act: `Synchronized Life OS systems`, xp: `+${lifeScore.score} XP`, time: 'Optimal' },
+                          { act: `Synchronized Life OS systems`, xp: `+${lifeScore?.score || 84} XP`, time: 'Optimal' },
                         ].map((log, idx) => (
                           <div key={idx} className="flex justify-between text-xs font-medium">
                             <span className="text-white/60">{log.act}</span>

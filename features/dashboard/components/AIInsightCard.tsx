@@ -21,7 +21,7 @@ export function AIInsightCard() {
 
   const insightLines = mounted ? [
     '> Initializing behavioral diagnostics...',
-    ...(insights.map((ins) => `> ${ins.text}`)),
+    ...(insights?.map((ins) => `> ${ins.text}`) || []),
     dailyBriefing ? `> Focus suggestion: ${dailyBriefing.todayFocusRecommendation}` : '> Keep consistent focus blocks today.',
   ] : [];
 

@@ -32,9 +32,17 @@ export default function GlobalError({
           </div>
           
           <h1 className="text-2xl font-display font-bold text-white mb-2">System Anomaly Detected</h1>
-          <p className="text-white/50 text-sm mb-8">
+          <p className="text-white/50 text-sm mb-4">
             The neural engine encountered an unexpected error. Your data is safe, but the current process was halted.
           </p>
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 w-full mb-8 text-left max-h-48 overflow-y-auto">
+            <p className="text-rose-400 text-xs font-mono break-all whitespace-pre-wrap">
+              {error.message || 'Unknown Error'}
+            </p>
+            {error.digest && (
+              <p className="text-rose-500/60 text-xs font-mono mt-2">Digest: {error.digest}</p>
+            )}
+          </div>
 
           <div className="flex flex-col w-full gap-3">
             <button
