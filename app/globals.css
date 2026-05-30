@@ -1,0 +1,386 @@
+@import "tailwindcss";
+@import "react-grid-layout/css/styles.css";
+@import "react-resizable/css/styles.css";
+@theme {
+  /* ── Color Tokens ── */
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-card: rgba(10, 10, 10, 0.6);
+  --color-primary: #ffffff;
+  --color-secondary: rgba(255, 255, 255, 0.7);
+  --color-muted: rgba(255, 255, 255, 0.4);
+  --color-accent: rgba(255, 255, 255, 0.1);
+  --color-destructive: #ff4444;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-input: rgba(255, 255, 255, 0.05);
+  --color-ring: rgba(255, 255, 255, 0.2);
+  --color-glow: rgba(255, 255, 255, 0.15);
+  --color-surface-elevated: rgba(18, 18, 18, 0.8);
+  --color-surface-overlay: rgba(0, 0, 0, 0.8);
+  --color-success: #00ff88;
+  --color-warning: #ffaa00;
+
+  /* ── Shadow System ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.08);
+  --shadow-glow-strong: 0 0 40px rgba(255, 255, 255, 0.15);
+
+  /* ── Border Radius ── */
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-full: 9999px;
+
+  /* ── Fonts ── */
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* ── Animation Tokens ── */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+/* ── Glass Panel Utilities ── */
+
+.glass-panel {
+  background: var(--color-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-panel-strong {
+  background: var(--color-surface-elevated);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── Glow Utilities ── */
+
+.glow-hover:hover {
+  box-shadow: var(--shadow-glow);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.glow-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.glow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-foreground);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+/* ── CSS Keyframe Animations ── */
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.25);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* ── Animation Utility Classes ── */
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Custom Scrollbar ── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 🌟 React Grid Layout Overrides 🌟 */
+
+.react-grid-item.react-grid-placeholder {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--radius-xl) !important;
+  opacity: 0.6 !important;
+}
+
+/* 🌟 Frosted Glass Noise Overlay 🌟 */
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 🌟 Hover Glow border highlight overlay 🌟 */
+.glass-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel.fixed {
+  position: fixed;
+}
+
+.glass-panel.absolute {
+  position: absolute;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.glass-panel:hover::before {
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+}
+
+/* 🌟 Advanced Themes Overrides 🌟 */
+
+/* 1. Minimal Black */
+html[data-theme='minimal-black'] body {
+  --color-background: #000000;
+  --color-card: #000000;
+  --color-surface-elevated: #000000;
+  --color-border: #333333;
+}
+html[data-theme='minimal-black'] .glass-panel,
+html[data-theme='minimal-black'] .glass-panel-strong,
+html[data-theme='minimal-black'] .glass-panel-subtle {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+html[data-theme='minimal-black'] .glass-panel::after {
+  display: none;
+}
+html[data-theme='minimal-black'] .glass-panel:hover::before {
+  background: radial-gradient(
+    200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+/* 2. Cyberpunk Neon */
+html[data-theme='cyberpunk'] body {
+  --color-background: #070114;
+  --color-card: rgba(22, 10, 48, 0.75);
+  --color-surface-elevated: rgba(32, 15, 68, 0.9);
+  --color-border: rgba(255, 0, 255, 0.25);
+  --color-foreground: #00ffcc;
+  --color-primary: #ff00ff;
+  --color-ring: rgba(0, 255, 204, 0.4);
+  --shadow-glow: 0 0 20px rgba(255, 0, 255, 0.35);
+}
+html[data-theme='cyberpunk'] .glass-panel {
+  border: 1px solid rgba(255, 0, 255, 0.35);
+  box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.05), 0 4px 20px rgba(255, 0, 255, 0.08);
+}
+html[data-theme='cyberpunk'] .glass-panel:hover::before {
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 0, 255, 0.45) 0%,
+    rgba(0, 255, 204, 0.18) 60%,
+    transparent 100%
+  );
+}
+html[data-theme='cyberpunk'] input, 
+html[data-theme='cyberpunk'] select, 
+html[data-theme='cyberpunk'] textarea {
+  border-color: rgba(255, 0, 255, 0.25);
+  color: #00ffcc;
+}
+html[data-theme='cyberpunk'] input:focus, 
+html[data-theme='cyberpunk'] select:focus, 
+html[data-theme='cyberpunk'] textarea:focus {
+  border-color: #00ffcc;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+/* 3. Hacker Green Terminal */
+html[data-theme='hacker'] body {
+  --color-background: #000000;
+  --color-card: rgba(0, 15, 0, 0.85);
+  --color-surface-elevated: rgba(0, 22, 0, 0.9);
+  --color-border: rgba(0, 255, 0, 0.3);
+  --color-foreground: #00ff44;
+  --color-primary: #00ff00;
+  --font-sans: var(--font-mono);
+  --font-display: var(--font-mono);
+  --shadow-glow: 0 0 25px rgba(0, 255, 0, 0.2);
+}
+html[data-theme='hacker'] .glass-panel {
+  border: 1px solid rgba(0, 255, 0, 0.35);
+  border-radius: 0;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.05);
+}
+html[data-theme='hacker'] .glass-panel:hover::before {
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 255, 0, 0.4) 0%,
+    rgba(0, 255, 0, 0.05) 60%,
+    transparent 100%
+  );
+}
+html[data-theme='hacker'] input, 
+html[data-theme='hacker'] select, 
+html[data-theme='hacker'] textarea {
+  border-color: rgba(0, 255, 0, 0.3);
+  color: #00ff44;
+  border-radius: 0;
+}
+html[data-theme='hacker'] input:focus, 
+html[data-theme='hacker'] select:focus, 
+html[data-theme='hacker'] textarea:focus {
+  border-color: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+/* 🌟 Rainbow Easter Egg Mode 🌟 */
+@keyframes hue-cycle {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+html.rainbow-active body {
+  animation: hue-cycle 8s linear infinite !important;
+}
+

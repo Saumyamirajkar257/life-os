@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Life OS</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111111">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <div class="app-page">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <a href="index.html" class="sidebar-item" title="Back to Home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-item active" data-page="home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                </div>
+                <div class="sidebar-item" data-page="finance">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <div class="sidebar-item" data-page="tasks">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                </div>
+                <div class="sidebar-item" data-page="analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10M12 20V4M6 20v-6"/>
+                    </svg>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header class="dashboard-header">
+                    <h1>Good Morning</h1>
+                    <div class="user-info">
+                        <span class="user-name">Alex Morgan</span>
+                        <div class="user-avatar">AM</div>
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <!-- Stats Row -->
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Balance</div>
+                            <div class="stat-value">$48,294</div>
+                            <div class="stat-change positive">↑ 12.5% this month</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Active Tasks</div>
+                            <div class="stat-value">23</div>
+                            <div class="stat-change positive">8 completed today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Focus Score</div>
+                            <div class="stat-value">87</div>
+                            <div class="stat-change positive">↑ 5 points</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Weekly Progress</div>
+                            <div class="stat-value">72%</div>
+                            <div class="stat-change positive">On track</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="chart-card">
+                        <h3>Weekly Activity</h3>
+                        <div class="chart-placeholder">
+                            <div class="chart-bar" style="height: 120px;"></div>
+                            <div class="chart-bar" style="height: 180px;"></div>
+                            <div class="chart-bar" style="height: 90px;"></div>
+                            <div class="chart-bar" style="height: 220px;"></div>
+                            <div class="chart-bar" style="height: 160px;"></div>
+                            <div class="chart-bar" style="height: 280px;"></div>
+                            <div class="chart-bar" style="height: 200px;"></div>
+                        </div>
+                        <div class="chart-labels">
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                            <span>Sun</span>
+                        </div>
+                    </div>
+
+                    <!-- Tasks -->
+                    <div class="task-card">
+                        <h3>Today's Tasks</h3>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <div class="task-checkbox"></div>
+                                <span class="task-text">Review quarterly report</span>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox"></div>
+                                <span class="task-text">Team standup meeting</span>
+                            </div>
+                            <div class="task-item completed">
+                                <div class="task-checkbox"></div>
+                                <span class="task-text">Update project timeline</span>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox"></div>
+                                <span class="task-text">Call with design team</span>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox"></div>
+                                <span class="task-text">Prepare presentation slides</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finance -->
+                    <div class="finance-card">
+                        <h3>Recent Transactions</h3>
+                        <div class="finance-list">
+                            <div class="finance-item">
+                                <div class="item-info">
+                                    <span class="item-name">Salary Deposit</span>
+                                    <span class="item-date">Today, 9:00 AM</span>
+                                </div>
+                                <span class="item-amount income">+$5,200</span>
+                            </div>
+                            <div class="finance-item">
+                                <div class="item-info">
+                                    <span class="item-name">Netflix Subscription</span>
+                                    <span class="item-date">Yesterday</span>
+                                </div>
+                                <span class="item-amount expense">-$15.99</span>
+                            </div>
+                            <div class="finance-item">
+                                <div class="item-info">
+                                    <span class="item-name">Grocery Store</span>
+                                    <span class="item-date">2 days ago</span>
+                                </div>
+                                <span class="item-amount expense">-$124.50</span>
+                            </div>
+                            <div class="finance-item">
+                                <div class="item-info">
+                                    <span class="item-name">Freelance Project</span>
+                                    <span class="item-date">3 days ago</span>
+                                </div>
+                                <span class="item-amount income">+$800</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                                <span>Add Task</span>
+                            </button>
+                            <button class="action-btn">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                                <span>Add Expense</span>
+                            </button>
+                            <button class="action-btn">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span>Upload File</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Dock -->
+        <nav class="dock">
+            <div class="dock-item active" data-label="Home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9,22 9,12 15,12 15,22"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="Finance">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="Tasks">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="Analytics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 20V10M12 20V4M6 20v-6"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="AI Assistant">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="Profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="dock-item" data-label="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
+        </nav>
+    </div>
+
+    <style>
+        /* Additional Dashboard Styles */
+        .sidebar-divider {
+            width: 32px;
+            height: 1px;
+            background: var(--border-color);
+            margin: 10px 0;
+        }
+        
+        .chart-labels {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .quick-actions {
+            grid-column: span 12;
+            background: transparent !important;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        
+        .quick-actions h3 {
+            font-family: var(--font-display);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all var(--duration) var(--ease-smooth);
+        }
+        
+        .action-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            transform: translateY(-3px);
+        }
+        
+        .action-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* App page fade-in */
+        .app-page {
+    background: url(https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop) center/cover no-repeat; background-attachment: fixed;
+
+            animation: fadeInApp 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        
+        @keyframes fadeInApp {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Dock positioning adjustment */
+        .dock {
+            left: calc(40px + 50%); /* Center relative to main content */
+            transform: translateX(-50%);
+        }
+    </style>
+    
+    <script src="script.js"></script>
+    <script>
+        // Dashboard-specific enhancements
+        document.addEventListener('DOMContentLoaded', () => {
+            // Greeting based on time
+            const greetingElement = document.querySelector('.dashboard-header h1');
+            const hour = new Date().getHours();
+            let greeting = 'Good Morning';
+            
+            if (hour >= 12 && hour < 17) {
+                greeting = 'Good Afternoon';
+            } else if (hour >= 17 && hour < 21) {
+                greeting = 'Good Evening';
+            } else if (hour >= 21 || hour < 5) {
+                greeting = 'Good Night';
+            }
+            
+            if (greetingElement) {
+                greetingElement.textContent = greeting;
+            }
+            
+            // Page navigation from sidebar
+            const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Also update dock
+                    const pageName = item.dataset.page;
+                    const dockItem = document.querySelector(`.dock-item[data-label="${pageName.charAt(0).toUpperCase() + pageName.slice(1)}"]`);
+                    if (dockItem) {
+                        document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+                        dockItem.classList.add('active');
+                    }
+                });
+            });
+            
+            // Dock item click handler
+            const dockItems = document.querySelectorAll('.dock-item');
+            dockItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    dockItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Also update sidebar
+                    const label = item.dataset.label;
+                    const sidebarItem = document.querySelector(`.sidebar-item[data-page="${label.toLowerCase()}"]`);
+                    if (sidebarItem) {
+                        document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+                        sidebarItem.classList.add('active');
+                    }
+                });
+            });
+            
+            // Add more tasks
+            const addTaskBtn = document.querySelector('.action-btn span');
+            if (addTaskBtn && addTaskBtn.textContent === 'Add Task') {
+                addTaskBtn.parentElement.addEventListener('click', () => {
+                    showNotification('Task creation panel coming soon!', 'info');
+                });
+            }
+        });
+    </script>
+
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+</body>
+</html>
