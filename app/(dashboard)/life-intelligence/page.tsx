@@ -203,7 +203,7 @@ export default function LifeIntelligence() {
             phase: `Phase ${idx + 1}: ${m.name}`,
             desc: `Target Date: ${m.targetDate}. Complete this step to advance your career blueprint.`
           })),
-          obstacles: `Primary hazard is potential setback from: ${memory.mainWeakness || 'fatigue'}. Mitigate by locking focus limits and prioritizing core ${memory.strongHabit || 'routine'} routine.`
+          obstacles: `Primary hazard is potential setback from: ${memory?.mainWeakness || 'fatigue'}. Mitigate by locking focus limits and prioritizing core ${memory?.strongHabit || 'routine'} routine.`
         });
       } else {
         throw new Error('Sync lag');
@@ -297,7 +297,7 @@ export default function LifeIntelligence() {
       setCoachMessages([
         { 
           sender: 'ai', 
-          text: `Cognitive systems synchronized. Here is what I analyze from your personal data matrix:\n• You have ${unfinishedTasks.length} active objectives in your queue.\n${priorityMsg}\n${activeStreakMsg}\n• AI Memory identifies your main threshold as "${memory.mainWeakness}". Maintain strict work logs to override fatigue decay.`, 
+          text: `Cognitive systems synchronized. Here is what I analyze from your personal data matrix:\n• You have ${unfinishedTasks.length} active objectives in your queue.\n${priorityMsg}\n${activeStreakMsg}\n• AI Memory identifies your main threshold as "${memory?.mainWeakness || 'fatigue'}". Maintain strict work logs to override fatigue decay.`, 
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         }
       ]);
@@ -310,7 +310,7 @@ export default function LifeIntelligence() {
         }
       ]);
     }
-  }, [mounted, unfinishedTasks.length, highPriorityTasks.length, strongHabit, strongHabitStreak, memory.mainWeakness, tasks]);
+  }, [mounted, unfinishedTasks.length, highPriorityTasks.length, strongHabit, strongHabitStreak, memory?.mainWeakness, tasks]);
 
   if (!mounted) {
     return (

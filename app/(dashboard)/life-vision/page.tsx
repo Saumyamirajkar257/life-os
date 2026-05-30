@@ -402,9 +402,9 @@ export default function LifeVision() {
                         <div className="p-4.5 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div>
                             <span className="text-[10px] text-white/40 font-mono uppercase">AI Vibe Analysis</span>
-                            <span className="text-base font-semibold text-white block mt-0.5">Focus Mode Dominance: The {memory.strongHabit || 'Productivity'} Architect</span>
+                            <span className="text-base font-semibold text-white block mt-0.5">Focus Mode Dominance: The {memory?.strongHabit || 'Productivity'} Architect</span>
                             <p className="text-xs text-white/60 mt-1 leading-relaxed max-w-xl">
-                              You spent most of your study session in uninterrupted deep work phases, peaking around your best focus block of {memory.bestFocusTime || 'evening'} with low context switching, while successfully overcoming your prime weakness of "{memory.mainWeakness || 'fatigue'}".
+                              You spent most of your study session in uninterrupted deep work phases, peaking around your best focus block of {memory?.bestFocusTime || 'evening'} with low context switching, while successfully overcoming your prime weakness of "{memory?.mainWeakness || 'fatigue'}".
                             </p>
                           </div>
                           
