@@ -497,20 +497,6 @@ export function DashboardGrid() {
     });
   }, [prioritization]);
 
-  if (!mounted) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <motion.div
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-white/30 font-display text-lg"
-        >
-          Powering up Life OS Dashboard...
-        </motion.div>
-      </div>
-    );
-  }
-
   // Pre-calculations for display
   const completedTasksCount = tasks.filter(t => t.completed).length;
   const activeTasks = tasks.filter(t => !t.completed);
@@ -626,6 +612,20 @@ export function DashboardGrid() {
       skillsCount: uniqueSkills.length > 0 ? uniqueSkills.length : 4
     };
   }, [habits, tasks]);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-white/30 font-display text-lg"
+        >
+          Powering up Life OS Dashboard...
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-12 px-2 relative">
