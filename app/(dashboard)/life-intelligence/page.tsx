@@ -14,7 +14,8 @@ import { useHabitsStore } from '@/store/useHabitsStore';
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useAIStore } from '@/store/useAIStore';
 import { useBrainStore } from '@/store/useBrainStore';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 type MainTab = 'coach' | 'future' | 'dna';
 type SubTab = string;
@@ -223,33 +224,58 @@ export default function LifeIntelligence() {
     }
   };
 
-  const handleSearchMemory = () => {
+  const handleSearchMemory = async () => {
     if (!memoryQuery.trim()) return;
     setSearchingMemory(true);
     
-    const query = memoryQuery.toLowerCase();
-    const matches = nodes.filter(n => 
-      n.title.toLowerCase().includes(query) || 
-      n.content.toLowerCase().includes(query) || 
-      n.tags.some(t => t.toLowerCase().includes(query))
-    );
+    try {
+      const user = auth.currentUser;
+      const query = memoryQuery.toLowerCase();
+      let matches: any[] = [];
+      
+      if (user) {
+        const colRef = collection(db, 'users', user.uid, 'brain_nodes');
+        const qSnap = await getDocs(colRef);
+        const fetchedNodes: any[] = [];
+        qSnap.forEach((doc) => {
+          fetchedNodes.push({ ...doc.data(), id: doc.id });
+        });
+        
+        matches = fetchedNodes.filter(n => 
+          (n.title?.toLowerCase() || '').includes(query) || 
+          (n.content?.toLowerCase() || '').includes(query) || 
+          (n.tags || []).some((t: string) => (t?.toLowerCase() || '').includes(query))
+        );
+      } else {
+        // Fallback to local store nodes if user is not authenticated
+        matches = nodes.filter(n => 
+          n.title.toLowerCase().includes(query) || 
+          n.content.toLowerCase().includes(query) || 
+          n.tags.some(t => t.toLowerCase().includes(query))
+        );
+      }
 
-    setTimeout(() => {
-      setSearchingMemory(false);
       if (matches.length > 0) {
         setMemoryResults(matches.map(n => ({
-          date: new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          type: n.type.toUpperCase(),
-          detail: `${n.title}: ${n.content}`
+          date: new Date(n.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          type: (n.type || 'NOTE').toUpperCase(),
+          detail: `${n.title || ''}: ${n.content || ''}`
         })));
       } else {
         setMemoryResults([
-          { date: 'Index Log', type: 'AI SEARCH', detail: `No local Second Brain nodes matched "${memoryQuery}". Add nodes to your Second Brain vault to embed them semantically!` },
+          { date: 'Index Log', type: 'AI SEARCH', detail: `No Cloud Second Brain nodes matched "${memoryQuery}". Add nodes to your Second Brain vault to sync them to Firestore!` },
           { date: 'Feb 12, 2026', type: 'Focus Session', detail: 'Studied Advanced Compiler Design for 2h 45m. Average heart rate 72bpm.' },
           { date: 'Feb 24, 2026', type: 'Journal Entry', detail: 'Recorded thoughts on systems project failure. "We must optimize memory safety early."' }
         ]);
       }
-    }, 800);
+    } catch (err) {
+      console.error("Firestore memory search failed:", err);
+      setMemoryResults([
+        { date: 'Index Log', type: 'AI SEARCH', detail: `No Cloud Second Brain nodes matched "${memoryQuery}". Add nodes to your Second Brain vault to sync them to Firestore!` }
+      ]);
+    } finally {
+      setSearchingMemory(false);
+    }
   };
 
   // Prevent SSR Hydration discrepancies
