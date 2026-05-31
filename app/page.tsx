@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { AppShell } from '@/components/layout/AppShell';
 import { DashboardGrid } from '@/features/dashboard/components/DashboardGrid';
 import Navbar from '@/components/Navbar';
@@ -11,7 +12,7 @@ import { HeroParticles } from '@/components/landing/HeroParticles';
 import { TypewriterText } from '@/components/landing/TypewriterText';
 import { ScrollReveal } from '@/components/landing/ScrollReveal';
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase';
-import { ArrowRight, Sparkles, Target, Shield, Activity, Star, Plus } from 'lucide-react';
+import { ArrowRight, Sparkles, Target, Shield, Activity, Star, Plus, X } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
 import { AnimatedMockup } from '@/components/landing/AnimatedMockup';
@@ -25,6 +26,43 @@ export default function Home() {
   const [isBypassed, setIsBypassed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Waitlist Modal States
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waitlistEmail) return;
+
+    setIsSubmitting(true);
+    setErrorMsg('');
+
+    try {
+      const docRef = doc(db, 'waitlist', waitlistEmail.toLowerCase().trim());
+      await setDoc(docRef, {
+        email: waitlistEmail.toLowerCase().trim(),
+        joinedAt: new Date().toISOString(),
+        plan: 'pro'
+      });
+
+      setSubmitSuccess(true);
+      setWaitlistEmail('');
+
+      setTimeout(() => {
+        setIsWaitlistOpen(false);
+        setSubmitSuccess(false);
+      }, 2000);
+    } catch (err: any) {
+      console.error('Waitlist submission error:', err);
+      setErrorMsg('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const bypassed = typeof window !== 'undefined' && localStorage.getItem('life-os-bypass-auth') === 'true';
@@ -258,6 +296,9 @@ export default function Home() {
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
                   Most Popular
                 </div>
+                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#00d4ff20] border border-[#00d4ff]/20 text-[#00d4ff] text-[10px] font-semibold tracking-wide">
+                  🚀 Launching Soon
+                </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-indigo-300">Pro</h3>
                   <p className="text-white/40 text-xs mb-6">Advanced power features for high achievers.</p>
@@ -273,15 +314,21 @@ export default function Home() {
                     <li className="flex items-center gap-2"><span className="text-indigo-400 font-bold">✓</span> Priority feature access</li>
                   </ul>
                 </div>
-                <Link href="/login" className="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-center text-sm font-semibold hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300 mt-auto">
-                  Upgrade to Pro
-                </Link>
+                <button
+                  onClick={() => setIsWaitlistOpen(true)}
+                  className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black text-center text-sm font-bold hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300 mt-auto"
+                >
+                  Join Waitlist →
+                </button>
               </div>
             </ScrollReveal>
 
             {/* Team Tier */}
             <ScrollReveal direction="up" delay={0.4}>
               <div className="glass-panel p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#7c3aed20] border border-[#7c3aed]/20 text-[#a78bfa] text-[10px] font-semibold tracking-wide">
+                  🔜 Coming Soon
+                </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Team</h3>
                   <p className="text-white/40 text-xs mb-6">Collaborative workspace for small teams.</p>
@@ -296,11 +343,23 @@ export default function Home() {
                     <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> Dedicated support line</li>
                   </ul>
                 </div>
-                <Link href="/login" className="w-full py-3 rounded-xl border border-white/10 text-white text-center text-sm font-semibold hover:bg-white/5 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300 mt-auto">
-                  Try for Free
-                </Link>
+                <button
+                  disabled
+                  className="w-full py-3 rounded-xl border border-white/10 text-white/60 text-center text-sm font-semibold opacity-60 cursor-not-allowed mt-auto"
+                >
+                  Coming Soon
+                </button>
               </div>
             </ScrollReveal>
+          </div>
+
+          {/* Launch Timeline Info */}
+          <div className="text-center mt-12 text-zinc-500 text-xs md:text-sm font-light">
+            <span>Pro launching Q3 2026</span>
+            <span className="text-[#00d4ff] font-bold mx-2">·</span>
+            <span>Team launching Q4 2026</span>
+            <span className="text-[#00d4ff] font-bold mx-2">·</span>
+            <span>Early bird pricing available</span>
           </div>
         </ScrollReveal>
       </section>
@@ -388,6 +447,74 @@ export default function Home() {
           <p>© 2026 LIFE OS. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Pro Waitlist Modal */}
+      {isWaitlistOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+          onClick={() => setIsWaitlistOpen(false)}
+        >
+          <div 
+            className="relative w-full max-w-md p-8 overflow-hidden border glass-panel rounded-2xl border-white/10 bg-zinc-950/95 shadow-[0_0_50px_rgba(0,212,255,0.15)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button (X) */}
+            <button 
+              onClick={() => setIsWaitlistOpen(false)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {submitSuccess ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-12 h-12 rounded-full bg-cyan-500/25 text-[#00d4ff] flex items-center justify-center mb-4 text-2xl">
+                  ✓
+                </div>
+                <p className="text-white text-lg font-medium text-center">
+                  ✅ You're on the list! We'll notify you at launch.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-2xl font-display font-bold text-white mb-2 flex items-center gap-2">
+                  Join the Pro Waitlist 🚀
+                </h3>
+                <p className="text-white/60 text-sm mb-6 leading-relaxed">
+                  Be first to know when Pro launches. Early birds get 50% off first month.
+                </p>
+
+                <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+                  <div>
+                    <input 
+                      type="email" 
+                      required
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] transition-all"
+                    />
+                  </div>
+                  {errorMsg && (
+                    <p className="text-rose-400 text-xs">{errorMsg}</p>
+                  )}
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black font-semibold hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Joining...' : 'Notify Me →'}
+                  </button>
+                </form>
+
+                <p className="text-center text-white/30 text-xs mt-4">
+                  No spam. Unsubscribe anytime.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
