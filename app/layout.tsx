@@ -75,7 +75,6 @@ export default function RootLayout({
           <AuthProvider>
             {children}
           </AuthProvider>
-          <VoiceAssistant />
           <CommandPalette />
         </ThemeProvider>
       </body>
