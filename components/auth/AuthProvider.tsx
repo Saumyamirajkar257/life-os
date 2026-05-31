@@ -55,12 +55,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [pathname, router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-black">
-        <div className="animate-pulse-slow text-white/50 font-display">Initializing Neural Link...</div>
-      </div>
-    );
+  const publicPaths = ['/login', '/welcome', '/', '/about', '/contact', '/faq'];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  if (loading && !isPublicPath) {
+    return <div className="min-h-screen w-full bg-black" />;
   }
 
   return <>{children}</>;

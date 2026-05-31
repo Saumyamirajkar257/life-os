@@ -22,7 +22,7 @@ type SubTab = string;
 
 export default function LifeProfile() {
   const [mounted, setMounted] = useState(false);
-  const { userName } = useAppStore();
+  const { userName, userPfp } = useAppStore();
   const [activeTab, setActiveTab] = useState<MainTab>('profile');
 
   // Hydrate local stores
@@ -309,8 +309,12 @@ export default function LifeProfile() {
 
                     <div className="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 relative overflow-hidden flex flex-col md:flex-row gap-6 items-center md:items-start">
                       {/* Avatar Mock */}
-                      <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/15 shrink-0 shadow-lg shadow-primary/20 relative">
-                        <User className="w-12 h-12 text-black" />
+                      <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/15 shrink-0 shadow-lg shadow-primary/20 relative overflow-hidden">
+                        {mounted && userPfp ? (
+                          <img src={userPfp} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-12 h-12 text-black" />
+                        )}
                         <div className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-black border border-primary text-[10px] text-primary font-bold font-mono">
                           LVL {Math.floor((completedTasksCount * 50 + habits.reduce((acc, h) => acc + (h.completedDates?.length || 0) * 30, 0)) / 1000) + 1}
                         </div>

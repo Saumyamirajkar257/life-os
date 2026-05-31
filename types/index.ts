@@ -54,6 +54,7 @@ export interface AppState {
   userName: string;
   userEmail: string;
   userHandle: string;
+  userPfp: string;
   setActivePage: (page: string) => void;
   toggleSidebar: () => void;
   setSidebarExpanded: (expanded: boolean) => void;
@@ -63,7 +64,7 @@ export interface AppState {
   setTablet: (tablet: boolean) => void;
   setCompactDock: (compact: boolean) => void;
   setSoundEnabled: (enabled: boolean) => void;
-  updateProfile: (name: string, email: string, handle: string) => void;
+  updateProfile: (name: string, email: string, handle: string, pfp?: string) => void;
 }
 
 export interface DashboardState {

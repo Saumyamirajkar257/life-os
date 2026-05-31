@@ -38,7 +38,18 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Authentication failed. Check your credentials.');
+      if (err.code === 'auth/invalid-credential' || err.message?.includes('auth/invalid-credential')) {
+        setError(isLogin 
+          ? "Invalid Credentials. If you haven't created an account yet, click 'Create one' at the bottom to sign up first. Otherwise, please check your passcode spelling."
+          : "Account creation failed. That email may be registered already or the passcode is too short. Try again or sign in."
+        );
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError("This email identifier is already active. Please switch to 'Authenticate' below to sign in.");
+      } else if (err.code === 'auth/weak-password') {
+        setError("Passcode is too weak. Please use at least 6 characters.");
+      } else {
+        setError(err.message || 'Authentication failed. Check your credentials.');
+      }
     } finally {
       setLoading(false);
     }

@@ -10,14 +10,14 @@ export const easeSmooth: Transition = { duration: 0.4, ease: [0.25, 0.46, 0.45, 
 // ── Page Transition ──
 
 export const pageTransition: Variants = {
-  initial: { opacity: 0, y: 20, filter: 'blur(4px)' },
+  initial: { opacity: 0, y: 20, filter: 'blur(2px)' },
   animate: {
     opacity: 1,
     y: 0,
     filter: 'blur(0px)',
     transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
-  exit: { opacity: 0, y: -10, filter: 'blur(4px)', transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: -10, filter: 'blur(2px)', transition: { duration: 0.3 } },
 };
 
 // ── Fade Variants ──
@@ -134,5 +134,41 @@ export const slideInRight: Variants = {
     x: 0,
     opacity: 1,
     transition: { type: 'spring', stiffness: 300, damping: 30 },
+  },
+};
+
+// ── Scale In (for cards) ──
+
+export const scaleIn: Variants = {
+  initial: { opacity: 0, scale: 0.97 },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+  exit: { opacity: 0, scale: 0.97 },
+};
+
+// ── Glow Pulse (for active indicators) ──
+
+export const glowPulse: Variants = {
+  animate: {
+    boxShadow: [
+      '0 0 10px rgba(255, 255, 255, 0.05)',
+      '0 0 25px rgba(255, 255, 255, 0.15)',
+      '0 0 10px rgba(255, 255, 255, 0.05)',
+    ],
+    transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+  },
+};
+
+// ── Count Up (for animated numbers) ──
+
+export const countUp: Variants = {
+  initial: { opacity: 0, y: 10 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 };

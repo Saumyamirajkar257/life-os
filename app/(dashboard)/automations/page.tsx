@@ -15,11 +15,14 @@ import {
   TrendingUp,
   Target,
   Wallet,
-  Brain
+  Brain,
+  Trash2
 } from 'lucide-react';
+import { RuleModal } from '@/components/automations/RuleModal';
 
 export default function AutomationsPage() {
   const { rules, toggleRule, deleteRule } = useAutomationsStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getConditionIcon = (type: string) => {
     switch (type) {
@@ -61,7 +64,10 @@ export default function AutomationsPage() {
           <p className="text-white/60 mt-1">Smart rules that react to your behavior and adapt your OS.</p>
         </div>
         
-        <button className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+        >
           <Plus className="w-4 h-4" />
           Create Rule
         </button>
@@ -87,8 +93,12 @@ export default function AutomationsPage() {
                         </h3>
                       </div>
                       <div className="flex gap-2">
-                        <button className="p-2 bg-white/5 rounded-lg text-white/40 hover:text-white/80 transition-colors">
-                          <Settings2 className="w-4 h-4" />
+                        <button 
+                          onClick={() => deleteRule(rule.id)}
+                          className="p-2 bg-rose-500/10 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 transition-colors"
+                          title="Delete Rule"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -167,6 +177,11 @@ export default function AutomationsPage() {
           </GlassCard>
         </div>
       </div>
+      <AnimatePresence>
+        {isModalOpen && (
+          <RuleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

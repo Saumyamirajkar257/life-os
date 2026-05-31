@@ -9,11 +9,12 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   reactStrictMode: true,
-  turbopack: {},
   images: {
-    formats: ['image/avif', 'image/webp'],
+    unoptimized: true,
   },
+  turbopack: {},
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },

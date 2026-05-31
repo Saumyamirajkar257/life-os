@@ -59,13 +59,19 @@ export function AnimatedBackground() {
       height = canvas.height = window.innerHeight;
     };
 
+    let scrollY = 0;
+    const handleScroll = () => {
+      scrollY = window.scrollY;
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.tx = e.clientX;
-      mouseRef.current.ty = e.clientY;
+      mouseRef.current.ty = e.clientY + scrollY; // adjust for scroll
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
 
     // Initial mouse state centered
     mouseRef.current.x = width / 2;
@@ -113,11 +119,25 @@ export function AnimatedBackground() {
 
         // Render point of light
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y - scrollY * 0.15, p.size, 0, Math.PI * 2); // subtle parallax
         ctx.fillStyle = p.color;
         ctx.shadowBlur = p.size > 1.5 ? 4 : 0;
         ctx.shadowColor = p.color;
         ctx.fill();
+
+        // Constellation effect (increase line rendering between nearby particles)
+        particles.forEach((p2) => {
+          const cdx = p.x - p2.x;
+          const cdy = (p.y - scrollY * 0.15) - (p2.y - scrollY * 0.15);
+          const cdist = Math.hypot(cdx, cdy);
+          if (cdist > 0 && cdist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y - scrollY * 0.15);
+            ctx.lineTo(p2.x, p2.y - scrollY * 0.15);
+            ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 - cdist / 666})`;
+            ctx.stroke();
+          }
+        });
       });
 
       // Clear shadows for next frame speed
@@ -131,12 +151,24 @@ export function AnimatedBackground() {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(animationId);
     };
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none">
+    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none parallax-layer">
+      {/* Animated Aurora Background Layer */}
+      <div 
+        className="absolute inset-0 opacity-40 mix-blend-screen"
+        style={{
+          background: 'linear-gradient(-45deg, #4f46e5, #9333ea, #db2777, #4f46e5)',
+          backgroundSize: '400% 400%',
+          animation: 'aurora 15s ease infinite',
+          filter: 'blur(100px)'
+        }}
+      />
+
       {/* Low-CPU Canvas Particle Generator */}
       <canvas ref={canvasRef} className="absolute inset-0 block opacity-80" />
 

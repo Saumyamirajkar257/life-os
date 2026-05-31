@@ -15,6 +15,7 @@ export const useAppStore = create<AppState>()(
       userName: 'Saumya',
       userEmail: 'saumya@lifeos.ai',
       userHandle: '@Sam_257',
+      userPfp: '',
       setActivePage: (page) => set({ activePage: page }),
       toggleSidebar: () => set((state) => ({ sidebarExpanded: !state.sidebarExpanded })),
       setSidebarExpanded: (expanded) => set({ sidebarExpanded: expanded }),
@@ -24,7 +25,12 @@ export const useAppStore = create<AppState>()(
       setTablet: (tablet) => set({ isTablet: tablet }),
       setCompactDock: (compact) => set({ compactDock: compact }),
       setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
-      updateProfile: (name, email, handle) => set({ userName: name, userEmail: email, userHandle: handle }),
+      updateProfile: (name, email, handle, pfp) => set((state) => ({
+        userName: name,
+        userEmail: email,
+        userHandle: handle,
+        userPfp: pfp !== undefined ? pfp : state.userPfp,
+      })),
     }),
     {
       name: 'life-os-app-settings',

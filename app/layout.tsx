@@ -19,9 +19,36 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'LIFE OS | AI-Powered Life Command Center',
-  description: 'Futuristic AI-powered productivity operating system. Manage tasks, habits, journal, analytics, finance, and focus — all from one cinematic command center.',
+  metadataBase: new URL('https://lifetrackr-premium.netlify.app'),
+  title: 'LIFE OS — AI-Powered Life Command Center',
+  description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI.',
   keywords: ['productivity', 'life os', 'ai', 'task manager', 'habits', 'journal'],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    title: 'LIFE OS — AI-Powered Life Command Center',
+    description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI.',
+    url: 'https://lifetrackr-premium.netlify.app',
+    siteName: 'LIFE OS',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'LIFE OS Preview',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LIFE OS — AI-Powered Life Command Center',
+    description: 'Your entire life. One command center.',
+    images: ['/og-image.png'],
+  },
 };
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider';

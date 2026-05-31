@@ -1,13 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Search, Bell, User, Menu, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Bell, User, Menu, Trash2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
-import { useState, useEffect } from 'react';
+import { useTasksStore } from '@/store/useTasksStore';
+import { useHabitsStore } from '@/store/useHabitsStore';
+import { useState, useEffect, useMemo } from 'react';
 import { fadeInDown } from '@/animations';
 import { cn } from '@/lib/utils';
+import { FutureSelfModal } from '@/features/future-self/components/FutureSelfModal';
 
 function formatDate(): string {
   const now = new Date();
@@ -30,22 +33,73 @@ export function TopBar() {
     isMobile,
     toggleCommandPalette,
     toggleSidebar,
-    userHandle
+    userHandle,
+    userPfp
   } = useAppStore();
 
   const { notifications, markAllAsRead, clearAll, removeNotification } = useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [liveTime, setLiveTime] = useState('');
+  const [isFutureSelfOpen, setIsFutureSelfOpen] = useState(false);
+
+  // Live clock - updates every second
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setLiveTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     useNotificationStore.persist.rehydrate();
-    setIsHydrated(true);
+    // Force re-render after hydration so persisted userPfp is available
+    const unsub = useAppStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+    });
+    // If already hydrated (hot module reload etc), set immediately
+    if (useAppStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+    }
+    return unsub;
   }, []);
+
+  // Daily progress calculation
+  const dailyProgress = useMemo(() => {
+    if (!isHydrated) return 0;
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const tasks = useTasksStore.getState().tasks;
+      const habits = useHabitsStore.getState().habits;
+      const totalTasks = tasks.filter(t => t.dueDate === todayStr).length;
+      const completedTasks = tasks.filter(t => t.dueDate === todayStr && t.completed).length;
+      const totalHabits = habits.length;
+      const completedHabits = habits.filter(h => h.completedDates.includes(todayStr)).length;
+      const totalItems = totalTasks + totalHabits;
+      if (totalItems === 0) return 0;
+      return Math.round(((completedTasks + completedHabits) / totalItems) * 100);
+    } catch {
+      return 0;
+    }
+  }, [isHydrated]);
 
   const unreadCount = isHydrated ? notifications.filter((n) => !n.read).length : 0;
   const pageTitle = capitalizeFirst(activePage || 'dashboard');
 
   return (
+    <>
+    {/* Thin gradient progress bar at very top of viewport */}
+    <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-black/30">
+      <motion.div
+        className="h-full progress-gradient rounded-r-full"
+        initial={{ width: '0%' }}
+        animate={{ width: `${dailyProgress}%` }}
+        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.5 }}
+      />
+    </div>
     <motion.header
       variants={fadeInDown}
       initial="initial"
@@ -76,11 +130,33 @@ export function TopBar() {
           <span className="text-sm text-white/30 hidden sm:block">
             {formatDate()}
           </span>
+          {/* Live Clock Widget */}
+          {liveTime && (
+            <>
+              <div className="w-1 h-1 rounded-full bg-white/10 hidden md:block" />
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                <Clock className="w-3 h-3 text-white/25" />
+                <span className="text-[11px] font-mono text-white/35 tabular-nums tracking-wider">{liveTime}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-1.5">
+        
+        {/* Future Self Trigger */}
+        <button
+          onClick={() => setIsFutureSelfOpen(true)}
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 hover:bg-indigo-500/30 hover:shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-all duration-300 group mr-2"
+        >
+          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+          <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-indigo-200 group-hover:text-white transition-colors">
+            Future Self
+          </span>
+        </button>
+
         {/* Search / Command Palette button */}
         <button
           onClick={toggleCommandPalette}
@@ -131,11 +207,18 @@ export function TopBar() {
           </button>
 
           {/* Dropdown panel */}
+          <AnimatePresence>
           {isOpen && (
             <>
               {/* Clicking outside closes the panel */}
               <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 glass-panel rounded-2xl p-4 shadow-2xl z-50 border border-white/10 max-h-[400px] overflow-y-auto space-y-3">
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="absolute right-0 mt-2 w-80 sm:w-96 glass-panel rounded-2xl p-4 shadow-2xl z-50 border border-white/10 max-h-[400px] overflow-y-auto space-y-3"
+              >
                 <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-semibold text-white tracking-wide uppercase">Notifications</h4>
@@ -204,21 +287,36 @@ export function TopBar() {
                     ))
                   )}
                 </div>
-              </div>
+              </motion.div>
             </>
           )}
+          </AnimatePresence>
         </div>
 
-        {/* User avatar & Handle */}
-        <Link href="/settings" className="p-1.5 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-200 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/15 to-white/5 border border-white/10 flex items-center justify-center shrink-0">
-            <User className="w-4 h-4" />
+        {/* Clickable PFP Profile Avatar with Aura Glow */}
+        <Link href="/settings" className="relative group shrink-0 block select-none" title="Settings Profile">
+          {/* Pulsing Breathing Aura Background */}
+          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-pink-500/40 blur-md opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 animate-pulse-slow" style={{ animationDuration: '4s' }} />
+          
+          {/* Main avatar container */}
+          <div className="relative w-14 h-14 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/15 flex items-center justify-center shrink-0 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 group-hover:border-white/30 group-hover:scale-105 group-active:scale-95">
+            {isHydrated && userPfp ? (
+              <img src={userPfp} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-6 h-6 text-white/40 group-hover:text-white/60 transition-colors" />
+            )}
           </div>
-          <span className="text-xs font-mono font-medium hidden md:block mr-1">
-            {userHandle}
+
+          {/* Active Status Pulse Indicator Dot */}
+          <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-black/80" />
           </span>
         </Link>
       </div>
     </motion.header>
+    
+    <FutureSelfModal isOpen={isFutureSelfOpen} onClose={() => setIsFutureSelfOpen(false)} />
+    </>
   );
 }

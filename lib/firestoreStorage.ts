@@ -149,80 +149,84 @@ export const createFirestoreStorage = (): StateStorage => ({
       localStorage.setItem(name, value);
       return;
     }
-    try {
-      // If store is not mapped as granular, write monolithic document
-      if (!GRANULAR_STORES[name]) {
-        const docRef = doc(db, 'users', user.uid, 'store', name);
-        await setDoc(docRef, { value });
-        localStorage.setItem(name, value);
-        return;
-      }
+    
+    // Save to local cache IMMEDIATELY so the client update is fully instantaneous
+    localStorage.setItem(name, value);
 
-      let parsed: any;
+    // KICK OFF database writes in the background to prevent blocking the event loop
+    (async () => {
       try {
-        parsed = JSON.parse(value);
-      } catch (e) {
-        console.error(`Failed to parse state values for writing ${name}`, e);
-        localStorage.setItem(name, value);
-        return;
-      }
-
-      // Read local cache values to compute diffs (zero-cost diff check)
-      const localPrevStr = localStorage.getItem(name);
-      let localPrevState: any = null;
-      if (localPrevStr) {
-        try {
-          localPrevState = JSON.parse(localPrevStr);
-        } catch (e) {}
-      }
-
-      const mappings = GRANULAR_STORES[name];
-      for (const mapping of mappings) {
-        const newItems: any[] = parsed.state?.[mapping.stateKey] || [];
-        const prevItems: any[] = localPrevState?.state?.[mapping.stateKey] || [];
-
-        // 1. Identify new/modified documents to update
-        const itemsToWrite = newItems.filter((newItem) => {
-          const prevItem = prevItems.find((p) => p.id === newItem.id);
-          if (!prevItem) return true; // new document
-          return JSON.stringify(newItem) !== JSON.stringify(prevItem); // modified document
-        });
-
-        // 2. Identify removed documents to delete
-        const itemsToDelete = prevItems.filter(
-          (prevItem) => !newItems.some((n) => n.id === prevItem.id)
-        );
-
-        const writePromises = itemsToWrite.map((item) => {
-          const originalIndex = newItems.findIndex((n) => n.id === item.id);
-          const itemDocRef = doc(db, 'users', user.uid, mapping.collectionName, item.id);
-          return setDoc(itemDocRef, { ...item, _index: originalIndex });
-        });
-
-        const deletePromises = itemsToDelete.map((item) => {
-          const itemDocRef = doc(db, 'users', user.uid, mapping.collectionName, item.id);
-          return deleteDoc(itemDocRef);
-        });
-
-        await Promise.all([...writePromises, ...deletePromises]);
-      }
-
-      // 3. Write non-granular variables to the base config document
-      const baseStateObj = JSON.parse(value);
-      for (const mapping of mappings) {
-        if (baseStateObj.state) {
-          delete baseStateObj.state[mapping.stateKey];
+        // If store is not mapped as granular, write monolithic document in background
+        if (!GRANULAR_STORES[name]) {
+          const docRef = doc(db, 'users', user.uid, 'store', name);
+          await setDoc(docRef, { value });
+          return;
         }
-      }
-      const baseDocRef = doc(db, 'users', user.uid, 'store', name);
-      await setDoc(baseDocRef, { value: JSON.stringify(baseStateObj) });
 
-      // Save full string to local cache for subsequent diff calculations
-      localStorage.setItem(name, value);
-    } catch (e) {
-      console.error(`Firestore granular write failed for ${name}`, e);
-      localStorage.setItem(name, value);
-    }
+        let parsed: any;
+        try {
+          parsed = JSON.parse(value);
+        } catch (e) {
+          console.error(`Failed to parse state values for background writing ${name}`, e);
+          return;
+        }
+
+        // Read background-specific tracking key to compute accurate diffs asynchronously
+        const localPrevStr = localStorage.getItem(`${name}_prev_firestore`);
+        let localPrevState: any = null;
+        if (localPrevStr) {
+          try {
+            localPrevState = JSON.parse(localPrevStr);
+          } catch (e) {}
+        }
+
+        const mappings = GRANULAR_STORES[name];
+        for (const mapping of mappings) {
+          const newItems: any[] = parsed.state?.[mapping.stateKey] || [];
+          const prevItems: any[] = localPrevState?.state?.[mapping.stateKey] || [];
+
+          // 1. Identify new/modified documents to update
+          const itemsToWrite = newItems.filter((newItem) => {
+            const prevItem = prevItems.find((p) => p.id === newItem.id);
+            if (!prevItem) return true; // new document
+            return JSON.stringify(newItem) !== JSON.stringify(prevItem); // modified document
+          });
+
+          // 2. Identify removed documents to delete
+          const itemsToDelete = prevItems.filter(
+            (prevItem) => !newItems.some((n) => n.id === prevItem.id)
+          );
+
+          const writePromises = itemsToWrite.map((item) => {
+            const originalIndex = newItems.findIndex((n) => n.id === item.id);
+            const itemDocRef = doc(db, 'users', user.uid, mapping.collectionName, item.id);
+            return setDoc(itemDocRef, { ...item, _index: originalIndex });
+          });
+
+          const deletePromises = itemsToDelete.map((item) => {
+            const itemDocRef = doc(db, 'users', user.uid, mapping.collectionName, item.id);
+            return deleteDoc(itemDocRef);
+          });
+
+          await Promise.all([...writePromises, ...deletePromises]);
+        }
+
+        // 3. Write non-granular variables to the base config document
+        const baseStateObj = JSON.parse(value);
+        for (const mapping of mappings) {
+          if (baseStateObj.state) {
+            delete baseStateObj.state[mapping.stateKey];
+          }
+        }
+        const baseDocRef = doc(db, 'users', user.uid, 'store', name);
+        await setDoc(baseDocRef, { value: JSON.stringify(baseStateObj) });
+
+        // Update secondary tracking key for the next loop's diff calculation
+        localStorage.setItem(`${name}_prev_firestore`, value);
+      } catch (e) {
+        console.error(`Firestore background sync failed for ${name}`, e);
+      }
+    })();
   },
 
   removeItem: async (name: string): Promise<void> => {

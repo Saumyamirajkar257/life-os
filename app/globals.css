@@ -72,6 +72,7 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-panel-strong {
@@ -111,6 +112,63 @@
   border-radius: 50%;
   background: var(--color-foreground);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+}
+
+/* ── Shimmer Text Gradient Animation ── */
+@keyframes shimmer-text {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.4) 25%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.4) 75%,
+    rgba(255, 255, 255, 0.15) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-text 4s ease-in-out infinite;
+}
+
+/* ── Breathing Glow Border ── */
+@keyframes breathe-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+}
+
+.breathe-glow {
+  animation: breathe-glow 3s ease-in-out infinite;
+}
+
+/* ── Accent Bar Glow ── */
+.accent-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* ── Progress Bar Gradient ── */
+@keyframes progress-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.progress-gradient {
+  background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6, #818cf8);
+  background-size: 200% 100%;
+  animation: progress-shimmer 3s ease-in-out infinite;
 }
 
 /* ── CSS Keyframe Animations ── */
@@ -190,6 +248,63 @@
   );
   background-size: 200% 100%;
   animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Depth System ── */
+.depth-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+              0 4px 12px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.depth-card-elevated {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+              0 8px 32px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.parallax-layer {
+  transform: translateZ(0);
+}
+
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes border-rotate {
+  100% { transform: rotate(1turn); }
+}
+
+@keyframes depth-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-lg);
+}
+
+.magnetic-hover {
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ── Custom Scrollbar ── */
@@ -383,4 +498,34 @@ html[data-theme='hacker'] textarea:focus {
 html.rainbow-active body {
   animation: hue-cycle 8s linear infinite !important;
 }
+
+/* 🌟 Animated Dot Grid 🌟 */
+.dot-grid-bg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  animation: pan-bg 40s linear infinite;
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+}
+
+@keyframes pan-bg {
+  0% { background-position: 0 0; }
+  100% { background-position: -1000px 1000px; }
+}
+
+/* 🌟 3D Transform Utilities 🌟 */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.rotate-y-minus-10 {
+  transform: rotateY(-10deg);
+}
+.rotate-x-5 {
+  transform: rotateX(5deg);
+}
+
 

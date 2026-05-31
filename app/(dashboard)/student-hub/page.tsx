@@ -101,7 +101,7 @@ function SocialWorkspace() {
     cancelFriendRequest 
   } = useFriendsStore();
 
-  const { userName, userHandle } = useAppStore();
+  const { userName, userHandle, userPfp } = useAppStore();
 
   // Study Rooms
   const [rooms, setRooms] = useState([
@@ -391,6 +391,25 @@ function SocialWorkspace() {
                 >
                   <div className="flex items-center gap-4">
                     <span className="font-mono text-lg font-bold w-6 text-center text-white/40">#{item.rank}</span>
+                    {leaderboardFilter !== 'college' && (
+                      <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                        {(() => {
+                          if ((item as any).isUser) {
+                            return userPfp ? (
+                              <img src={userPfp} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-bold text-xs uppercase text-white/60">{item.name.slice(0, 2)}</span>
+                            );
+                          }
+                          const foundFriend = friendsList.find(f => f.name.toLowerCase() === item.name.toLowerCase());
+                          return foundFriend?.pfp ? (
+                            <img src={foundFriend.pfp} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-bold text-xs uppercase text-white/60">{item.name.slice(0, 2)}</span>
+                          );
+                        })()}
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-semibold text-white/95">{item.name}</h4>
                       <p className="text-xs text-white/40">{item.college}</p>
@@ -459,8 +478,12 @@ function SocialWorkspace() {
                         <GlassCard className="p-6 border-white/10 bg-white/[0.02]">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3.5">
-                              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-white">
-                                {selectedDesk.slice(0, 2).toUpperCase()}
+                              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-white overflow-hidden shrink-0">
+                                {storeFriend?.pfp ? (
+                                  <img src={storeFriend.pfp} alt={selectedDesk} className="w-full h-full object-cover" />
+                                ) : (
+                                  selectedDesk.slice(0, 2).toUpperCase()
+                                )}
                               </div>
                               <div>
                                 <h4 className="font-semibold text-white text-base">{selectedDesk}</h4>
@@ -771,6 +794,13 @@ function SocialWorkspace() {
                                 >
                                   <div className="flex items-center gap-3">
                                     <span className="font-mono text-[#8e8a86] w-4 font-bold">#{index + 1}</span>
+                                    <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                      {storeFriend?.pfp ? (
+                                        <img src={storeFriend.pfp} alt={d.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-[8px] font-bold text-white/55 uppercase">{d.name.slice(0, 1)}</span>
+                                      )}
+                                    </div>
                                     <span className="font-semibold text-white/90">{d.name}</span>
                                   </div>
                                   <span className="font-mono text-white/50 text-[10px]">
@@ -1101,8 +1131,12 @@ function SocialWorkspace() {
                   <div key={friend.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center font-bold text-white uppercase">
-                          {friend.name.slice(0, 2)}
+                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center font-bold text-white uppercase overflow-hidden shrink-0">
+                          {friend.pfp ? (
+                            <img src={friend.pfp} alt={friend.name} className="w-full h-full object-cover" />
+                          ) : (
+                            friend.name.slice(0, 2)
+                          )}
                         </div>
                         <div className={cn(
                           "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-black/80",
@@ -1156,8 +1190,12 @@ function SocialWorkspace() {
                   .map((peer) => (
                     <div key={peer.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex justify-between items-center">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center font-bold text-xs uppercase text-white/60">
-                          {peer.name.slice(0, 2)}
+                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs uppercase text-white/60 overflow-hidden shrink-0">
+                          {peer.pfp ? (
+                            <img src={peer.pfp} alt={peer.name} className="w-full h-full object-cover" />
+                          ) : (
+                            peer.name.slice(0, 2)
+                          )}
                         </div>
                         <div>
                           <span className="text-xs font-semibold text-white/80 block">{peer.name}</span>

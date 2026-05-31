@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LIFE OS | Personal Life Command Center</title>
+    <meta name="description" content="Manage tasks, optimize habits, track finances, and cultivate your second brain in one beautiful central workspace."/>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN for compatibility and responsive classes) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* ── Design System CSS Variables ── */
+        :root {
+            --color-background: #000000;
+            --color-foreground: #ffffff;
+            --color-card: rgba(10, 10, 10, 0.6);
+            --color-border: rgba(255, 255, 255, 0.08);
+            --color-primary: #ffffff;
+            --color-accent: rgba(99, 102, 241, 0.15);
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+            --radius-xl: 1rem;
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-foreground);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ── Glassmorphic Panels ── */
+        .glass-panel {
+            background: var(--color-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--color-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
+        }
+
+        /* ── Button Glowing Hover Effects ── */
+        .glow-btn-primary {
+            background-color: #6366f1; /* indigo-500 */
+            color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .glow-btn-primary:hover {
+            background-color: #4f46e5; /* indigo-600 */
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+            transform: scale(1.02);
+        }
+
+        .glow-btn-secondary {
+            background-color: #ffffff;
+            color: #000000;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .glow-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            transform: scale(1.02);
+        }
+
+        /* ── Micro-Animations ── */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.35; }
+        }
+        .pulse-bg-glow {
+            animation: pulse-glow 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-in-out;
+        }
+
+        .faq-item.active .accordion-content {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-500/30">
+
+    <!-- background glow element -->
+    <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div class="absolute -top-40 left-1/4 w-96 h-96 rounded-full bg-indigo-900/10 blur-[120px] pulse-bg-glow"></div>
+        <div class="absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-purple-950/10 blur-[150px] pulse-bg-glow" style="animation-delay: -3s;"></div>
+    </div>
+
+    <!-- NAVBAR (Sticky & Glassmorphic) -->
+    <nav class="sticky top-0 w-full z-50 bg-black/40 backdrop-blur-[12px] border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2 text-2xl font-bold tracking-tighter font-display">
+                <svg class="w-5 h-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 3-1.912 5.886L4.2 9.2 9.1 13.6 7.272 19.8 12 16l4.728 3.8L14.9 13.6 19.8 9.2l-5.888-.314L12 3z"/>
+                </svg>
+                LIFE<span class="text-indigo-400">OS</span>
+            </a>
+            
+            <!-- Desktop Nav Links -->
+            <div class="hidden md:flex gap-8 items-center text-sm font-medium text-white/70">
+                <a href="#" class="hover:text-white transition-colors">Home</a>
+                <a href="#features" class="hover:text-white transition-colors">Features</a>
+                <a href="#testimonials" class="hover:text-white transition-colors font-medium">Testimonials</a>
+                <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+                <a href="#faq" class="hover:text-white transition-colors">FAQ</a>
+            </div>
+
+            <!-- Desktop CTA & Mobile Toggle -->
+            <div class="flex items-center gap-4">
+                <a href="/login" class="hidden md:inline-flex px-4 py-2 rounded-lg text-sm font-semibold glow-btn-primary">
+                    Start Free →
+                </a>
+                <button id="menu-btn" class="md:hidden text-white/80 hover:text-white p-1" aria-label="Toggle menu">
+                    <!-- Hamburger Menu Icon -->
+                    <svg id="menu-icon-open" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                        <line x1="4" y1="6" x2="20" y2="6"></line>
+                        <line x1="4" y1="18" x2="20" y2="18"></line>
+                    </svg>
+                    <!-- Close Icon -->
+                    <svg id="menu-icon-close" class="w-6 h-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-black/95 backdrop-blur-[12px] px-6 py-6 transition-all duration-300">
+            <div class="flex flex-col gap-4 text-base font-medium text-white/70">
+                <a href="#" class="mobile-link hover:text-white transition-colors py-1">Home</a>
+                <a href="#features" class="mobile-link hover:text-white transition-colors py-1">Features</a>
+                <a href="#testimonials" class="mobile-link hover:text-white transition-colors py-1">Testimonials</a>
+                <a href="#pricing" class="mobile-link hover:text-white transition-colors py-1">Pricing</a>
+                <a href="#faq" class="mobile-link hover:text-white transition-colors py-1">FAQ</a>
+                <a href="/login" class="mt-2 w-full py-2.5 rounded-lg text-center font-semibold glow-btn-primary">
+                    Start Free →
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION (Cinematic, Instant Load) -->
+    <section class="relative min-h-[85vh] flex flex-col items-center justify-center pt-20 pb-16 overflow-hidden">
+        <div class="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-indigo-300 mb-8 backdrop-blur-md">
+                <svg class="w-4 h-4 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 3-1.912 5.886L4.2 9.2 9.1 13.6 7.272 19.8 12 16l4.728 3.8L14.9 13.6 19.8 9.2l-5.888-.314L12 3z"/>
+                </svg>
+                LIFE OS v2.0
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-6xl md:text-8xl lg:text-[9rem] font-display font-black tracking-tighter mb-8 leading-none">
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60 drop-shadow-2xl">
+                    Your Life.
+                </span>
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 pb-4">
+                    Orchestrated.
+                </span>
+            </h1>
+
+            <!-- Description -->
+            <p class="text-base md:text-lg text-white/50 max-w-3xl font-light leading-relaxed mb-10">
+                Take control of your daily schedule, habits, and long-term goals in one unified space. Experience a clean, beautiful digital environment built to keep you focused, motivated, and highly consistent.
+            </p>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
+                <a href="/login" class="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 glow-btn-secondary">
+                    Start Free Now 
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <a href="/login" class="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center">
+                    Watch Demo →
+                </a>
+            </div>
+            <p class="text-xs text-white/40 mt-4 font-mono">No credit card needed · Cancel anytime</p>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+            <div class="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center p-1">
+                <div class="w-1 h-2 bg-white rounded-full"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOCIAL PROOF BAR -->
+    <section class="relative z-20 -mt-6 mb-24 max-w-4xl mx-auto px-6">
+        <div class="glass-panel px-8 py-4 rounded-full flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs md:text-sm text-white/70 font-medium tracking-wide">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> 500+ Users</span>
+            <span class="text-white/20 hidden sm:inline">•</span>
+            <span class="flex items-center gap-1.5">50,000+ Tasks Completed</span>
+            <span class="text-white/20 hidden sm:inline">•</span>
+            <span class="flex items-center gap-1.5 text-indigo-300">4.9★ Rating</span>
+            <span class="text-white/20 hidden sm:inline">•</span>
+            <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">Free Forever</span>
+        </div>
+    </section>
+
+    <!-- FEATURE GRID (Benefit-focused Cards) -->
+    <section id="features" class="relative py-20 bg-gradient-to-b from-black via-zinc-950/40 to-black border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight">A complete ecosystem.</h2>
+                <p class="text-white/50 text-base md:text-lg">Everything you need to organize your daily life efficiently.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 relative mb-20">
+                <!-- Card 1 -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden group hover:-translate-y-1">
+                    <div class="absolute top-8 left-8 w-16 h-16 rounded-full bg-blue-500/10 blur-2xl group-hover:opacity-100 transition-opacity"></div>
+                    <div class="inline-flex p-3 rounded-xl bg-blue-500/10 border border-white/10 mb-6 relative z-10">
+                        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3 relative z-10">Master Your Day</h3>
+                    <p class="text-white/60 text-sm leading-relaxed relative z-10">Track your tasks, habits, and daily schedules in one beautiful, unified dashboard designed to reduce mental clutter.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden group hover:-translate-y-1">
+                    <div class="absolute top-8 left-8 w-16 h-16 rounded-full bg-indigo-500/10 blur-2xl group-hover:opacity-100 transition-opacity"></div>
+                    <div class="inline-flex p-3 rounded-xl bg-indigo-500/10 border border-white/10 mb-6 relative z-10">
+                        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3 relative z-10">Compound Your Habits</h3>
+                    <p class="text-white/60 text-sm leading-relaxed relative z-10">Visualize how your daily habits compound over 30, 90, and 365 days, helping you stay consistent over the long term.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden group hover:-translate-y-1">
+                    <div class="absolute top-8 left-8 w-16 h-16 rounded-full bg-purple-500/10 blur-2xl group-hover:opacity-100 transition-opacity"></div>
+                    <div class="inline-flex p-3 rounded-xl bg-purple-500/10 border border-white/10 mb-6 relative z-10">
+                        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3 relative z-10">Connect Your Thoughts</h3>
+                    <p class="text-white/60 text-sm leading-relaxed relative z-10">Build a private library of notes and ideas that link together dynamically, acting as a second brain for all your knowledge.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden group hover:-translate-y-1">
+                    <div class="absolute top-8 left-8 w-16 h-16 rounded-full bg-amber-500/10 blur-2xl group-hover:opacity-100 transition-opacity"></div>
+                    <div class="inline-flex p-3 rounded-xl bg-amber-500/10 border border-white/10 mb-6 relative z-10">
+                        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3 relative z-10">Eliminate Distractions</h3>
+                    <p class="text-white/60 text-sm leading-relaxed relative z-10">Enter deep flow states instantly with built-in ambient soundscapes and intelligent focus sessions that keep you productive.</p>
+                </div>
+            </div>
+
+            <!-- Focus highlights cards list -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 border-t border-white/5">
+                <!-- Highlight 1 -->
+                <div class="glass-panel p-8 rounded-xl hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Form Better Habits</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Build life-changing streaks and view behavioral reports that help you stay consistent.</p>
+                </div>
+                <!-- Highlight 2 -->
+                <div class="glass-panel p-8 rounded-xl hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-rose-400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Own Your Data</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Enjoy peace of mind knowing your data is private, secure, and resides 100% on your device.</p>
+                </div>
+                <!-- Highlight 3 -->
+                <div class="glass-panel p-8 rounded-xl hover:-translate-y-1">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Double Your Focus</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Reach deep flow states with interactive soundscapes, pomodoro timers, and distraction blocks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION (3 cards, dark cards) -->
+    <section id="testimonials" class="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold mb-4 tracking-tight">Loved by real users.</h2>
+            <p class="text-white/50 text-base max-w-md mx-auto">See how others are taking control of their day and achieving their goals.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Testimonial 1 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-white/20 transition-all hover:-translate-y-1">
+                <div class="flex text-amber-400 mb-4 gap-0.5">
+                    <span class="text-sm">★★★★★</span>
+                </div>
+                <p class="text-white/80 text-sm leading-relaxed mb-6 font-light">"LIFE OS replaced my 4 apps. I actually stick to my habits now. The visual layout changes everything."</p>
+                <div>
+                    <div class="font-bold text-white text-sm">Arjun S.</div>
+                    <div class="text-white/40 text-xs mt-0.5">Student</div>
+                </div>
+            </div>
+            <!-- Testimonial 2 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-white/20 transition-all hover:-translate-y-1">
+                <div class="flex text-amber-400 mb-4 gap-0.5">
+                    <span class="text-sm">★★★★★</span>
+                </div>
+                <p class="text-white/80 text-sm leading-relaxed mb-6 font-light">"Having tasks, habits, and finance in one clean space is a game-changer. I save hours of planning every single week."</p>
+                <div>
+                    <div class="font-bold text-white text-sm">Sarah M.</div>
+                    <div class="text-white/40 text-xs mt-0.5">Product Manager</div>
+                </div>
+            </div>
+            <!-- Testimonial 3 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-white/20 transition-all hover:-translate-y-1">
+                <div class="flex text-amber-400 mb-4 gap-0.5">
+                    <span class="text-sm">★★★★★</span>
+                </div>
+                <p class="text-white/80 text-sm leading-relaxed mb-6 font-light">"The local-first design keeps my data private, and the interface is beautiful. It makes daily planning actually fun."</p>
+                <div>
+                    <div class="font-bold text-white text-sm">David K.</div>
+                    <div class="text-white/40 text-xs mt-0.5">Freelance Designer</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING SECTION (3 tiers) -->
+    <section id="pricing" class="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold mb-4 tracking-tight">Simple, transparent pricing.</h2>
+            <p class="text-white/50 text-base max-w-md mx-auto">Start free and unlock premium features as you level up your productivity.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Free Tier -->
+            <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between hover:-translate-y-1 relative">
+                <div>
+                    <h3 class="text-xl font-bold mb-2">Free</h3>
+                    <p class="text-white/40 text-xs mb-6">Essential organization tools for everyone.</p>
+                    <div class="flex items-baseline mb-8">
+                        <span class="text-4xl font-extrabold text-white">₹0</span>
+                        <span class="text-white/40 text-sm ml-2">/ month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 text-sm text-white/70">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Unlimited tasks & projects</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Habit trackers & streaks</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Local-first data storage</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Basic analytics</li>
+                    </ul>
+                </div>
+                <a href="/login" class="w-full py-3 rounded-xl border border-white/10 text-white text-center text-sm font-semibold hover:bg-white/5 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300 mt-auto">
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Pro Tier (Most Popular) -->
+            <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between border-indigo-500/30 bg-indigo-950/10 hover:border-indigo-500/50 transition-all hover:-translate-y-1 relative shadow-[0_0_30px_rgba(99,102,241,0.05)]">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
+                    Most Popular
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-2 text-indigo-300">Pro</h3>
+                    <p class="text-white/40 text-xs mb-6">Advanced power features for high achievers.</p>
+                    <div class="flex items-baseline mb-8">
+                        <span class="text-4xl font-extrabold text-white">₹299</span>
+                        <span class="text-white/40 text-sm ml-2">/ month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 text-sm text-white/70">
+                        <li class="flex items-center gap-2"><span class="text-indigo-400 font-bold">✓</span> Everything in Free</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-400 font-bold">✓</span> Multi-device cloud sync</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-400 font-bold">✓</span> Advanced behavior charts</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-400 font-bold">✓</span> Interactive voice assistant</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-400 font-bold">✓</span> Priority feature access</li>
+                    </ul>
+                </div>
+                <a href="/login" class="w-full py-3 rounded-xl text-center text-sm font-semibold glow-btn-primary mt-auto">
+                    Upgrade to Pro
+                </a>
+            </div>
+
+            <!-- Team Tier -->
+            <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between hover:-translate-y-1 relative">
+                <div>
+                    <h3 class="text-xl font-bold mb-2">Team</h3>
+                    <p class="text-white/40 text-xs mb-6">Collaborative workspace for small teams.</p>
+                    <div class="flex items-baseline mb-8">
+                        <span class="text-4xl font-extrabold text-white">₹599</span>
+                        <span class="text-white/40 text-sm ml-2">/ month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 text-sm text-white/70">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Everything in Pro</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Shared task list & goals</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Team activity metrics</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Dedicated support line</li>
+                    </ul>
+                </div>
+                <a href="/login" class="w-full py-3 rounded-xl border border-white/10 text-white text-center text-sm font-semibold hover:bg-white/5 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300 mt-auto">
+                    Try for Free
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION (accordion working with vanilla JS) -->
+    <section id="faq" class="py-24 max-w-4xl mx-auto px-6 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-display font-bold mb-4 tracking-tight">Frequently Asked Questions</h2>
+            <p class="text-white/50 text-base">Got questions? We've got answers.</p>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Q1 -->
+            <div class="faq-item glass-panel rounded-xl overflow-hidden transition-all duration-300">
+                <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left font-semibold text-sm md:text-base text-white/95 hover:text-white transition-colors">
+                    <span>Is it really free?</span>
+                    <svg class="faq-icon w-5 h-5 text-indigo-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="accordion-content">
+                    <p class="px-6 pb-6 text-sm text-white/50 leading-relaxed font-light">Yes! LIFE OS is free forever for core features. You get unlimited tasks, projects, habits, and local data storage without paying a single rupee.</p>
+                </div>
+            </div>
+            <!-- Q2 -->
+            <div class="faq-item glass-panel rounded-xl overflow-hidden transition-all duration-300">
+                <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left font-semibold text-sm md:text-base text-white/95 hover:text-white transition-colors">
+                    <span>Is my data private and secure?</span>
+                    <svg class="faq-icon w-5 h-5 text-indigo-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="accordion-content">
+                    <p class="px-6 pb-6 text-sm text-white/50 leading-relaxed font-light">Absolutely. We use a local-first design. Your data is stored directly on your device and is never uploaded to any servers unless you choose to enable cloud sync.</p>
+                </div>
+            </div>
+            <!-- Q3 -->
+            <div class="faq-item glass-panel rounded-xl overflow-hidden transition-all duration-300">
+                <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left font-semibold text-sm md:text-base text-white/95 hover:text-white transition-colors">
+                    <span>What devices does it work on?</span>
+                    <svg class="faq-icon w-5 h-5 text-indigo-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="accordion-content">
+                    <p class="px-6 pb-6 text-sm text-white/50 leading-relaxed font-light">It works on all modern web browsers across desktops, tablets, and phones. It is also installable as a Progressive Web App (PWA) for offline usage.</p>
+                </div>
+            </div>
+            <!-- Q4 -->
+            <div class="faq-item glass-panel rounded-xl overflow-hidden transition-all duration-300">
+                <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left font-semibold text-sm md:text-base text-white/95 hover:text-white transition-colors">
+                    <span>Can I cancel my Pro plan anytime?</span>
+                    <svg class="faq-icon w-5 h-5 text-indigo-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="accordion-content">
+                    <p class="px-6 pb-6 text-sm text-white/50 leading-relaxed font-light">Yes, you can cancel your Pro plan anytime from your profile settings page. You will continue to have access to Pro features until the end of your billing cycle.</p>
+                </div>
+            </div>
+            <!-- Q5 -->
+            <div class="faq-item glass-panel rounded-xl overflow-hidden transition-all duration-300">
+                <button class="faq-question w-full px-6 py-5 flex items-center justify-between text-left font-semibold text-sm md:text-base text-white/95 hover:text-white transition-colors">
+                    <span>Does it work without internet?</span>
+                    <svg class="faq-icon w-5 h-5 text-indigo-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="accordion-content">
+                    <p class="px-6 pb-6 text-sm text-white/50 leading-relaxed font-light">Yes! Because of the local-first structure, all core functions work completely offline. Your habits and tasks sync when you reconnect.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-12">
+            <a href="/login" class="inline-flex px-6 py-3 rounded-lg text-sm font-semibold glow-btn-primary">
+                Get Started Today
+            </a>
+        </div>
+    </section>
+
+    <!-- SECTION 4: Final CTA -->
+    <section class="py-32 text-center relative overflow-hidden border-t border-white/5">
+        <div class="absolute inset-0 bg-indigo-900/10 blur-[100px] rounded-full w-1/2 h-1/2 left-1/4 top-1/4"></div>
+        <h2 class="text-5xl md:text-7xl font-display font-bold mb-8">Ready to upgrade?</h2>
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <a href="/login" class="px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 glow-btn-primary">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                Start Free Today
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/5 bg-zinc-950/20 py-16 px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="flex flex-col items-center md:items-start text-center md:text-left">
+                <a href="#" class="flex items-center gap-2 text-xl font-bold tracking-tighter font-display mb-2">
+                    <svg class="w-5 h-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m12 3-1.912 5.886L4.2 9.2 9.1 13.6 7.272 19.8 12 16l4.728 3.8L14.9 13.6 19.8 9.2l-5.888-.314L12 3z"/>
+                    </svg>
+                    LIFE<span class="text-indigo-400">OS</span>
+                </a>
+                <p class="text-white/40 text-xs max-w-xs">Take control of your tasks, habits, and goals in one unified space.</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 text-xs text-white/50 font-medium">
+                <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
+                <span class="text-white/10">|</span>
+                <a href="/terms" class="hover:text-white transition-colors">Terms of Service</a>
+                <span class="text-white/10">|</span>
+                <a href="/contact" class="hover:text-white transition-colors">Contact Us</a>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center text-xs text-white/30 font-mono">
+            <p>© 2025 LIFE OS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS (Hamburger menu & FAQ Accordion) -->
+    <script>
+        // ── Mobile Hamburger Menu Toggle ──
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIconOpen = document.getElementById('menu-icon-open');
+        const menuIconClose = document.getElementById('menu-icon-close');
+
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => {
+                const isHidden = mobileMenu.classList.toggle('hidden');
+                if (!isHidden) {
+                    menuIconOpen.classList.add('hidden');
+                    menuIconClose.classList.remove('hidden');
+                } else {
+                    menuIconOpen.classList.remove('hidden');
+                    menuIconClose.classList.add('hidden');
+                }
+            });
+        }
+
+        // Close mobile menu when links are clicked
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuIconOpen.classList.remove('hidden');
+                menuIconClose.classList.add('hidden');
+            });
+        });
+
+        // ── FAQ Accordion Toggle ──
+        document.querySelectorAll('.faq-question').forEach((button) => {
+            button.addEventListener('click', () => {
+                const item = button.parentElement;
+                const answer = item.querySelector('.accordion-content');
+                const icon = button.querySelector('.faq-icon');
+                const isOpen = item.classList.contains('active');
+                
+                // Close all other FAQs first
+                document.querySelectorAll('.faq-item').forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    const otherAnswer = otherItem.querySelector('.accordion-content');
+                    const otherIcon = otherItem.querySelector('.faq-icon');
+                    if (otherAnswer) otherAnswer.style.maxHeight = null;
+                    if (otherIcon) otherIcon.style.transform = 'rotate(0)';
+                });
+
+                if (!isOpen) {
+                    item.classList.add('active');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(45deg)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

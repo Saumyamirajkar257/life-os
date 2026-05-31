@@ -26,40 +26,55 @@ import {
   Telescope,
   User,
   Menu,
-  X,
-  Database
+  Database,
+  Briefcase,
+  X
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import { DigitalPet } from '@/components/companion/DigitalPet';
+
+
+export type SidebarCategory = 'Overview' | 'Learning Suite' | 'Productivity' | 'Mind & Knowledge' | 'Systems';
 
 interface SidebarNavItem {
   label: string;
   icon: LucideIcon;
   href: string;
+  category: SidebarCategory;
 }
 
+const categories: SidebarCategory[] = ['Overview', 'Learning Suite', 'Productivity', 'Mind & Knowledge', 'Systems'];
+
 const navItems: SidebarNavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
-  { label: 'Study OS', icon: GraduationCap, href: '/study' },
-  { label: 'Student Hub', icon: Trophy, href: '/student-hub' },
-  { label: 'AI Features', icon: Sparkles, href: '/ai-features' },
-  { label: 'Life Intelligence', icon: Brain, href: '/life-intelligence' },
-  { label: 'Life Vision', icon: Telescope, href: '/life-vision' },
-  { label: 'Life Profile', icon: User, href: '/life-profile' },
-  { label: 'Timeline', icon: History, href: '/timeline' },
-  { label: 'Tasks', icon: CheckSquare, href: '/tasks' },
-  { label: 'Habits', icon: Target, href: '/habits' },
-  { label: 'Journal', icon: BookOpen, href: '/journal' },
-  { label: 'Second Brain', icon: Compass, href: '/brain' },
-  { label: 'Resource Vault', icon: Database, href: '/vault' },
-  { label: 'PDF Editor', icon: FileText, href: '/pdf-editor' },
-  { label: 'Analytics', icon: BarChart3, href: '/analytics' },
-  { label: 'Finance', icon: Wallet, href: '/finance' },
-  { label: 'Focus', icon: BrainCircuit, href: '/focus' },
-  { label: 'Automations', icon: Zap, href: '/automations' },
-  { label: 'Settings', icon: Settings, href: '/settings' },
+  // Overview
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/', category: 'Overview' },
+  { label: 'Timeline', icon: History, href: '/timeline', category: 'Overview' },
+  
+  // Learning Suite
+  { label: 'Study OS', icon: GraduationCap, href: '/study', category: 'Learning Suite' },
+  { label: 'Student Hub', icon: Trophy, href: '/student-hub', category: 'Learning Suite' },
+  { label: 'PDF Editor', icon: FileText, href: '/pdf-editor', category: 'Learning Suite' },
+  { label: 'Resource Vault', icon: Database, href: '/vault', category: 'Learning Suite' },
+  
+  // Productivity
+  { label: 'Tasks', icon: CheckSquare, href: '/tasks', category: 'Productivity' },
+  { label: 'Habits', icon: Target, href: '/habits', category: 'Productivity' },
+  { label: 'Focus', icon: BrainCircuit, href: '/focus', category: 'Productivity' },
+  { label: 'Finance', icon: Wallet, href: '/finance', category: 'Productivity' },
+  
+  // Mind & Knowledge
+  { label: 'Second Brain', icon: Compass, href: '/brain', category: 'Mind & Knowledge' },
+  { label: 'Life Intelligence', icon: Brain, href: '/life-intelligence', category: 'Mind & Knowledge' },
+  { label: 'Life Vision', icon: Telescope, href: '/life-vision', category: 'Mind & Knowledge' },
+  { label: 'Life Profile', icon: User, href: '/life-profile', category: 'Mind & Knowledge' },
+  { label: 'Journal', icon: BookOpen, href: '/journal', category: 'Mind & Knowledge' },
+  
+  // Systems
+  { label: 'AI Features', icon: Sparkles, href: '/ai-features', category: 'Systems' },
+  { label: 'Analytics', icon: BarChart3, href: '/analytics', category: 'Systems' },
+  { label: 'Automations', icon: Zap, href: '/automations', category: 'Systems' },
+  { label: 'Settings', icon: Settings, href: '/settings', category: 'Systems' },
 ];
 
 function NavTooltip({ label, show }: { label: string; show: boolean }) {
@@ -92,6 +107,9 @@ function DesktopSidebar() {
       animate={{ width: sidebarExpanded ? 240 : 72 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
+      {/* Premium gradient accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
       {/* Logo area */}
       <div className="flex items-center h-16 px-4 border-b border-white/5">
         <motion.div
@@ -124,85 +142,101 @@ function DesktopSidebar() {
       </div>
 
       {/* Nav items */}
-      <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-none">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <div className="flex-1 py-4 px-3 space-y-4 overflow-y-auto scrollbar-none">
+        {categories.map((category, catIndex) => {
+          const categoryItems = navItems.filter((item) => item.category === category);
+          if (categoryItems.length === 0) return null;
 
           return (
-            <div
-              key={item.href}
-              className="relative"
-              onMouseEnter={() => setHoveredItem(item.href)}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              <Link
-                href={item.href}
-                onClick={() => setActivePage(item.label.toLowerCase())}
-                className={cn(
-                  'relative flex items-center gap-3 rounded-xl transition-colors duration-200',
-                  sidebarExpanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center',
-                  isActive
-                    ? 'text-white'
-                    : 'text-white/40 hover:text-white/70'
-                )}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="sidebar-active-bg"
-                    className="absolute inset-0 rounded-xl bg-white/10 border border-white/10"
-                    style={{
-                      boxShadow: '0 0 20px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)',
-                    }}
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-                <Icon
-                  className={cn(
-                    'w-5 h-5 flex-shrink-0 relative z-10 transition-all duration-200',
-                    isActive && 'drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
-                  )}
-                />
-                <AnimatePresence>
-                  {sidebarExpanded && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-sm font-medium relative z-10 overflow-hidden whitespace-nowrap"
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Link>
-
-              {/* Tooltip when collapsed */}
-              {!sidebarExpanded && (
-                <NavTooltip
-                  label={item.label}
-                  show={hoveredItem === item.href}
-                />
+            <div key={category} className="space-y-1">
+              {/* Category Header or Divider */}
+              {sidebarExpanded ? (
+                <div className="text-[10px] font-bold tracking-wider text-white/20 uppercase px-3 pt-2 pb-1 font-display select-none">
+                  {category}
+                </div>
+              ) : (
+                catIndex > 0 && <div className="h-[1px] bg-white/5 my-2 mx-2" />
               )}
+
+              {categoryItems.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+
+                return (
+                  <motion.div
+                    key={item.href}
+                    className="relative"
+                    onMouseEnter={() => setHoveredItem(item.href)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setActivePage(item.label.toLowerCase())}
+                      className={cn(
+                        'relative flex items-center gap-3 rounded-xl transition-colors duration-200',
+                        sidebarExpanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center',
+                        isActive
+                          ? 'text-white'
+                          : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-bg"
+                          className="absolute inset-0 rounded-xl bg-white/10 border border-white/10"
+                          style={{
+                            boxShadow: '0 0 20px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-accent-bar"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-gradient-to-b from-white/70 to-white/20"
+                          style={{ boxShadow: '0 0 8px rgba(255,255,255,0.3)' }}
+                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                      <Icon
+                        className={cn(
+                          'w-5 h-5 flex-shrink-0 relative z-10 transition-all duration-200',
+                          isActive && 'drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                        )}
+                      />
+                      <AnimatePresence>
+                        {sidebarExpanded && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="text-sm font-medium relative z-10 overflow-hidden whitespace-nowrap"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </Link>
+
+                    {/* Tooltip when collapsed */}
+                    {!sidebarExpanded && (
+                      <NavTooltip
+                        label={item.label}
+                        show={hoveredItem === item.href}
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           );
         })}
       </div>
 
-      {/* Pet Component */}
-      <AnimatePresence>
-        {sidebarExpanded && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-3 pb-4"
-          >
-            <DigitalPet />
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       <div className="p-3 border-t border-white/5 space-y-1">
         <button
@@ -269,9 +303,10 @@ function MobileBottomDock() {
   const { setActivePage, compactDock } = useAppStore();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  // Show 4 items, plus "More"
-  const mobileItems = navItems.slice(0, 4);
-  const moreItems = navItems.slice(4);
+  // Decoupled mobile items: 4 core items, rest are "more"
+  const mobileCoreHrefs = ['/', '/tasks', '/habits', '/ai-features'];
+  const mobileItems = navItems.filter((item) => mobileCoreHrefs.includes(item.href));
+  const moreItems = navItems.filter((item) => !mobileCoreHrefs.includes(item.href) && item.href !== '/');
 
   return (
     <>
@@ -346,12 +381,12 @@ function MobileBottomDock() {
             const Icon = item.icon;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setActivePage(item.label.toLowerCase())}
-                className="relative flex flex-col items-center gap-1 p-2 rounded-xl"
-              >
+              <motion.div key={item.href} whileHover={{ scale: 1.15, y: -4 }} whileTap={{ scale: 0.9 }}>
+                <Link
+                  href={item.href}
+                  onClick={() => setActivePage(item.label.toLowerCase())}
+                  className="relative flex flex-col items-center gap-1 p-2 rounded-xl"
+                >
                 {isActive && (
                   <motion.div
                     layoutId="mobile-dock-active"
@@ -376,6 +411,7 @@ function MobileBottomDock() {
                   {item.label}
                 </span>
               </Link>
+             </motion.div>
             );
           })}
 

@@ -10,6 +10,8 @@ import {
   X, Share2, Eye, ShieldAlert, Award, Clock, ArrowUpDown, HelpCircle, LayoutDashboard
 } from 'lucide-react';
 
+import { createPortal } from 'react-dom';
+
 import { useAppStore } from '@/store/useAppStore';
 import { useFocusStore } from '@/store/useFocusStore';
 import { useToast } from '@/components/ui/Toast';
@@ -270,15 +272,12 @@ export function DashboardGrid() {
     if (focusActive && focusTime > 0) {
       interval = setInterval(() => {
         setFocusTime((prev) => prev - 1);
-        // Animate equalizer bars
         if (ambientSound !== 'none') {
           setEqualizerBars(prev => prev.map(() => Math.floor(Math.random() * 35) + 5));
         }
       }, 1000);
     } else if (focusTime === 0 && focusActive) {
-      // Completed Focus Block!
       setFocusActive(false);
-      // Play brief synth sound
       try {
         if (soundEnabled) {
           const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -287,14 +286,13 @@ export function DashboardGrid() {
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
           gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
           osc.start();
           osc.stop(audioCtx.currentTime + 0.3);
         }
       } catch (e) {}
       toast('Focus Block Complete! +100 XP awarded to your Life Profile.', 'success');
-      // Reset timer
       setFocusTime(selectedPreset * 60);
     }
     return () => clearInterval(interval);
@@ -360,9 +358,8 @@ export function DashboardGrid() {
     };
   }, [searchQuery, tasks, habits, nodes]);
 
-  // 9. "What Should I Do Next?" - Dynamic Smart Recommendation
+  // 9. "What Should I Do Next?"
   const nextRecommendedAction = useMemo(() => {
-    // Priority 1: Any uncompleted habit today
     const uncompletedHabit = habits.find(h => !h.completedDates.includes(todayStr));
     if (uncompletedHabit) {
       return {
@@ -374,7 +371,6 @@ export function DashboardGrid() {
       };
     }
 
-    // Priority 2: High priority task due today or overdue
     const highPriorityTask = tasks.find(t => t.priority === 'high' && !t.completed);
     if (highPriorityTask) {
       return {
@@ -386,7 +382,6 @@ export function DashboardGrid() {
       };
     }
 
-    // Priority 3: Any uncompleted task due today
     const taskDueToday = tasks.find(t => t.dueDate === todayStr && !t.completed);
     if (taskDueToday) {
       return {
@@ -398,7 +393,6 @@ export function DashboardGrid() {
       };
     }
 
-    // Priority 4: Default fallback
     return {
       title: 'Review Second Brain Ideations',
       reason: 'No urgent task conflicts detected today. Browse your Idea Vault or start a general study block.',
@@ -411,7 +405,6 @@ export function DashboardGrid() {
   const missionObjectives = useMemo(() => {
     const objectives = [];
     
-    // Objective 1: High priority task or standard task
     const urgentTask = tasks.find(t => t.priority === 'high' && !t.completed);
     const regularTask = tasks.find(t => t.dueDate === todayStr && !t.completed);
     if (urgentTask) {
@@ -435,7 +428,6 @@ export function DashboardGrid() {
       });
     }
 
-    // Objective 2: Habits
     const pendingHabit = habits.find(h => !h.completedDates.includes(todayStr));
     if (pendingHabit) {
       objectives.push({
@@ -452,7 +444,6 @@ export function DashboardGrid() {
       });
     }
 
-    // Objective 3: Focus Timer / Study Block
     objectives.push({
       title: focusActive ? 'Focus Block Active' : 'Initiate Deep Focus Block',
       desc: focusActive ? `Time remaining: ${formatTime(focusTime)}` : 'Complete at least one 25m Pomodoro block',
@@ -462,7 +453,6 @@ export function DashboardGrid() {
     return objectives;
   }, [tasks, habits, todayStr, focusActive, focusTime]);
 
-  // 10. Today's Mission Counts and Progress
   const todayMissions = useMemo(() => {
     const total = missionObjectives.length;
     const done = missionObjectives.filter(o => o.completed).length;
@@ -470,7 +460,6 @@ export function DashboardGrid() {
     return { done, total, percentage };
   }, [missionObjectives]);
 
-  // 11. Custom Grid Sort & Prioritization Order based on PriorityMode
   const dashboardBlocks = useMemo(() => {
     const blocks = [
       { id: 'recommendation', urgency: 1, focus: 2, habits: 2, balanced: 1 },
@@ -497,7 +486,6 @@ export function DashboardGrid() {
     });
   }, [prioritization]);
 
-  // Pre-calculations for display
   const completedTasksCount = tasks.filter(t => t.completed).length;
   const activeTasks = tasks.filter(t => !t.completed);
   const highPriorityActive = activeTasks.filter(t => t.priority === 'high');
@@ -505,7 +493,6 @@ export function DashboardGrid() {
     .filter(t => t.dueDate)
     .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
 
-  // 1. Synced finance balance
   const dynamicFinanceBalance = useMemo(() => {
     const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Math.abs(t.amount), 0);
@@ -513,20 +500,17 @@ export function DashboardGrid() {
     return currentBalance !== 0 ? `$${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$2,450.00';
   }, [transactions]);
 
-  // 2. Active projects count
   const dynamicProjectsCount = useMemo(() => {
     const uniqueProjects = Array.from(new Set(tasks.map(t => t.project).filter(Boolean)));
     return uniqueProjects.length > 0 ? `${uniqueProjects.length} Project${uniqueProjects.length === 1 ? '' : 's'}` : '5 Projects';
   }, [tasks]);
 
-  // 3. Courses learning count
   const dynamicCoursesCount = useMemo(() => {
     const uniqueTags = Array.from(new Set(tasks.flatMap(t => t.tags || [])));
     const activeCount = uniqueTags.length;
     return activeCount > 0 ? `${activeCount} Active` : '3 Active';
   }, [tasks]);
 
-  // 4. Fitness Index sessions
   const dynamicFitnessIndex = useMemo(() => {
     const fitnessHabits = habits.filter(h => 
       ['gym', 'fitness', 'workout', 'run', 'walk', 'meditation', 'water', 'health'].some(kw => 
@@ -537,7 +521,6 @@ export function DashboardGrid() {
     return totalSessions > 0 ? `${totalSessions} Session${totalSessions === 1 ? '' : 's'}` : '4 Sessions';
   }, [habits]);
 
-  // 5. Study hours estimation
   const dynamicStudyHours = useMemo(() => {
     const studyHabits = habits.filter(h => 
       ['study', 'learn', 'read', 'german', 'course', 'class'].some(kw => 
@@ -545,16 +528,14 @@ export function DashboardGrid() {
       )
     );
     const totalSessions = studyHabits.reduce((acc, h) => acc + (h.completedDates?.length || 0), 0);
-    const calculatedHrs = totalSessions * 0.5; // 30m per session
+    const calculatedHrs = totalSessions * 0.5;
     return calculatedHrs > 0 ? `${calculatedHrs.toFixed(1)}h` : '42.5h';
   }, [habits]);
 
-  // 6. Dynamic XP & Level Progression
   const dynamicProgression = useMemo(() => {
     const totalHabitsCompletions = habits.reduce((acc, h) => acc + (h.completedDates?.length || 0), 0);
     const calculatedXP = (completedTasksCount * 50) + (totalHabitsCompletions * 30);
     const baseScore = lifeScore?.score || 84;
-    // Add baseScore weight to XP so users have a healthy baseline
     const finalXP = (baseScore * 10) + calculatedXP;
     const computedLevel = Math.floor(finalXP / 1000) + 1;
     const currentLevelXP = finalXP % 1000;
@@ -567,7 +548,6 @@ export function DashboardGrid() {
     };
   }, [completedTasksCount, habits, lifeScore]);
 
-  // 7. Dynamic Sleep Quality based on AI Memory mainWeakness
   const sleepQuality = useMemo(() => {
     const isLateSleeper = memory?.mainWeakness?.toLowerCase().includes('sleep') || memory?.mainWeakness?.toLowerCase().includes('night');
     const score = isLateSleeper ? 68 : 86;
@@ -578,7 +558,6 @@ export function DashboardGrid() {
     return { score, hours, status };
   }, [memory]);
 
-  // 8. Weekly Focus Hours Chart Data based on actual completions
   const last7DaysActivity = useMemo(() => {
     const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const result = [];
@@ -594,13 +573,12 @@ export function DashboardGrid() {
       const score = (habitsDone * 1.5) + (tasksDone * 2.0);
       result.push({
         day: dayLabel,
-        hrs: score > 0 ? Math.min(8.0, 1.5 + score) : 1.5 + (Math.sin(d.getDate()) + 1) * 1.5 // gentle variations if empty
+        hrs: score > 0 ? Math.min(8.0, 1.5 + score) : 1.5 + (Math.sin(d.getDate()) + 1) * 1.5
       });
     }
     return result;
   }, [habits, tasks]);
 
-  // 9. Spotify-wrapped variables
   const wrappedStats = useMemo(() => {
     const currentMonthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const highestStreak = habits.reduce((max, h) => h.currentStreak > max ? h.currentStreak : max, 0);
@@ -668,7 +646,6 @@ export function DashboardGrid() {
               >
                 <span className="text-[10px] uppercase font-mono tracking-wider text-white/30 block mb-2">Search results</span>
                 
-                {/* Matched tasks */}
                 {allFilteredItems.tasks.length > 0 && (
                   <div className="mb-3">
                     <span className="text-[10px] text-primary/60 font-semibold block mb-1">Tasks</span>
@@ -681,7 +658,6 @@ export function DashboardGrid() {
                   </div>
                 )}
 
-                {/* Matched habits */}
                 {allFilteredItems.habits.length > 0 && (
                   <div className="mb-3">
                     <span className="text-[10px] text-amber-400 font-semibold block mb-1">Habits</span>
@@ -693,7 +669,6 @@ export function DashboardGrid() {
                   </div>
                 )}
 
-                {/* Matched nodes */}
                 {allFilteredItems.nodes.length > 0 && (
                   <div>
                     <span className="text-[10px] text-purple-400 font-semibold block mb-1">Second Brain</span>
@@ -759,13 +734,11 @@ export function DashboardGrid() {
         </div>
       </motion.div>
 
-      {/* 3. GRID OF MODULES WITH LAYOUT-ANIMATED REARRANGING */}
+      {/* 3. GRID OF MODULES */}
       <motion.div layout className="grid grid-cols-12 gap-5 items-stretch">
-        
         <AnimatePresence mode="popLayout">
-          {dashboardBlocks.map((block) => {
+          {dashboardBlocks.map((block, blockIndex) => {
             
-            // CARD A: SMART RECOMMENDATION ("What Should I Do Next?")
             if (block.id === 'recommendation') {
               return (
                 <motion.div
@@ -776,7 +749,7 @@ export function DashboardGrid() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="col-span-12 lg:col-span-8"
                 >
-                  <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/10 via-background/40 to-blue-500/10 p-6 backdrop-blur-md h-full flex flex-col justify-between">
+                  <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/10 via-background/40 to-blue-500/10 p-6 backdrop-blur-md h-full flex flex-col justify-between breathe-glow">
                     <div className="absolute top-0 right-0 p-4 opacity-15 pointer-events-none">
                       <Sparkles className="w-24 h-24 text-primary animate-pulse" />
                     </div>
@@ -818,7 +791,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD B: TODAY'S MISSION
             if (block.id === 'mission') {
               return (
                 <motion.div
@@ -854,16 +826,24 @@ export function DashboardGrid() {
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-white/5">
-                      <div className="flex justify-between text-xs text-white/40 mb-1.5 font-mono">
-                        <span>MISSION SUCCESS RATE</span>
-                        <span>{todayMissions.percentage}%</span>
+                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1 font-mono">MISSION SUCCESS</span>
+                        <div className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+                          {todayMissions.percentage}%
+                        </div>
                       </div>
-                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-500"
-                          style={{ width: `${todayMissions.percentage}%` }}
-                        />
+                      <div className="relative w-12 h-12">
+                        <svg className="w-full h-full -rotate-90 drop-shadow-lg" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mission-gradient)" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 - (todayMissions.percentage / 100) * 251.2} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                          <defs>
+                            <linearGradient id="mission-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#34d399" />
+                              <stop offset="100%" stopColor="#3b82f6" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
                       </div>
                     </div>
                   </GlassCard>
@@ -871,7 +851,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD C: FOCUS LAUNCHER WIDGET
             if (block.id === 'focusLauncher') {
               return (
                 <motion.div
@@ -908,13 +887,23 @@ export function DashboardGrid() {
                         </div>
                       </div>
 
-                      {/* Display timer */}
-                      <div className="text-center py-6 bg-black/60 border border-white/5 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center">
-                        <span className="text-4xl font-mono font-bold tracking-widest text-white glow-text">
-                          {formatTime(focusTime)}
-                        </span>
+                      <div className="py-6 bg-black/60 border border-white/5 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center">
+                        <div className="relative w-40 h-40 flex items-center justify-center">
+                          <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-2xl" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#focus-gradient)" strokeWidth="4" strokeDasharray={282.7} strokeDashoffset={282.7 - ((focusTime) / (selectedPreset * 60)) * 282.7} strokeLinecap="round" className="transition-all duration-1000 ease-linear" />
+                            <defs>
+                              <linearGradient id="focus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#a855f7" />
+                                <stop offset="100%" stopColor="#ec4899" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <span className="text-4xl font-mono font-bold tracking-widest text-white glow-text relative z-10">
+                            {formatTime(focusTime)}
+                          </span>
+                        </div>
                         
-                        {/* Audio equalizer visualization */}
                         {focusActive && ambientSound !== 'none' && (
                           <div className="flex gap-0.5 justify-center items-end h-6 mt-3">
                             {equalizerBars.map((val, idx) => (
@@ -931,7 +920,6 @@ export function DashboardGrid() {
                         </span>
                       </div>
 
-                      {/* Ambient Sound options */}
                       <div className="flex items-center justify-between gap-2 mt-4 p-2 bg-white/5 rounded-xl border border-white/5">
                         <span className="text-[10px] font-mono text-white/40 flex items-center gap-1.5">
                           <Volume2 className="w-3.5 h-3.5" /> AMBIENT:
@@ -986,7 +974,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD D: TODAY'S TASKS & DEADLINES BOARD
             if (block.id === 'tasks') {
               return (
                 <motion.div
@@ -998,79 +985,57 @@ export function DashboardGrid() {
                   className="col-span-12 md:col-span-6 lg:col-span-4"
                 >
                   <GlassCard
-                    icon={<CheckSquare className="w-5 h-5 text-white/70" />}
-                    header="Today's Tasks & Priorities"
+                    icon={<CheckSquare className="w-5 h-5 text-indigo-400" />}
+                    header="Active Task Backlog"
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
                     <div>
-                      {/* Quick Inline task creator */}
-                      <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4">
+                      <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4 bg-black/40 border border-white/5 p-2 rounded-xl">
                         <input
                           type="text"
-                          placeholder="Quick add task for today..."
+                          placeholder="Quick capture task..."
                           value={quickTaskTitle}
                           onChange={(e) => setQuickTaskTitle(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all font-sans"
+                          className="flex-1 bg-transparent border-none text-xs text-white placeholder-white/20 focus:outline-none pl-2"
                         />
-                        <button type="submit" className="p-2 bg-white text-black rounded-xl hover:opacity-90 active:scale-95 transition-all">
-                          <Plus className="w-4 h-4" />
+                        <button type="submit" className="p-2 bg-white text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center">
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </form>
 
-                      {/* Task checklist */}
-                      <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-                        {tasks.slice(0, 4).map((task) => (
-                          <div 
-                            key={task.id}
-                            onClick={() => toggleTask(task.id)}
-                            className={`flex items-start justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
-                              task.completed 
-                                ? 'bg-white/5 border-white/5 text-white/30 line-through' 
-                                : 'bg-black/30 border-white/5 hover:border-white/15 text-white'
-                            }`}
-                          >
-                            <div className="flex items-start gap-2.5">
-                              <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 transition-colors ${
-                                task.completed ? 'text-white/30' : task.priority === 'high' ? 'text-rose-400' : 'text-white/20'
-                              }`} />
-                              <div className="text-xs">
-                                <span className="font-semibold block">{task.title}</span>
-                                <span className="text-[10px] text-white/40 block mt-0.5">{task.project || 'Inbox'}</span>
-                              </div>
+                      <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                        {activeTasks.slice(0, 4).map((task) => (
+                          <div key={task.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between gap-3 hover:bg-white/10 transition-all">
+                            <button onClick={() => toggleTask(task.id)} className="w-4.5 h-4.5 rounded-md border border-white/20 hover:border-white/40 flex items-center justify-center">
+                              <div className="w-2 h-2 bg-transparent rounded-[2px]" />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs font-semibold text-white block truncate">{task.title}</span>
+                              <span className="text-[10px] text-white/40 block mt-0.5">{task.project}</span>
                             </div>
-                            {task.priority === 'high' && !task.completed && (
-                              <Badge variant="destructive" className="text-[8px] tracking-wide shrink-0">HIGH</Badge>
-                            )}
+                            <Badge variant={task.priority === 'high' ? 'destructive' : 'outline'} className="text-[8px] uppercase tracking-wider font-mono">
+                              {task.priority}
+                            </Badge>
                           </div>
                         ))}
-
-                        {tasks.length === 0 && (
-                          <div className="text-center py-8 text-white/30 text-xs font-mono">
-                            No tasks found. Use task editor.
+                        {activeTasks.length === 0 && (
+                          <div className="text-center py-6 text-white/30 text-xs font-mono">
+                            No active tasks in inbox.
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Upcoming deadlines */}
-                    <div className="mt-4 pt-4 border-t border-white/5">
-                      <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-2 font-mono">Upcoming Deadlines</span>
-                      <div className="space-y-2">
-                        {upcomingDeadlines.slice(0, 2).map((task) => (
-                          <div key={task.id} className="flex justify-between items-center text-xs font-medium">
-                            <span className="text-white/60 truncate pr-4">{task.title}</span>
-                            <span className="text-rose-400/90 text-[10px] font-mono shrink-0">Due: {task.dueDate}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <Link href="/tasks" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                      <span>Open Task Manager</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
                   </GlassCard>
                 </motion.div>
               );
             }
 
-            // CARD E: HABIT TRACKER PANEL
             if (block.id === 'habits') {
               return (
                 <motion.div
@@ -1083,56 +1048,41 @@ export function DashboardGrid() {
                 >
                   <GlassCard
                     icon={<Flame className="w-5 h-5 text-amber-500" />}
-                    header="Habit Tracker Checklist"
+                    header="Habit Tracker Streaks"
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono text-white/40 uppercase">DAILY STREAKS</span>
-                        <Badge variant="glow" className="bg-amber-500/10 text-amber-400 border-amber-500/20">MULT: 1.5X</Badge>
-                      </div>
-
-                      <div className="space-y-3">
-                        {habits.slice(0, 3).map((habit) => {
-                          const isDone = habit.completedDates.includes(todayStr);
-                          return (
-                            <div 
-                              key={habit.id}
-                              onClick={() => toggleHabitComplete(habit.id, todayStr)}
-                              className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                                isDone 
-                                  ? 'bg-amber-500/10 border-amber-500/20 text-white/70' 
-                                  : 'bg-black/30 border-white/5 hover:border-white/15 text-white'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-sm">
-                                  {habit.icon === 'brain' ? '🧠' : habit.icon === 'languages' ? '🌐' : '💧'}
-                                </div>
-                                <div>
-                                  <span className="text-xs font-semibold block">{habit.title}</span>
-                                  <span className="text-[10px] text-white/40 block mt-0.5">{habit.description}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-xs font-mono text-amber-500 font-bold flex items-center gap-0.5">
-                                  <Flame className="w-3.5 h-3.5 fill-current" /> {habit.currentStreak}d
-                                </span>
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
-                                  isDone ? 'bg-amber-500 border-amber-500 text-black' : 'border-white/20'
-                                }`}>
-                                  {isDone && <CheckCircle2 className="w-3.5 h-3.5 stroke-[3px]" />}
-                                </div>
-                              </div>
+                    <div className="space-y-3">
+                      {habits.slice(0, 3).map((habit) => {
+                        const isDoneToday = habit.completedDates.includes(todayStr);
+                        return (
+                          <div key={habit.id} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <span className="text-xs font-semibold text-white block truncate">{habit.title}</span>
+                              <span className="text-[10px] text-white/40 block mt-0.5 truncate">{habit.description}</span>
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className="text-[10px] font-mono font-bold text-amber-500 flex items-center gap-0.5">
+                                🔥 {habit.currentStreak}d
+                              </span>
+                              <button 
+                                onClick={() => toggleHabitComplete(habit.id, todayStr)}
+                                className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all ${
+                                  isDoneToday
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                    : 'bg-white text-black hover:opacity-90'
+                                }`}
+                              >
+                                {isDoneToday ? 'Secured' : 'Secure'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <Link href="/habits" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                      <span>View All Habits</span>
+                      <span>Open Habit Dashboard</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </GlassCard>
@@ -1140,7 +1090,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD F: LIFE OVERVIEW WIDGET
             if (block.id === 'overview') {
               return (
                 <motion.div
@@ -1149,43 +1098,41 @@ export function DashboardGrid() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="col-span-12"
+                  className="col-span-12 md:col-span-6 lg:col-span-4"
                 >
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    {[
-                      { label: 'Study Hours', value: dynamicStudyHours, sub: 'Last 7 days', xp: 'Flow sessions', color: 'from-blue-500/20 to-blue-600/5', border: 'border-blue-500/20', text: 'text-blue-400', icon: GraduationCap },
-                      { label: 'Career Level', value: `Level ${dynamicProgression.level}`, sub: 'Commander', xp: `${dynamicProgression.xp} / ${dynamicProgression.total} XP`, color: 'from-purple-500/20 to-purple-600/5', border: 'border-purple-500/20', text: 'text-purple-400', icon: Trophy },
-                      { label: 'Active Projects', value: dynamicProjectsCount, sub: 'In Workspace', xp: 'Milestones tracked', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: Laptop },
-                      { label: 'Courses Learning', value: dynamicCoursesCount, sub: 'Topic tags active', xp: 'Workspace tags', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400', icon: BookOpen },
-                      { label: 'Fitness Index', value: dynamicFitnessIndex, sub: 'Routines hit', xp: 'Hydration & Gym', color: 'from-rose-500/20 to-rose-600/5', border: 'border-rose-500/20', text: 'text-rose-400', icon: Dumbbell },
-                      { label: 'Encrypted Finance', value: dynamicFinanceBalance, sub: 'Budget synced', xp: 'Transactions logged', color: 'from-cyan-500/20 to-cyan-600/5', border: 'border-cyan-500/20', text: 'text-cyan-400', icon: DollarSign },
-                    ].map((stat, idx) => {
-                      const Icon = stat.icon;
-                      return (
-                        <motion.div
-                          key={idx}
-                          className={`rounded-2xl border ${stat.border} bg-gradient-to-b ${stat.color} p-4.5 backdrop-blur-md flex flex-col justify-between min-h-[130px] hover:scale-[1.02] transition-transform duration-300`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <span className="text-xs text-white/50 font-medium block">{stat.label}</span>
-                            <Icon className={`w-4 h-4 ${stat.text}`} />
-                          </div>
-                          <div>
-                            <span className="text-lg md:text-xl font-display font-bold text-white block mt-2">{stat.value}</span>
-                          </div>
-                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5 text-[10px] font-mono">
-                            <span className="text-white/40">{stat.sub}</span>
-                            <span className={`${stat.text} font-semibold`}>{stat.xp}</span>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
+                  <GlassCard
+                    icon={<Compass className="w-5 h-5 text-cyan-400" />}
+                    header="Telemetry Overview"
+                    className="h-full flex flex-col justify-between"
+                    animated={false}
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                        <span className="text-[9px] text-white/30 font-mono block uppercase">Finance Synced</span>
+                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFinanceBalance}</span>
+                      </div>
+                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                        <span className="text-[9px] text-white/30 font-mono block uppercase">Active Startup</span>
+                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicProjectsCount}</span>
+                      </div>
+                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                        <span className="text-[9px] text-white/30 font-mono block uppercase">Learning Tracks</span>
+                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicCoursesCount}</span>
+                      </div>
+                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                        <span className="text-[9px] text-white/30 font-mono block uppercase">Gym Fortifications</span>
+                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFitnessIndex}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-[9px] font-mono text-purple-400/80 text-center uppercase tracking-widest mt-4">
+                      SECTORS ACTIVE & TRANSMITTING
+                    </div>
+                  </GlassCard>
                 </motion.div>
               );
             }
 
-            // CARD G: XP & RANK PROGRESSION
             if (block.id === 'xp') {
               return (
                 <motion.div
@@ -1197,63 +1144,41 @@ export function DashboardGrid() {
                   className="col-span-12 md:col-span-6 lg:col-span-4"
                 >
                   <GlassCard
-                    icon={<Trophy className="w-5 h-5 text-purple-400" />}
-                    header="XP & Level Progression"
+                    icon={<Trophy className="w-5 h-5 text-amber-400" />}
+                    header="Commander Level Progression"
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div>
-                      <div className="flex items-center gap-4 p-4 rounded-xl bg-black/40 border border-white/5 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center border border-white/10 shrink-0 shadow-lg shadow-primary/20">
-                          <span className="text-xl font-display font-extrabold text-black">{dynamicProgression.level}</span>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <span className="text-[10px] text-white/40 block font-mono">LEVEL RANK</span>
+                          <span className="text-3xl font-display font-extrabold text-white">Lvl {dynamicProgression.level}</span>
                         </div>
-                        <div className="flex-grow">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-semibold text-white">Level {dynamicProgression.level} Commander</span>
-                            <span className="text-[9px] text-white/40 uppercase tracking-widest font-mono">Rank #{(15 - Math.min(5, dynamicProgression.level))}</span>
-                          </div>
-                          <div className="text-[10px] text-white/50 mt-0.5">Title: Strategic Visionary</div>
-                        </div>
+                        <span className="text-xs font-semibold text-emerald-400 font-mono">
+                          {dynamicProgression.xp} / {dynamicProgression.total} XP
+                        </span>
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-white/40 font-mono">
-                          <span>Next level in {dynamicProgression.deficit} XP</span>
-                          <span>{dynamicProgression.xp} / {dynamicProgression.total} XP</span>
+                        <div className="h-2 w-full rounded-full bg-white/5 border border-white/10 overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 transition-all duration-500" style={{ width: `${(dynamicProgression.xp / dynamicProgression.total) * 100}%` }} />
                         </div>
-                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                          <div 
-                            className="h-full bg-gradient-to-r from-primary via-blue-500 to-primary rounded-full"
-                            style={{ width: `${(dynamicProgression.xp / dynamicProgression.total) * 100}%` }}
-                          />
-                        </div>
+                        <span className="text-[10px] text-white/30 block font-mono text-right">
+                          {dynamicProgression.deficit} XP to Level {dynamicProgression.level + 1}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/5">
-                      <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-2 font-mono">Recent Activity Log</span>
-                      <div className="space-y-2">
-                        {[
-                          { act: `Completed ${completedTasksCount} total tasks`, xp: `+${completedTasksCount * 50} XP`, time: 'Active' },
-                          { act: `Logged active habit routines`, xp: `+${habits.reduce((acc, h) => acc + h.completedDates.length, 0) * 30} XP`, time: 'Secured' },
-                          { act: `Synchronized Life OS systems`, xp: `+${lifeScore?.score || 84} XP`, time: 'Optimal' },
-                        ].map((log, idx) => (
-                          <div key={idx} className="flex justify-between text-xs font-medium">
-                            <span className="text-white/60">{log.act}</span>
-                            <div className="flex gap-2 font-mono shrink-0">
-                              <span className="text-primary">{log.xp}</span>
-                              <span className="text-white/20">{log.time}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl mt-4 flex items-center justify-between text-xs">
+                      <span className="text-white/60">Streak Multiplier:</span>
+                      <span className="font-bold text-amber-400">1.8x Active</span>
                     </div>
                   </GlassCard>
                 </motion.div>
               );
             }
 
-            // CARD H: AI INSIGHTS
             if (block.id === 'insights') {
               return (
                 <motion.div
@@ -1265,8 +1190,8 @@ export function DashboardGrid() {
                   className="col-span-12 md:col-span-6 lg:col-span-4"
                 >
                   <GlassCard
-                    icon={<Brain className="w-5 h-5 text-white" />}
-                    header="AI Behavioral Diagnostics"
+                    icon={<Brain className="w-5 h-5 text-emerald-400" />}
+                    header="AI Neural Diagnostics"
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
@@ -1290,7 +1215,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD I: FUTURE PREDICTIONS
             if (block.id === 'predictions') {
               return (
                 <motion.div
@@ -1331,7 +1255,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD J: CALENDAR EVENTS
             if (block.id === 'calendar') {
               return (
                 <motion.div
@@ -1373,7 +1296,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD K: OPPORTUNITY FEED
             if (block.id === 'opportunities') {
               return (
                 <motion.div
@@ -1415,7 +1337,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD L: SECOND BRAIN / IDEAS VAULT
             if (block.id === 'notes') {
               return (
                 <motion.div
@@ -1433,7 +1354,6 @@ export function DashboardGrid() {
                     animated={false}
                   >
                     <div>
-                      {/* Inline Capture form */}
                       <form onSubmit={handleCaptureNote} className="space-y-2 mb-4 bg-black/40 border border-white/5 p-3 rounded-xl">
                         <input
                           type="text"
@@ -1454,7 +1374,6 @@ export function DashboardGrid() {
                         </button>
                       </form>
 
-                      {/* Recent brain items */}
                       <div className="space-y-2">
                         {nodes.slice(0, 2).map((node) => (
                           <div key={node.id} className="p-2.5 bg-white/5 border border-white/5 rounded-xl">
@@ -1477,7 +1396,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD M: MONTHLY CINEMATIC REPLAY (SPOTIFY WRAPPED)
             if (block.id === 'wrapped') {
               return (
                 <motion.div
@@ -1519,7 +1437,6 @@ export function DashboardGrid() {
               );
             }
 
-            // CARD N: WEEKLY / PULSE CHART PANEL
             if (block.id === 'stats') {
               return (
                 <motion.div
@@ -1531,28 +1448,50 @@ export function DashboardGrid() {
                   className="col-span-12 lg:col-span-8"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 h-full">
-                    {/* Weekly Chart */}
                     <div className="glass-panel rounded-2xl p-5 border border-white/10 flex flex-col justify-between min-h-[200px]">
                       <div>
                         <span className="text-xs text-white/40 block font-mono">PRODUCTIVITY DRIFT</span>
                         <h4 className="text-base font-semibold mt-1">Weekly Focus Activity</h4>
                       </div>
-                      <div className="h-28 flex items-end gap-2.5 px-1 mt-4">
-                        {last7DaysActivity.map((d, index) => {
-                          const maxHrs = 8.0;
-                          const percent = (d.hrs / maxHrs) * 100;
-                          return (
-                            <div key={index} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                              <div className="w-full rounded-t bg-white/20 group-hover:bg-white transition-all cursor-pointer relative" style={{ height: `${percent}%` }}>
-                                <div className="absolute top-full text-[9px] text-white/30 text-center w-full mt-1.5 font-mono">{d.day}</div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                      <div className="h-32 mt-4 relative w-full pt-4">
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 700 100" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="area-gradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="rgba(99, 102, 241, 0.5)" />
+                              <stop offset="100%" stopColor="rgba(99, 102, 241, 0)" />
+                            </linearGradient>
+                          </defs>
+                          <motion.path
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            d={`M 0 100 ${last7DaysActivity.map((d, i) => `L ${i * 116.6} ${100 - (d.hrs / 8) * 100}`).join(' ')} L 700 100 Z`}
+                            fill="url(#area-gradient)"
+                          />
+                          <motion.path
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            d={`M ${last7DaysActivity.map((d, i) => `${i * 116.6} ${100 - (d.hrs / 8) * 100}`).join(' L ')}`}
+                            fill="none"
+                            stroke="#818cf8"
+                            strokeWidth="3"
+                          />
+                          {last7DaysActivity.map((d, i) => (
+                            <g key={i} className="group cursor-pointer">
+                              <circle cx={i * 116.6} cy={100 - (d.hrs / 8) * 100} r="4" fill="#818cf8" className="transition-all group-hover:r-[6px]" />
+                              <text x={i * 116.6} y={100 - (d.hrs / 8) * 100 - 15} fill="white" fontSize="24" textAnchor="middle" opacity="0" className="group-hover:opacity-100 transition-opacity font-mono">{d.hrs.toFixed(1)}h</text>
+                            </g>
+                          ))}
+                        </svg>
+                        <div className="flex justify-between w-full mt-2">
+                          {last7DaysActivity.map((d, i) => (
+                            <span key={i} className="text-[10px] text-white/30 font-mono text-center w-full block translate-x-[2px]">{d.day}</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Sleep Metric Circle */}
                     <div className="glass-panel rounded-2xl p-5 border border-white/10 flex flex-col items-center justify-center min-h-[200px] text-center">
                       <div className="relative w-24 h-24 mb-3">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -1572,7 +1511,6 @@ export function DashboardGrid() {
             return null;
           })}
         </AnimatePresence>
-
       </motion.div>
 
       {/* 4. CINEMATIC WRAPPED REPLAY STORY-STYLE MODAL */}
@@ -1580,7 +1518,6 @@ export function DashboardGrid() {
         {replayOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md">
             
-            {/* Slide story indicators */}
             <div className="absolute top-6 inset-x-6 flex gap-2 z-50 max-w-md mx-auto">
               {[0, 1, 2, 3, 4].map((idx) => (
                 <div key={idx} className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
@@ -1592,10 +1529,8 @@ export function DashboardGrid() {
               ))}
             </div>
 
-            {/* Slide contents container */}
             <div className="w-full max-w-md mx-4 p-8 relative flex flex-col justify-between h-[80vh] bg-gradient-to-b from-purple-950/20 via-black to-black border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
               
-              {/* Close button */}
               <button 
                 onClick={() => setReplayOpen(false)}
                 className="absolute top-10 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white z-50 border border-white/5"
@@ -1605,7 +1540,6 @@ export function DashboardGrid() {
 
               <div className="flex-1 flex flex-col items-center justify-center mt-6">
                 
-                {/* SLIDE 0: Welcome */}
                 {replaySlide === 0 && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1623,7 +1557,6 @@ export function DashboardGrid() {
                   </motion.div>
                 )}
 
-                {/* SLIDE 1: Hours studied */}
                 {replaySlide === 1 && (
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
@@ -1638,7 +1571,6 @@ export function DashboardGrid() {
                   </motion.div>
                 )}
 
-                {/* SLIDE 2: Habits streak */}
                 {replaySlide === 2 && (
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
@@ -1655,7 +1587,6 @@ export function DashboardGrid() {
                   </motion.div>
                 )}
 
-                {/* SLIDE 3: Tasks and projects completed */}
                 {replaySlide === 3 && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -1670,7 +1601,6 @@ export function DashboardGrid() {
                   </motion.div>
                 )}
 
-                {/* SLIDE 4: Share Replay */}
                 {replaySlide === 4 && (
                   <motion.div 
                     initial={{ opacity: 0, y: -20 }}
@@ -1700,7 +1630,6 @@ export function DashboardGrid() {
 
               </div>
 
-              {/* Navigation controls */}
               <div className="flex justify-between items-center pt-4 border-t border-white/5">
                 <button 
                   disabled={replaySlide === 0}
@@ -1725,401 +1654,388 @@ export function DashboardGrid() {
             </div>
           </div>
         )}
-
-        {/* 5. 3D PLANET UNIVERSE NAVIGATOR OVERLAY */}
-        {universeOpen && (
-          <motion.div
-            key="universe-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#05020c]/98 overflow-hidden font-sans select-none"
-          >
-            {/* Styles */}
-            <style dangerouslySetInnerHTML={{ __html: `
-              .space-bg {
-                background-image: 
-                  radial-gradient(white, rgba(255,255,255,.2) 1.5px, transparent 30px),
-                  radial-gradient(white, rgba(255,255,255,.1) 1px, transparent 20px);
-                background-size: 400px 400px, 250px 250px;
-                opacity: 0.18;
-                animation: stars-drift 160s linear infinite;
-              }
-              @keyframes stars-drift {
-                from { background-position: 0 0, 40px 60px; }
-                to { background-position: 400px 400px, 290px 310px; }
-              }
-              .glow-text {
-                text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-              }
-            `}} />
-
-            {/* Stars background */}
-            <div className="absolute inset-0 space-bg pointer-events-none" />
-            
-            {/* Ambient Nebula Glows */}
-            <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '10s' }} />
-            <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
-
-            {/* Close Button */}
-            <button 
-              onClick={() => {
-                if (zoomPlanet) return;
-                setUniverseOpen(false);
-              }}
-              className="absolute top-6 right-6 p-3 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white border border-white/10 z-50 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 active:scale-95"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Top HUD Panel */}
-            <div className="absolute top-6 left-6 z-40 pointer-events-none">
-              <div className="flex items-center gap-2">
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                </span>
-                <span className="text-[10px] font-mono tracking-widest text-purple-400 font-bold uppercase">
-                  LIFE OPERATING SYSTEM · {constellationMode ? 'CONSTELLATION VIEW' : 'SPATIAL VIEW'}
-                </span>
-              </div>
-              <h2 className="text-2xl font-display font-extrabold text-white mt-1 uppercase tracking-tight">The Life Universe</h2>
-              <p className="text-xs text-white/40 font-mono mt-0.5">Click a sector planet to zoom in and warp to that workspace.</p>
-            </div>
-
-            {/* View Toggle (Top Middle) */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1 backdrop-blur-md">
-              <button 
-                onClick={() => setConstellationMode(false)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${!constellationMode ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
-              >
-                3D Spatial
-              </button>
-              <button 
-                onClick={() => setConstellationMode(true)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${constellationMode ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
-              >
-                2D Constellation
-              </button>
-            </div>
-
-            {/* Telemetry Detail HUD Panel (Bottom Left) */}
-            <AnimatePresence>
-              {hoveredPlanetObj && (
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -30 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute bottom-6 left-6 w-80 bg-black/85 border border-white/15 rounded-2xl p-5 z-40 shadow-2xl backdrop-blur-xl pointer-events-none"
-                >
-                  <span className="text-[9px] font-mono tracking-widest text-purple-400 font-bold uppercase block mb-1">Sector Telemetry</span>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${hoveredPlanetObj.color} flex items-center justify-center text-white border border-white/10 shadow-lg`}>
-                      <hoveredPlanetObj.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-display font-bold text-white leading-none">{hoveredPlanetObj.title}</h3>
-                      <span className="text-[10px] font-mono text-emerald-400 mt-1 block">{hoveredPlanetObj.stats}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-white/60 mt-3 leading-relaxed">
-                    {hoveredPlanetObj.description}
-                  </p>
-                  
-                  <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[10px] font-mono text-white/30">
-                    <span>SECTOR_COORDS: {hoveredPlanetObj.x}, {hoveredPlanetObj.y}</span>
-                    <span className="text-purple-400 font-semibold animate-pulse">WARP STATUS: READY</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* General Help Subtext HUD (Bottom Right) */}
-            <div className="absolute bottom-6 right-6 z-40 text-right pointer-events-none font-mono text-[9px] text-white/20 uppercase tracking-widest">
-              <span>SYSTEM: ONLINE · LOCAL STORAGE: BACKUP SYNCED</span>
-            </div>
-
-            {/* Orbit / Planets Camera Viewport */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              <motion.div
-                animate={{
-                  scale: universeZoom,
-                  x: zoomPlanet ? -zoomPlanetCoordinates.x : 0,
-                  y: zoomPlanet ? -zoomPlanetCoordinates.y : 0,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 45,
-                  damping: 15,
-                  mass: 1.2
-                }}
-                className="relative flex items-center justify-center w-0 h-0"
-              >
-                {constellationMode ? (
-                  <>
-                    {/* SVG Constellation Connective Grid */}
-                    <svg className="absolute w-[800px] h-[800px] pointer-events-none overflow-visible z-0" viewBox="-400 -400 800 800">
-                      <defs>
-                        <filter id="star-glow" x="-20%" y="-20%" width="140%" height="140%">
-                          <feGaussianBlur stdDeviation="8" result="blur" />
-                          <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="SourceGraphic" />
-                          </feMerge>
-                        </filter>
-                      </defs>
-                      {/* Connection lines from Core (0,0) */}
-                      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(99, 102, 241, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      <line x1="0" y1="0" x2="-150" y2="0" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      <line x1="0" y1="0" x2="120" y2="208" stroke="rgba(245, 158, 11, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      <line x1="0" y1="0" x2="-120" y2="-208" stroke="rgba(244, 63, 94, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      <line x1="0" y1="0" x2="-165" y2="286" stroke="rgba(6, 182, 212, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      <line x1="0" y1="0" x2="165" y2="-286" stroke="rgba(168, 85, 247, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
-                      
-                      {/* Inter-node constellation links */}
-                      <line x1="150" y1="0" x2="165" y2="-286" stroke="rgba(168, 85, 247, 0.25)" strokeWidth="1" />
-                      <line x1="-150" y1="0" x2="-120" y2="-208" stroke="rgba(236, 72, 153, 0.25)" strokeWidth="1" />
-                      <line x1="120" y1="208" x2="165" y2="-286" stroke="rgba(244, 63, 94, 0.25)" strokeWidth="1" />
-                      <line x1="-120" y1="-208" x2="-165" y2="286" stroke="rgba(6, 182, 212, 0.25)" strokeWidth="1" />
-                    </svg>
-
-                    {/* Constellation Planet Nodes */}
-                    {planets.map(planet => (
-                      <div
-                        key={planet.id}
-                        className="absolute pointer-events-auto z-20"
-                        style={{
-                          left: `calc(50% + ${planet.x}px)`,
-                          top: `calc(50% + ${planet.y}px)`,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                      >
-                        <motion.button
-                          onClick={() => {
-                            if (zoomPlanet) return;
-                            setZoomPlanet(planet.id);
-                            setUniverseZoom(5.5);
-                            setTimeout(() => {
-                              router.push(planet.path);
-                            }, 1200);
-                          }}
-                          onMouseEnter={() => setHoveredPlanet(planet.id)}
-                          onMouseLeave={() => setHoveredPlanet(null)}
-                          whileHover={{ scale: 1.15 }}
-                          className={`w-12 h-12 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/25 flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300`}
-                          style={{
-                            boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
-                          }}
-                        >
-                          <div className="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-white hover:bg-transparent transition-all">
-                            <planet.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
-                            {planet.title}
-                          </div>
-                        </motion.button>
-                      </div>
-                    ))}
-
-                    {/* Constellation Commander Core */}
-                    <motion.div
-                      onMouseEnter={() => setHoveredPlanet('core')}
-                      onMouseLeave={() => setHoveredPlanet(null)}
-                      whileHover={{ scale: 1.05 }}
-                      className="absolute z-10 w-28 h-28 flex flex-col items-center justify-center rounded-full bg-black/90 backdrop-blur-xl border border-white/15 shadow-[0_0_30px_rgba(168,85,247,0.25)] cursor-pointer"
-                    >
-                      <div className="absolute inset-1.5 rounded-full bg-gradient-to-tr from-purple-500/10 via-blue-500/10 to-cyan-500/10 animate-pulse pointer-events-none" />
-                      <Trophy className="w-4 h-4 text-purple-400 mb-0.5" />
-                      <span className="text-[8px] font-mono text-white/40 tracking-wider">
-                        {mounted ? userName.toUpperCase() : 'COMMANDER'}&apos;S CORE
-                      </span>
-                      <span className="text-sm font-display font-extrabold text-white mt-0.5">Level 24</span>
-                      <span className="text-[8px] font-mono text-emerald-400 mt-0.5 font-bold">SCORE: 84</span>
-                    </motion.div>
-                  </>
-                ) : (
-                  <>
-                    {/* Orbit 1 Container (Radius 150px) */}
-                    <motion.div
-                      animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
-                      transition={zoomPlanet 
-                        ? { type: 'spring', stiffness: 50, damping: 15 } 
-                        : { repeat: Infinity, duration: 30, ease: "linear" }
-                      }
-                      className="absolute w-[300px] h-[300px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
-                    >
-                      {planets.filter(p => Math.abs(p.x) === 150).map(planet => (
-                        <div
-                          key={planet.id}
-                          className="absolute pointer-events-auto"
-                          style={{
-                            left: `calc(50% + ${planet.x}px)`,
-                            top: `calc(50% + ${planet.y}px)`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <motion.button
-                            animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
-                            transition={zoomPlanet 
-                              ? { type: 'spring', stiffness: 50, damping: 15 } 
-                              : { repeat: Infinity, duration: 30, ease: "linear" }
-                            }
-                            onClick={() => {
-                              if (zoomPlanet) return;
-                              setZoomPlanet(planet.id);
-                              setUniverseZoom(5.5);
-                              setTimeout(() => {
-                                router.push(planet.path);
-                              }, 1200);
-                            }}
-                            onMouseEnter={() => setHoveredPlanet(planet.id)}
-                            onMouseLeave={() => setHoveredPlanet(null)}
-                            whileHover={{ scale: 1.15 }}
-                            className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
-                            style={{
-                              boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
-                            }}
-                          >
-                            <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
-                              <planet.icon className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
-                              {planet.title}
-                            </div>
-                          </motion.button>
-                        </div>
-                      ))}
-                    </motion.div>
-
-                    {/* Orbit 2 Container (Radius 240px) */}
-                    <motion.div
-                      animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
-                      transition={zoomPlanet 
-                        ? { type: 'spring', stiffness: 50, damping: 15 } 
-                        : { repeat: Infinity, duration: 45, ease: "linear" }
-                      }
-                      className="absolute w-[480px] h-[480px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
-                    >
-                      {planets.filter(p => Math.abs(p.x) === 120).map(planet => (
-                        <div
-                          key={planet.id}
-                          className="absolute pointer-events-auto"
-                          style={{
-                            left: `calc(50% + ${planet.x}px)`,
-                            top: `calc(50% + ${planet.y}px)`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <motion.button
-                            animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
-                            transition={zoomPlanet 
-                              ? { type: 'spring', stiffness: 50, damping: 15 } 
-                              : { repeat: Infinity, duration: 45, ease: "linear" }
-                            }
-                            onClick={() => {
-                              if (zoomPlanet) return;
-                              setZoomPlanet(planet.id);
-                              setUniverseZoom(5.5);
-                              setTimeout(() => {
-                                router.push(planet.path);
-                              }, 1200);
-                            }}
-                            onMouseEnter={() => setHoveredPlanet(planet.id)}
-                            onMouseLeave={() => setHoveredPlanet(null)}
-                            whileHover={{ scale: 1.15 }}
-                            className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
-                            style={{
-                              boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
-                            }}
-                          >
-                            <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
-                              <planet.icon className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
-                              {planet.title}
-                            </div>
-                          </motion.button>
-                        </div>
-                      ))}
-                    </motion.div>
-
-                    {/* Orbit 3 Container (Radius 330px) */}
-                    <motion.div
-                      animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
-                      transition={zoomPlanet 
-                        ? { type: 'spring', stiffness: 50, damping: 15 } 
-                        : { repeat: Infinity, duration: 60, ease: "linear" }
-                      }
-                      className="absolute w-[660px] h-[660px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
-                    >
-                      {planets.filter(p => Math.abs(p.x) === 165).map(planet => (
-                        <div
-                          key={planet.id}
-                          className="absolute pointer-events-auto"
-                          style={{
-                            left: `calc(50% + ${planet.x}px)`,
-                            top: `calc(50% + ${planet.y}px)`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <motion.button
-                            animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
-                            transition={zoomPlanet 
-                              ? { type: 'spring', stiffness: 50, damping: 15 } 
-                              : { repeat: Infinity, duration: 60, ease: "linear" }
-                            }
-                            onClick={() => {
-                              if (zoomPlanet) return;
-                              setZoomPlanet(planet.id);
-                              setUniverseZoom(5.5);
-                              setTimeout(() => {
-                                router.push(planet.path);
-                              }, 1200);
-                            }}
-                            onMouseEnter={() => setHoveredPlanet(planet.id)}
-                            onMouseLeave={() => setHoveredPlanet(null)}
-                            whileHover={{ scale: 1.15 }}
-                            className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
-                            style={{
-                              boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
-                            }}
-                          >
-                            <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
-                              <planet.icon className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
-                              {planet.title}
-                            </div>
-                          </motion.button>
-                        </div>
-                      ))}
-                    </motion.div>
-
-                    {/* Central Commander Core */}
-                    <motion.div
-                      onMouseEnter={() => setHoveredPlanet('core')}
-                      onMouseLeave={() => setHoveredPlanet(null)}
-                      whileHover={{ scale: 1.05 }}
-                      className="absolute z-10 w-36 h-36 flex flex-col items-center justify-center rounded-full bg-black/90 backdrop-blur-xl border border-white/15 shadow-[0_0_40px_rgba(168,85,247,0.25)] cursor-pointer"
-                    >
-                      <div className="absolute inset-1.5 rounded-full bg-gradient-to-tr from-purple-500/10 via-blue-500/10 to-cyan-500/10 animate-pulse pointer-events-none" />
-                      
-                      <Trophy className="w-5 h-5 text-purple-400 mb-1" />
-                      <span className="text-[9px] font-mono text-white/40 tracking-wider">
-                        {mounted ? userName.toUpperCase() : 'COMMANDER'}&apos;S CORE
-                      </span>
-                      <span className="text-base font-display font-extrabold text-white mt-0.5">Level 24</span>
-                      <span className="text-[9px] font-mono text-emerald-400 mt-1 font-bold">SCORE: 84</span>
-                    </motion.div>
-                  </>
-                )}
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
+
+      {/* 5. 3D PLANET UNIVERSE NAVIGATOR OVERLAY */}
+      {mounted && typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {universeOpen && (
+            <motion.div
+              key="universe-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="fixed inset-0 z-[999] flex items-center justify-center bg-[#05020c]/98 overflow-hidden font-sans select-none"
+            >
+              <style dangerouslySetInnerHTML={{ __html: `
+                .space-bg {
+                  background-image: 
+                    radial-gradient(white, rgba(255,255,255,.2) 1.5px, transparent 30px),
+                    radial-gradient(white, rgba(255,255,255,.1) 1px, transparent 20px);
+                  background-size: 400px 400px, 250px 250px;
+                  opacity: 0.18;
+                  animation: stars-drift 160s linear infinite;
+                }
+                @keyframes stars-drift {
+                  from { background-position: 0 0, 40px 60px; }
+                  to { background-position: 400px 400px, 290px 310px; }
+                }
+                .glow-text {
+                  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+                }
+              `}} />
+
+              <div className="absolute inset-0 space-bg pointer-events-none" />
+              
+              <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '10s' }} />
+              <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
+
+              <button 
+                onClick={() => {
+                  if (zoomPlanet) return;
+                  setUniverseOpen(false);
+                }}
+                className="absolute top-6 right-6 p-3 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white border border-white/10 z-50 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="absolute top-6 left-6 z-40 pointer-events-none">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                  </span>
+                  <span className="text-[10px] font-mono tracking-widest text-purple-400 font-bold uppercase">
+                    LIFE OPERATING SYSTEM · {constellationMode ? 'CONSTELLATION VIEW' : 'SPATIAL VIEW'}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-display font-extrabold text-white mt-1 uppercase tracking-tight">The Life Universe</h2>
+                <p className="text-xs text-white/40 font-mono mt-0.5">Click a sector planet to zoom in and warp to that workspace.</p>
+              </div>
+
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1 backdrop-blur-md">
+                <button 
+                  onClick={() => setConstellationMode(false)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${!constellationMode ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
+                >
+                  3D Spatial
+                </button>
+                <button 
+                  onClick={() => setConstellationMode(true)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${constellationMode ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
+                >
+                  2D Constellation
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {hoveredPlanetObj && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-6 left-6 w-80 bg-black/85 border border-white/15 rounded-2xl p-5 z-40 shadow-2xl backdrop-blur-xl pointer-events-none"
+                  >
+                    <span className="text-[9px] font-mono tracking-widest text-purple-400 font-bold uppercase block mb-1">Sector Telemetry</span>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${hoveredPlanetObj.color} flex items-center justify-center text-white border border-white/10 shadow-lg`}>
+                        <hoveredPlanetObj.icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-display font-bold text-white leading-none">{hoveredPlanetObj.title}</h3>
+                        <span className="text-[10px] font-mono text-emerald-400 mt-1 block">{hoveredPlanetObj.stats}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-white/60 mt-3 leading-relaxed">
+                      {hoveredPlanetObj.description}
+                    </p>
+                    
+                    <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[10px] font-mono text-white/30">
+                      <span>SECTOR_COORDS: {hoveredPlanetObj.x}, {hoveredPlanetObj.y}</span>
+                      <span className="text-purple-400 font-semibold animate-pulse">WARP STATUS: READY</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="absolute bottom-6 right-6 z-40 text-right pointer-events-none font-mono text-[9px] text-white/20 uppercase tracking-widest">
+                <span>SYSTEM: ONLINE · LOCAL STORAGE: BACKUP SYNCED</span>
+              </div>
+
+              <div className="relative w-full h-full flex items-center justify-center">
+                <motion.div
+                  animate={{
+                    scale: universeZoom,
+                    x: zoomPlanet ? -zoomPlanetCoordinates.x : 0,
+                    y: zoomPlanet ? -zoomPlanetCoordinates.y : 0,
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 45,
+                    damping: 15,
+                    mass: 1.2
+                  }}
+                  className="relative flex items-center justify-center w-0 h-0"
+                >
+                  {constellationMode ? (
+                    <>
+                      <svg className="absolute w-[800px] h-[800px] pointer-events-none overflow-visible z-0" viewBox="-400 -400 800 800">
+                        <defs>
+                          <filter id="star-glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="8" result="blur" />
+                            <feMerge>
+                              <feMergeNode in="blur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
+                        </defs>
+                        <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(99, 102, 241, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        <line x1="0" y1="0" x2="-150" y2="0" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        <line x1="0" y1="0" x2="120" y2="208" stroke="rgba(245, 158, 11, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        <line x1="0" y1="0" x2="-120" y2="-208" stroke="rgba(244, 63, 94, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        <line x1="0" y1="0" x2="-165" y2="286" stroke="rgba(6, 182, 212, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        <line x1="0" y1="0" x2="165" y2="-286" stroke="rgba(168, 85, 247, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" filter="url(#star-glow)" />
+                        
+                        <line x1="150" y1="0" x2="165" y2="-286" stroke="rgba(168, 85, 247, 0.25)" strokeWidth="1" />
+                        <line x1="-150" y1="0" x2="-120" y2="-208" stroke="rgba(236, 72, 153, 0.25)" strokeWidth="1" />
+                        <line x1="120" y1="208" x2="165" y2="-286" stroke="rgba(244, 63, 94, 0.25)" strokeWidth="1" />
+                        <line x1="-120" y1="-208" x2="-165" y2="286" stroke="rgba(6, 182, 212, 0.25)" strokeWidth="1" />
+                      </svg>
+
+                      {planets.map(planet => (
+                        <div
+                          key={planet.id}
+                          className="absolute pointer-events-auto z-20"
+                          style={{
+                            left: `calc(50% + ${planet.x}px)`,
+                            top: `calc(50% + ${planet.y}px)`,
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                        >
+                          <motion.button
+                            onClick={() => {
+                              if (zoomPlanet) return;
+                              setZoomPlanet(planet.id);
+                              setUniverseZoom(5.5);
+                              setTimeout(() => {
+                                router.push(planet.path);
+                              }, 1200);
+                            }}
+                            onMouseEnter={() => setHoveredPlanet(planet.id)}
+                            onMouseLeave={() => setHoveredPlanet(null)}
+                            whileHover={{ scale: 1.15 }}
+                            className={`w-12 h-12 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/25 flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300`}
+                            style={{
+                              boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
+                            }}
+                          >
+                            <div className="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-white hover:bg-transparent transition-all">
+                              <planet.icon className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
+                              {planet.title}
+                            </div>
+                          </motion.button>
+                        </div>
+                      ))}
+
+                      <motion.div
+                        onMouseEnter={() => setHoveredPlanet('core')}
+                        onMouseLeave={() => setHoveredPlanet(null)}
+                        whileHover={{ scale: 1.05 }}
+                        className="absolute z-10 w-28 h-28 flex flex-col items-center justify-center rounded-full bg-black/90 backdrop-blur-xl border border-white/15 shadow-[0_0_30px_rgba(168,85,247,0.25)] cursor-pointer"
+                      >
+                        <div className="absolute inset-1.5 rounded-full bg-gradient-to-tr from-purple-500/10 via-blue-500/10 to-cyan-500/10 animate-pulse pointer-events-none" />
+                        <Trophy className="w-4 h-4 text-purple-400 mb-0.5" />
+                        <span className="text-[8px] font-mono text-white/40 tracking-wider">
+                          {mounted ? userName.toUpperCase() : 'COMMANDER'}&apos;S CORE
+                        </span>
+                        <span className="text-sm font-display font-extrabold text-white mt-0.5">Level 24</span>
+                        <span className="text-[8px] font-mono text-emerald-400 mt-0.5 font-bold">SCORE: 84</span>
+                      </motion.div>
+                    </>
+                  ) : (
+                    <>
+                      <motion.div
+                        animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
+                        transition={zoomPlanet 
+                          ? { type: 'spring', stiffness: 50, damping: 15 } 
+                          : { repeat: Infinity, duration: 30, ease: "linear" }
+                        }
+                        className="absolute w-[300px] h-[300px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
+                      >
+                        {planets.filter(p => Math.abs(p.x) === 150).map(planet => (
+                          <div
+                            key={planet.id}
+                            className="absolute pointer-events-auto"
+                            style={{
+                              left: `calc(50% + ${planet.x}px)`,
+                              top: `calc(50% + ${planet.y}px)`,
+                              transform: 'translate(-50%, -50%)',
+                            }}
+                          >
+                            <motion.button
+                              animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
+                              transition={zoomPlanet 
+                                ? { type: 'spring', stiffness: 50, damping: 15 } 
+                                : { repeat: Infinity, duration: 30, ease: "linear" }
+                              }
+                              onClick={() => {
+                                if (zoomPlanet) return;
+                                setZoomPlanet(planet.id);
+                                setUniverseZoom(5.5);
+                                setTimeout(() => {
+                                  router.push(planet.path);
+                                }, 1200);
+                              }}
+                              onMouseEnter={() => setHoveredPlanet(planet.id)}
+                              onMouseLeave={() => setHoveredPlanet(null)}
+                              whileHover={{ scale: 1.15 }}
+                              className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
+                              style={{
+                                boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
+                              }}
+                            >
+                              <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
+                                <planet.icon className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
+                                {planet.title}
+                              </div>
+                            </motion.button>
+                          </div>
+                        ))}
+                      </motion.div>
+
+                      <motion.div
+                        animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
+                        transition={zoomPlanet 
+                          ? { type: 'spring', stiffness: 50, damping: 15 } 
+                          : { repeat: Infinity, duration: 45, ease: "linear" }
+                        }
+                        className="absolute w-[480px] h-[480px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
+                      >
+                        {planets.filter(p => Math.abs(p.x) === 120).map(planet => (
+                          <div
+                            key={planet.id}
+                            className="absolute pointer-events-auto"
+                            style={{
+                              left: `calc(50% + ${planet.x}px)`,
+                              top: `calc(50% + ${planet.y}px)`,
+                              transform: 'translate(-50%, -50%)',
+                            }}
+                          >
+                            <motion.button
+                              animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
+                              transition={zoomPlanet 
+                                ? { type: 'spring', stiffness: 50, damping: 15 } 
+                                : { repeat: Infinity, duration: 45, ease: "linear" }
+                              }
+                              onClick={() => {
+                                if (zoomPlanet) return;
+                                setZoomPlanet(planet.id);
+                                setUniverseZoom(5.5);
+                                setTimeout(() => {
+                                  router.push(planet.path);
+                                }, 1200);
+                              }}
+                              onMouseEnter={() => setHoveredPlanet(planet.id)}
+                              onMouseLeave={() => setHoveredPlanet(null)}
+                              whileHover={{ scale: 1.15 }}
+                              className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
+                              style={{
+                                boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
+                              }}
+                            >
+                              <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
+                                <planet.icon className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
+                                {planet.title}
+                              </div>
+                            </motion.button>
+                          </div>
+                        ))}
+                      </motion.div>
+
+                      <motion.div
+                        animate={zoomPlanet ? { rotate: 0 } : { rotate: 360 }}
+                        transition={zoomPlanet 
+                          ? { type: 'spring', stiffness: 50, damping: 15 } 
+                          : { repeat: Infinity, duration: 60, ease: "linear" }
+                        }
+                        className="absolute w-[660px] h-[660px] rounded-full border border-white/5 pointer-events-none flex items-center justify-center"
+                      >
+                        {planets.filter(p => Math.abs(p.x) === 165).map(planet => (
+                          <div
+                            key={planet.id}
+                            className="absolute pointer-events-auto"
+                            style={{
+                              left: `calc(50% + ${planet.x}px)`,
+                              top: `calc(50% + ${planet.y}px)`,
+                              transform: 'translate(-50%, -50%)',
+                            }}
+                          >
+                            <motion.button
+                              animate={zoomPlanet ? { rotate: 0 } : { rotate: -360 }}
+                              transition={zoomPlanet 
+                                ? { type: 'spring', stiffness: 50, damping: 15 } 
+                                : { repeat: Infinity, duration: 60, ease: "linear" }
+                              }
+                              onClick={() => {
+                                if (zoomPlanet) return;
+                                setZoomPlanet(planet.id);
+                                setUniverseZoom(5.5);
+                                setTimeout(() => {
+                                  router.push(planet.path);
+                                }, 1200);
+                              }}
+                              onMouseEnter={() => setHoveredPlanet(planet.id)}
+                              onMouseLeave={() => setHoveredPlanet(null)}
+                              whileHover={{ scale: 1.15 }}
+                              className={`w-14 h-14 rounded-full bg-gradient-to-tr ${planet.color} p-[1px] border border-white/20 flex items-center justify-center cursor-pointer shadow-lg transition-shadow duration-300`}
+                              style={{
+                                  boxShadow: hoveredPlanet === planet.id ? `0 0 25px ${planet.shadow}` : undefined
+                              }}
+                            >
+                              <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-md flex items-center justify-center text-white hover:bg-transparent transition-all">
+                                <planet.icon className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/80 border border-white/10 px-2 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider text-white whitespace-nowrap shadow-md pointer-events-none opacity-80">
+                                {planet.title}
+                              </div>
+                            </motion.button>
+                          </div>
+                        ))}
+                      </motion.div>
+
+                      <motion.div
+                        onMouseEnter={() => setHoveredPlanet('core')}
+                        onMouseLeave={() => setHoveredPlanet(null)}
+                        whileHover={{ scale: 1.05 }}
+                        className="absolute z-10 w-36 h-36 flex flex-col items-center justify-center rounded-full bg-black/90 backdrop-blur-xl border border-white/15 shadow-[0_0_40px_rgba(168,85,247,0.25)] cursor-pointer"
+                      >
+                        <div className="absolute inset-1.5 rounded-full bg-gradient-to-tr from-purple-500/10 via-blue-500/10 to-cyan-500/10 animate-pulse pointer-events-none" />
+                        
+                        <Trophy className="w-5 h-5 text-purple-400 mb-1" />
+                        <span className="text-[9px] font-mono text-white/40 tracking-wider">
+                          {mounted ? userName.toUpperCase() : 'COMMANDER'}&apos;S CORE
+                        </span>
+                        <span className="text-base font-display font-extrabold text-white mt-0.5">Level 24</span>
+                        <span className="text-[9px] font-mono text-emerald-400 mt-1 font-bold">SCORE: 84</span>
+                      </motion.div>
+                    </>
+                  )}
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
