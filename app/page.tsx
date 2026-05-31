@@ -77,7 +77,7 @@ export default function Home() {
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60 drop-shadow-2xl pb-1">
                 Your
               </span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 pb-2 h-[1.2em]">
+              <span className="block pb-2 h-[1.2em]">
                 <CycleText words={['Tasks.', 'Habits.', 'Goals.', 'Life.']} />
               </span>
             </h1>
