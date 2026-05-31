@@ -30,14 +30,20 @@ export function NumberTicker({
   }, [motionValue, isInView, delay, value, direction]);
 
   useEffect(() => {
-    springValue.on('change', (latest) => {
+    const unsubscribe = springValue.on('change', (latest) => {
       if (ref.current) {
-        ref.current.textContent = Intl.NumberFormat('en-US').format(
-          Math.max(0, Math.round(latest))
-        );
+        const rounded = Math.round(latest);
+        if (Math.abs(latest - value) < 1) {
+          ref.current.textContent = Intl.NumberFormat('en-US').format(value);
+        } else {
+          ref.current.textContent = Intl.NumberFormat('en-US').format(
+            Math.max(0, rounded)
+          );
+        }
       }
     });
-  }, [springValue]);
+    return () => unsubscribe();
+  }, [springValue, value]);
 
   return (
     <span

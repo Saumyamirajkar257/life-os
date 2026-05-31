@@ -7,6 +7,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import { useTasksStore } from '@/store/useTasksStore';
 import { useHabitsStore } from '@/store/useHabitsStore';
+import { useSyncStore } from '@/store/useSyncStore';
 import { useState, useEffect, useMemo } from 'react';
 import { fadeInDown } from '@/animations';
 import { cn } from '@/lib/utils';
@@ -37,6 +38,7 @@ export function TopBar() {
     userPfp
   } = useAppStore();
 
+  const { status: syncStatus } = useSyncStore();
   const { notifications, markAllAsRead, clearAll, removeNotification } = useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -130,6 +132,19 @@ export function TopBar() {
           <span className="text-sm text-white/30 hidden sm:block">
             {formatDate()}
           </span>
+          {/* Sync Status Badge */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-[10px] font-mono text-white/40 select-none">
+            {syncStatus === 'syncing' && <span className="animate-spin text-indigo-400">🔄</span>}
+            {syncStatus === 'synced' && <span>☁️</span>}
+            {syncStatus === 'offline' && <span>📴</span>}
+            {syncStatus === 'error' && <span>⚠️</span>}
+            <span className="capitalize text-[9px] tracking-wide">
+              {syncStatus === 'syncing' && 'Syncing...'}
+              {syncStatus === 'synced' && 'Synced'}
+              {syncStatus === 'offline' && 'Offline'}
+              {syncStatus === 'error' && 'Sync error'}
+            </span>
+          </div>
           {/* Live Clock Widget */}
           {liveTime && (
             <>

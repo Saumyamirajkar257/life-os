@@ -94,9 +94,9 @@ export default function Home() {
               <Link href="/login" className="px-8 py-4 rounded-xl bg-white text-black font-semibold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300">
                 Start Free Now <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link href="/login" className="px-8 py-4 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center justify-center gap-2">
+              <a href="#ai-demo" className="px-8 py-4 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center justify-center gap-2">
                 Watch Demo →
-              </Link>
+              </a>
             </div>
             <p className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left">No credit card needed · Cancel anytime</p>
           </div>
@@ -179,7 +179,7 @@ export default function Home() {
       </section>
 
       {/* AI DEMO SECTION */}
-      <section className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
+      <section id="ai-demo" className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5 scroll-mt-24">
         <ScrollReveal direction="up">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight">Supercharge with AI.</h2>
@@ -354,7 +354,10 @@ export default function Home() {
       <section className="py-32 text-center relative overflow-hidden border-t border-white/5">
         <div className="absolute inset-0 bg-indigo-900/10 blur-[100px] rounded-full w-1/2 h-1/2 left-1/4 top-1/4" />
         <ScrollReveal direction="up">
-          <h2 className="text-5xl md:text-7xl font-display font-bold mb-8">Ready to upgrade?</h2>
+          <h2 className="text-5xl md:text-7xl font-display font-bold mb-4">Ready to upgrade?</h2>
+          <p className="text-white/60 text-lg md:text-xl max-w-xl mx-auto mb-10 font-light leading-relaxed px-6">
+            Join thousands of high-achievers who use LIFE OS to organize their tasks, track habits, and achieve their goals.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <Link href="/login" className="px-8 py-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all duration-300">
               <Sparkles className="w-5 h-5" /> Start Free Today
@@ -382,7 +385,7 @@ export default function Home() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center text-xs text-white/30 font-mono">
-          <p>© 2025 LIFE OS. All rights reserved.</p>
+          <p>© 2026 LIFE OS. All rights reserved.</p>
         </div>
       </footer>
     </main>

@@ -22,6 +22,7 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useAIStore } from '@/store/useAIStore';
 import { useRoutinesStore } from '@/store/useRoutinesStore';
 import { useAutomationsStore } from '@/store/useAutomationsStore';
+import { useSyncStore } from '@/store/useSyncStore';
 import { GlassCard, Badge, ProgressBar } from '@/components/ui';
 import { GreetingSection } from './GreetingSection';
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,11 @@ type PriorityMode = 'balanced' | 'urgency' | 'focus' | 'habits';
 
 export function DashboardGrid() {
   const { isMobile, userName, soundEnabled } = useAppStore();
+  const { loadedSections } = useSyncStore();
+  const tasksLoaded = loadedSections.tasks;
+  const habitsLoaded = loadedSections.habits;
+  const financeLoaded = loadedSections.finance;
+
   const [mounted, setMounted] = useState(false);
   const [prioritization, setPrioritization] = useState<PriorityMode>('balanced');
   const [constellationMode, setConstellationMode] = useState(false);
@@ -807,45 +813,61 @@ export function DashboardGrid() {
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-white/50 font-mono">SYSTEM OBJECTIVE</span>
-                        <Badge variant="success">{todayMissions.done} / {todayMissions.total} Done</Badge>
-                      </div>
-
-                      <div className="space-y-3">
-                        {missionObjectives.map((obj, index) => (
-                          <div key={index} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
-                            <CheckCircle2 className={`w-4 h-4 shrink-0 ${obj.completed ? 'text-emerald-400' : 'text-white/20'}`} />
-                            <div className="text-xs min-w-0">
-                              <span className={`font-semibold text-white block truncate ${obj.completed ? 'line-through text-white/40' : ''}`}>{obj.title}</span>
-                              <span className="text-white/40 block truncate">{obj.desc}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1 font-mono">MISSION SUCCESS</span>
-                        <div className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                          {todayMissions.percentage}%
+                    {!tasksLoaded || !habitsLoaded ? (
+                      <div className="animate-pulse space-y-4 py-4 w-full">
+                        <div className="flex justify-between items-center">
+                          <div className="h-3.5 bg-white/10 rounded w-1/4" />
+                          <div className="h-5 bg-white/10 rounded-full w-16" />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="h-12 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-12 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-1/2" /></div>
+                          <div className="h-12 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-3/4" /></div>
                         </div>
                       </div>
-                      <div className="relative w-12 h-12">
-                        <svg className="w-full h-full -rotate-90 drop-shadow-lg" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mission-gradient)" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 - (todayMissions.percentage / 100) * 251.2} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                          <defs>
-                            <linearGradient id="mission-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#34d399" />
-                              <stop offset="100%" stopColor="#3b82f6" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                      </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-white/50 font-mono">SYSTEM OBJECTIVE</span>
+                            <Badge variant="success">{todayMissions.done} / {todayMissions.total} Done</Badge>
+                          </div>
+
+                          <div className="space-y-3">
+                            {missionObjectives.map((obj, index) => (
+                              <div key={index} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
+                                <CheckCircle2 className={`w-4 h-4 shrink-0 ${obj.completed ? 'text-emerald-400' : 'text-white/20'}`} />
+                                <div className="text-xs min-w-0">
+                                  <span className={`font-semibold text-white block truncate ${obj.completed ? 'line-through text-white/40' : ''}`}>{obj.title}</span>
+                                  <span className="text-white/40 block truncate">{obj.desc}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1 font-mono">MISSION SUCCESS</span>
+                            <div className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+                              {todayMissions.percentage}%
+                            </div>
+                          </div>
+                          <div className="relative w-12 h-12">
+                            <svg className="w-full h-full -rotate-90 drop-shadow-lg" viewBox="0 0 100 100">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mission-gradient)" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 - (todayMissions.percentage / 100) * 251.2} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                              <defs>
+                                <linearGradient id="mission-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="#34d399" />
+                                  <stop offset="100%" stopColor="#3b82f6" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </GlassCard>
                 </motion.div>
               );
@@ -990,47 +1012,60 @@ export function DashboardGrid() {
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div>
-                      <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4 bg-black/40 border border-white/5 p-2 rounded-xl">
-                        <input
-                          type="text"
-                          placeholder="Quick capture task..."
-                          value={quickTaskTitle}
-                          onChange={(e) => setQuickTaskTitle(e.target.value)}
-                          className="flex-1 bg-transparent border-none text-xs text-white placeholder-white/20 focus:outline-none pl-2"
-                        />
-                        <button type="submit" className="p-2 bg-white text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center">
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </form>
-
-                      <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                        {activeTasks.slice(0, 4).map((task) => (
-                          <div key={task.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between gap-3 hover:bg-white/10 transition-all">
-                            <button onClick={() => toggleTask(task.id)} className="w-4.5 h-4.5 rounded-md border border-white/20 hover:border-white/40 flex items-center justify-center">
-                              <div className="w-2 h-2 bg-transparent rounded-[2px]" />
-                            </button>
-                            <div className="flex-1 min-w-0">
-                              <span className="text-xs font-semibold text-white block truncate">{task.title}</span>
-                              <span className="text-[10px] text-white/40 block mt-0.5">{task.project}</span>
-                            </div>
-                            <Badge variant={task.priority === 'high' ? 'destructive' : 'outline'} className="text-[8px] uppercase tracking-wider font-mono">
-                              {task.priority}
-                            </Badge>
-                          </div>
-                        ))}
-                        {activeTasks.length === 0 && (
-                          <div className="text-center py-6 text-white/30 text-xs font-mono">
-                            No active tasks in inbox.
-                          </div>
-                        )}
+                    {!tasksLoaded ? (
+                      <div className="animate-pulse space-y-4 py-4 w-full">
+                        <div className="h-10 bg-white/5 border border-white/5 rounded-xl" />
+                        <div className="space-y-3">
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-1/2" /></div>
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-3/4" /></div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div>
+                          <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4 bg-black/40 border border-white/5 p-2 rounded-xl">
+                            <input
+                              type="text"
+                              placeholder="Quick capture task..."
+                              value={quickTaskTitle}
+                              onChange={(e) => setQuickTaskTitle(e.target.value)}
+                              className="flex-1 bg-transparent border-none text-xs text-white placeholder-white/20 focus:outline-none pl-2"
+                            />
+                            <button type="submit" className="p-2 bg-white text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center">
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </form>
 
-                    <Link href="/tasks" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                      <span>Open Task Manager</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                          <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                            {activeTasks.slice(0, 4).map((task) => (
+                              <div key={task.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between gap-3 hover:bg-white/10 transition-all">
+                                <button onClick={() => toggleTask(task.id)} className="w-4.5 h-4.5 rounded-md border border-white/20 hover:border-white/40 flex items-center justify-center">
+                                  <div className="w-2 h-2 bg-transparent rounded-[2px]" />
+                                </button>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-xs font-semibold text-white block truncate">{task.title}</span>
+                                  <span className="text-[10px] text-white/40 block mt-0.5">{task.project}</span>
+                                </div>
+                                <Badge variant={task.priority === 'high' ? 'destructive' : 'outline'} className="text-[8px] uppercase tracking-wider font-mono">
+                                  {task.priority}
+                                </Badge>
+                              </div>
+                            ))}
+                            {activeTasks.length === 0 && (
+                              <div className="text-center py-6 text-white/30 text-xs font-mono">
+                                No active tasks in inbox.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <Link href="/tasks" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                          <span>Open Task Manager</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </>
+                    )}
                   </GlassCard>
                 </motion.div>
               );
@@ -1052,39 +1087,51 @@ export function DashboardGrid() {
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div className="space-y-3">
-                      {habits.slice(0, 3).map((habit) => {
-                        const isDoneToday = habit.completedDates.includes(todayStr);
-                        return (
-                          <div key={habit.id} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between gap-3">
-                            <div className="min-w-0">
-                              <span className="text-xs font-semibold text-white block truncate">{habit.title}</span>
-                              <span className="text-[10px] text-white/40 block mt-0.5 truncate">{habit.description}</span>
-                            </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              <span className="text-[10px] font-mono font-bold text-amber-500 flex items-center gap-0.5">
-                                🔥 {habit.currentStreak}d
-                              </span>
-                              <button 
-                                onClick={() => toggleHabitComplete(habit.id, todayStr)}
-                                className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all ${
-                                  isDoneToday
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : 'bg-white text-black hover:opacity-90'
-                                }`}
-                              >
-                                {isDoneToday ? 'Secured' : 'Secure'}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {!habitsLoaded ? (
+                      <div className="animate-pulse space-y-4 py-4 w-full">
+                        <div className="space-y-3">
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-1/2" /></div>
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-14 bg-white/5 border border-white/5 rounded-xl flex items-center px-4"><div className="h-4 bg-white/10 rounded w-3/5" /></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-3">
+                          {habits.slice(0, 3).map((habit) => {
+                            const isDoneToday = habit.completedDates.includes(todayStr);
+                            return (
+                              <div key={habit.id} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <span className="text-xs font-semibold text-white block truncate">{habit.title}</span>
+                                  <span className="text-[10px] text-white/40 block mt-0.5 truncate">{habit.description}</span>
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span className="text-[10px] font-mono font-bold text-amber-500 flex items-center gap-0.5">
+                                    🔥 {habit.currentStreak}d
+                                  </span>
+                                  <button 
+                                    onClick={() => toggleHabitComplete(habit.id, todayStr)}
+                                    className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all ${
+                                      isDoneToday
+                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                        : 'bg-white text-black hover:opacity-90'
+                                    }`}
+                                  >
+                                    {isDoneToday ? 'Secured' : 'Secure'}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
 
-                    <Link href="/habits" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                      <span>Open Habit Dashboard</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                        <Link href="/habits" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                          <span>Open Habit Dashboard</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </>
+                    )}
                   </GlassCard>
                 </motion.div>
               );
@@ -1106,28 +1153,41 @@ export function DashboardGrid() {
                     className="h-full flex flex-col justify-between"
                     animated={false}
                   >
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
-                        <span className="text-[9px] text-white/30 font-mono block uppercase">Finance Synced</span>
-                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFinanceBalance}</span>
+                    {!financeLoaded || !tasksLoaded || !habitsLoaded ? (
+                      <div className="animate-pulse space-y-4 py-4 w-full">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="h-16 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-1.5"><div className="h-3 bg-white/10 rounded w-1/2" /><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-16 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-1.5"><div className="h-3 bg-white/10 rounded w-1/2" /><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-16 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-1.5"><div className="h-3 bg-white/10 rounded w-1/2" /><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                          <div className="h-16 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-1.5"><div className="h-3 bg-white/10 rounded w-1/2" /><div className="h-4 bg-white/10 rounded w-2/3" /></div>
+                        </div>
                       </div>
-                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
-                        <span className="text-[9px] text-white/30 font-mono block uppercase">Active Startup</span>
-                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicProjectsCount}</span>
-                      </div>
-                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
-                        <span className="text-[9px] text-white/30 font-mono block uppercase">Learning Tracks</span>
-                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicCoursesCount}</span>
-                      </div>
-                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
-                        <span className="text-[9px] text-white/30 font-mono block uppercase">Gym Fortifications</span>
-                        <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFitnessIndex}</span>
-                      </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                            <span className="text-[9px] text-white/30 font-mono block uppercase">Finance Synced</span>
+                            <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFinanceBalance}</span>
+                          </div>
+                          <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                            <span className="text-[9px] text-white/30 font-mono block uppercase">Active Startup</span>
+                            <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicProjectsCount}</span>
+                          </div>
+                          <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                            <span className="text-[9px] text-white/30 font-mono block uppercase">Learning Tracks</span>
+                            <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicCoursesCount}</span>
+                          </div>
+                          <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                            <span className="text-[9px] text-white/30 font-mono block uppercase">Gym Fortifications</span>
+                            <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFitnessIndex}</span>
+                          </div>
+                        </div>
 
-                    <div className="text-[9px] font-mono text-purple-400/80 text-center uppercase tracking-widest mt-4">
-                      SECTORS ACTIVE & TRANSMITTING
-                    </div>
+                        <div className="text-[9px] font-mono text-purple-400/80 text-center uppercase tracking-widest mt-4">
+                          SECTORS ACTIVE & TRANSMITTING
+                        </div>
+                      </>
+                    )}
                   </GlassCard>
                 </motion.div>
               );

@@ -7,13 +7,20 @@ interface GranularMapping {
   collectionName: string;
 }
 
+let isSyncingFromServer = false;
+
+export const setSyncingFromServer = (val: boolean) => {
+  isSyncingFromServer = val;
+};
+
 // Maps Zustand stores to their Firestore collections
 const GRANULAR_STORES: Record<string, GranularMapping[]> = {
   'life-os-tasks': [{ stateKey: 'tasks', collectionName: 'tasks' }],
   'life-os-habits': [{ stateKey: 'habits', collectionName: 'habits' }],
+  'life-os-journal': [{ stateKey: 'entries', collectionName: 'journal' }],
   'life-os-brain': [{ stateKey: 'nodes', collectionName: 'brain_nodes' }],
   'life-os-finance': [
-    { stateKey: 'transactions', collectionName: 'finance_transactions' },
+    { stateKey: 'transactions', collectionName: 'finance' },
     { stateKey: 'goals', collectionName: 'finance_goals' },
     { stateKey: 'budgets', collectionName: 'finance_budgets' }
   ],
@@ -147,6 +154,13 @@ export const createFirestoreStorage = (): StateStorage => ({
     const user = auth.currentUser;
     if (!user) {
       localStorage.setItem(name, value);
+      return;
+    }
+    
+    if (isSyncingFromServer) {
+      // Loop protection: skip writing back to Firestore if the change originated from the server
+      const diffCacheKey = `life-os-prev-${user.uid}-${name}`;
+      localStorage.setItem(diffCacheKey, value);
       return;
     }
     

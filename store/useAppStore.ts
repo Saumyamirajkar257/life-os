@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { type AppState } from '@/types';
+import { createFirestoreStorage } from '@/lib/firestoreStorage';
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -34,6 +35,8 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'life-os-app-settings',
+      storage: createJSONStorage(() => createFirestoreStorage()),
+      skipHydration: true,
     }
   )
 );
