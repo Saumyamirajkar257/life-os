@@ -44,6 +44,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // User logged out
+        // Clear all local storage caches for stores to prevent data leaking between accounts
+        if (typeof window !== 'undefined') {
+          let hasCleared = false;
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith('life-os-')) {
+              localStorage.removeItem(key);
+              hasCleared = true;
+            }
+          });
+          
+          if (hasCleared) {
+            // Force a full page reload to clear Zustand in-memory state and garbage-collect old user data
+            window.location.href = '/login';
+            return;
+          }
+        }
+
         const publicPaths = ['/login', '/welcome', '/', '/about', '/contact', '/faq'];
         if (!publicPaths.includes(pathname)) {
           router.push('/login');
