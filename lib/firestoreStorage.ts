@@ -138,8 +138,8 @@ export const createFirestoreStorage = (): StateStorage => ({
 
       return JSON.stringify(sanitizeStateObject(stateObj, name));
     } catch (e) {
-      console.warn(`Firestore granular read failed for ${name}, falling back to local storage`, e);
-      return sanitizeMonolithicStorageString(localStorage.getItem(name), name);
+      console.warn(`Firestore granular read failed for ${name}`, e);
+      return null;
     }
   },
 
@@ -150,8 +150,7 @@ export const createFirestoreStorage = (): StateStorage => ({
       return;
     }
     
-    // Save to local cache IMMEDIATELY so the client update is fully instantaneous
-    localStorage.setItem(name, value);
+    // Do not save store caches to localStorage when logged in (Firebase is strict source of truth)
 
     // KICK OFF database writes in the background to prevent blocking the event loop
     (async () => {
@@ -171,8 +170,9 @@ export const createFirestoreStorage = (): StateStorage => ({
           return;
         }
 
-        // Read background-specific tracking key to compute accurate diffs asynchronously
-        const localPrevStr = localStorage.getItem(`${name}_prev_firestore`);
+        // Read background-specific tracking key to compute accurate diffs asynchronously (user-scoped to prevent account leaks)
+        const diffCacheKey = `life-os-prev-${user.uid}-${name}`;
+        const localPrevStr = localStorage.getItem(diffCacheKey);
         let localPrevState: any = null;
         if (localPrevStr) {
           try {
@@ -222,7 +222,7 @@ export const createFirestoreStorage = (): StateStorage => ({
         await setDoc(baseDocRef, { value: JSON.stringify(baseStateObj) });
 
         // Update secondary tracking key for the next loop's diff calculation
-        localStorage.setItem(`${name}_prev_firestore`, value);
+        localStorage.setItem(diffCacheKey, value);
       } catch (e) {
         console.error(`Firestore background sync failed for ${name}`, e);
       }
@@ -250,10 +250,11 @@ export const createFirestoreStorage = (): StateStorage => ({
       }
       const docRef = doc(db, 'users', user.uid, 'store', name);
       await deleteDoc(docRef);
-      localStorage.removeItem(name);
+      
+      const diffCacheKey = `life-os-prev-${user.uid}-${name}`;
+      localStorage.removeItem(diffCacheKey);
     } catch (e) {
       console.error(`Firestore delete failed for ${name}`, e);
-      localStorage.removeItem(name);
     }
   }
 });
