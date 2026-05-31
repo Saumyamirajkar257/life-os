@@ -44,27 +44,22 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/5 bg-black/95 backdrop-blur-[12px] px-6 py-6"
-          >
-            <div className="flex flex-col gap-4 text-base font-medium text-white/70">
-              <Link href="/" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">Home</Link>
-              <Link href="/about" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">About Us</Link>
-              <Link href="/faq" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">FAQ</Link>
-              <Link href="/contact" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">Contact Us</Link>
-              <Link href="/login" onClick={() => setIsOpen(false)} className="mt-2 w-full py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-center font-semibold hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
-                Start Free →
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Menu with CSS transitions for peak mobile performance */}
+      <div 
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out border-t border-white/5 bg-black/95 backdrop-blur-[12px] ${
+          isOpen ? 'max-h-[400px] opacity-100 py-6 px-6' : 'max-h-0 opacity-0 py-0 px-6 pointer-events-none'
+        }`}
+      >
+        <div className="flex flex-col gap-4 text-base font-medium text-white/70">
+          <Link href="/" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">Home</Link>
+          <Link href="/about" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">About Us</Link>
+          <Link href="/faq" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">FAQ</Link>
+          <Link href="/contact" onClick={() => setIsOpen(false)} className="hover:text-white transition-colors py-1">Contact Us</Link>
+          <Link href="/login" onClick={() => setIsOpen(false)} className="mt-2 w-full py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-center font-semibold hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
+            Start Free →
+          </Link>
+        </div>
+      </div>
     </motion.nav>
   );
 }

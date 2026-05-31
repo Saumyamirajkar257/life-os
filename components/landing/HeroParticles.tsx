@@ -8,6 +8,12 @@ export function HeroParticles() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Disable canvas render loop on mobile to prevent CPU/GPU throttling and input lag
+    if (window.innerWidth < 768) {
+      return;
+    }
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
