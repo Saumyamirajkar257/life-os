@@ -36,13 +36,13 @@ export function CycleText({ words }: { words: string[] }) {
   }, []);
 
   return (
-    <div className="relative inline-block h-[1em]">
+    <span className="relative inline-block h-[1em]">
       <span className="whitespace-nowrap">{`${words[index].substring(0, subIndex)}`}</span>
       <motion.span
         animate={{ opacity: blink ? 1 : 0 }}
         transition={{ duration: 0.1 }}
         className="inline-block w-[6px] h-[0.8em] bg-current align-middle ml-2"
       />
-    </div>
+    </span>
   );
 }
