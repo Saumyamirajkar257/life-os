@@ -52,7 +52,6 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { VoiceAssistant } from '@/components/ai/VoiceAssistant';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 
