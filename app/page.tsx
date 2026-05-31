@@ -58,9 +58,11 @@ export default function Home() {
       <Navbar />
       
       {/* SECTION 1: Cinematic Hero */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center pt-24 pb-16 overflow-hidden dot-grid-bg">
+      <section className="relative min-h-[90vh] flex flex-col justify-center pt-24 pb-16 overflow-hidden">
+        {/* Dot Grid Background overlay (masked to fade out at edges) */}
+        <div className="absolute inset-0 dot-grid-bg pointer-events-none z-0" />
         {/* Animated Background Mesh */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-black to-black opacity-80" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-black to-black opacity-80 z-0" />
         <HeroParticles />
         
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-6 max-w-7xl mx-auto w-full">
