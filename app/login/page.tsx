@@ -15,6 +15,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { HeroParticles } from '@/components/landing/HeroParticles';
+import { Logo } from '@/components/Logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -195,22 +196,17 @@ export default function LoginPage() {
           boxShadow: '0 0 60px rgba(0, 212, 255, 0.08)'
         }}
       >
-        <div className="text-center mb-8">
-          {/* Cyan Hexagon Logo */}
-          <div className="flex justify-center mb-4">
-            <svg 
-              className="w-8 h-8 text-[#00d4ff] drop-shadow-[0_0_15px_rgba(0,212,255,0.5)]" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2"
-            >
-              <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">
-            {isLogin ? 'LIFE OS' : 'Create your free account'}
-          </h1>
+        <div className="text-center mb-8 flex flex-col items-center justify-center">
+          {isLogin ? (
+            <Logo layout="vertical" showSubtitle={true} size={64} className="mb-4" />
+          ) : (
+            <>
+              <Logo showText={false} size={48} className="mb-4" />
+              <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">
+                Create your free account
+              </h1>
+            </>
+          )}
           <p className="text-white/60 text-sm">
             {isLogin ? 'Welcome back 👋' : 'Start your journey today 🚀'}
           </p>

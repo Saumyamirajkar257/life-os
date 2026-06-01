@@ -22,6 +22,7 @@ import { ScrollProgress } from '@/components/landing/ScrollProgress';
 import { LiveAiDemo } from '@/components/landing/LiveAiDemo';
 import { NumberTicker } from '@/components/landing/NumberTicker';
 import { WaitlistModal } from '@/components/landing/WaitlistModal';
+import { Logo } from '@/components/Logo';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -481,9 +482,8 @@ export default function Home() {
       <footer className="border-t border-white/5 bg-zinc-950/20 py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tighter font-display mb-2">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-              LIFE<span className="text-indigo-400">OS</span>
+            <Link href="/" className="mb-3 block">
+              <Logo size={32} showText={true} />
             </Link>
             <p className="text-white/40 text-xs max-w-xs">Take control of your tasks, habits, and goals in one unified space.</p>
           </div>

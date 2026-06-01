@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type ThemeType = 'minimal-black' | 'cyberpunk' | 'glassmorphism' | 'hacker' | 'adaptive';
+export type ThemeType = 'minimal-black' | 'cyberpunk' | 'glassmorphism' | 'hacker' | 'adaptive' | 'white';
 
 interface ThemeState {
   theme: ThemeType;

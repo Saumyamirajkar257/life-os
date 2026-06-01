@@ -528,4 +528,155 @@ html.rainbow-active body {
   transform: rotateX(5deg);
 }
 
+/* ── White / Light Theme Overrides ── */
+html[data-theme='white'] body {
+  --color-background: #f4f4f7;
+  --color-foreground: #09090b;
+  --color-card: rgba(255, 255, 255, 0.7);
+  --color-primary: #4f46e5; /* Indigo-600 */
+  --color-secondary: #27272a;
+  --color-muted: #71717a;
+  --color-accent: rgba(9, 9, 11, 0.05);
+  --color-border: rgba(9, 9, 11, 0.1);
+  --color-input: rgba(9, 9, 11, 0.03);
+  --color-ring: rgba(79, 70, 229, 0.3);
+  --color-glow: rgba(79, 70, 229, 0.05);
+  --color-surface-elevated: rgba(255, 255, 255, 0.9);
+  --color-surface-overlay: rgba(255, 255, 255, 0.95);
+  --color-success: #059669;
+  --color-warning: #d97706;
+}
+
+/* Force dark text for readability in light mode */
+html[data-theme='white'] .text-white,
+html[data-theme='white'] .text-white\/90,
+html[data-theme='white'] .text-white\/80,
+html[data-theme='white'] .text-white\/75,
+html[data-theme='white'] .text-white\/70,
+html[data-theme='white'] .text-white\/60,
+html[data-theme='white'] .text-white\/50,
+html[data-theme='white'] .text-white\/40,
+html[data-theme='white'] .text-white\/30,
+html[data-theme='white'] .text-white\/20,
+html[data-theme='white'] .text-white\/10,
+html[data-theme='white'] .text-zinc-100,
+html[data-theme='white'] .text-zinc-200,
+html[data-theme='white'] .text-zinc-300,
+html[data-theme='white'] .text-zinc-400 {
+  color: #09090b !important;
+}
+
+html[data-theme='white'] .text-white\/90 { opacity: 0.9 !important; }
+html[data-theme='white'] .text-white\/80 { opacity: 0.8 !important; }
+html[data-theme='white'] .text-white\/75 { opacity: 0.75 !important; }
+html[data-theme='white'] .text-white\/70 { opacity: 0.7 !important; }
+html[data-theme='white'] .text-white\/60 { opacity: 0.6 !important; }
+html[data-theme='white'] .text-white\/50 { opacity: 0.5 !important; }
+html[data-theme='white'] .text-white\/40 { opacity: 0.4 !important; }
+html[data-theme='white'] .text-white\/30 { opacity: 0.3 !important; }
+html[data-theme='white'] .text-white\/20 { opacity: 0.2 !important; }
+html[data-theme='white'] .text-white\/10 { opacity: 0.1 !important; }
+
+/* Invert default black backgrounds */
+html[data-theme='white'] .bg-black,
+html[data-theme='white'] .bg-zinc-950,
+html[data-theme='white'] .bg-\[\#0a0a0f\],
+html[data-theme='white'] .bg-\[\#12121a\],
+html[data-theme='white'] .bg-\[\#0d0b0a\],
+html[data-theme='white'] .bg-zinc-900,
+html[data-theme='white'] .bg-zinc-900\/60,
+html[data-theme='white'] .bg-black\/45,
+html[data-theme='white'] .bg-white\/5,
+html[data-theme='white'] .bg-white\/10,
+html[data-theme='white'] .bg-white\/\[0\.04\],
+html[data-theme='white'] .bg-white\/\[0\.03\] {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Specific button inverters */
+html[data-theme='white'] .bg-white {
+  background-color: #09090b !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='white'] .bg-white:hover {
+  background-color: #1c1c21 !important;
+}
+
+html[data-theme='white'] .text-black {
+  color: #ffffff !important;
+}
+
+html[data-theme='white'] .bg-white\/5:hover,
+html[data-theme='white'] .bg-white\/10:hover,
+html[data-theme='white'] .hover\:bg-white\/10:hover,
+html[data-theme='white'] .hover\:bg-white\/5:hover {
+  background-color: rgba(9, 9, 11, 0.06) !important;
+}
+
+/* Invert borders */
+html[data-theme='white'] .border-white\/10,
+html[data-theme='white'] .border-white\/15,
+html[data-theme='white'] .border-white\/20,
+html[data-theme='white'] .border-white\/5,
+html[data-theme='white'] .border-white\/\[0\.06\] {
+  border-color: rgba(9, 9, 11, 0.08) !important;
+}
+
+/* Invert inputs */
+html[data-theme='white'] input,
+html[data-theme='white'] select,
+html[data-theme='white'] textarea {
+  border-color: rgba(9, 9, 11, 0.15) !important;
+  color: #09090b !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html[data-theme='white'] input::placeholder,
+html[data-theme='white'] textarea::placeholder {
+  color: rgba(9, 9, 11, 0.4) !important;
+}
+
+/* Scrollbar adjustment */
+html[data-theme='white'] ::-webkit-scrollbar-thumb {
+  background: rgba(9, 9, 11, 0.15);
+}
+html[data-theme='white'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(9, 9, 11, 0.25);
+}
+
+/* Invert glass-panel effects */
+html[data-theme='white'] .glass-panel {
+  border: 1px solid rgba(9, 9, 11, 0.08);
+  box-shadow: inset 0 0 10px rgba(9, 9, 11, 0.01), 0 8px 32px rgba(9, 9, 11, 0.03);
+}
+
+html[data-theme='white'] .glass-panel::before {
+  background: linear-gradient(to bottom, rgba(9, 9, 11, 0.05), rgba(9, 9, 11, 0.01));
+}
+
+html[data-theme='white'] .glass-panel:hover::before {
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(9, 9, 11, 0.06) 0%,
+    rgba(9, 9, 11, 0.01) 50%,
+    transparent 100%
+  );
+}
+
+/* Adjust Aurora and Particle opacity for light mode so they are subtle watermarks */
+html[data-theme='white'] .dot-grid-bg {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  opacity: 0.4;
+}
+
+html[data-theme='white'] canvas {
+  opacity: 0.15 !important;
+}
+
+html[data-theme='white'] .fixed.inset-0.z-\[-1\] > div:first-child {
+  opacity: 0.1 !important; /* Low opacity aurora */
+}
+
+
 

@@ -260,19 +260,23 @@ export default function SettingsPage() {
                   <h4 className="text-xs font-semibold text-white">Visual Engine (Theme)</h4>
                   <p className="text-[10px] text-white/30 mt-0.5">Select the cinematic aesthetic of your OS</p>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-                  {(['minimal-black', 'cyberpunk', 'glassmorphism', 'hacker'] as ThemeType[]).map((t) => (
+                <div className="grid grid-cols-2 gap-2 mt-2 max-w-sm">
+                  {[
+                    { id: 'glassmorphism', label: 'Dark Theme' },
+                    { id: 'white', label: 'White Theme' }
+                  ].map((t) => (
                     <button
-                      key={t}
-                      onClick={() => setTheme(t)}
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTheme(t.id as ThemeType)}
                       className={cn(
-                        "px-3 py-2 rounded-lg text-xs font-mono capitalize transition-all border",
-                        currentTheme === t 
+                        "px-3 py-2 rounded-lg text-xs font-mono transition-all border",
+                        (t.id === 'white' && currentTheme === 'white') || (t.id === 'glassmorphism' && currentTheme !== 'white')
                           ? "bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]" 
                           : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
                       )}
                     >
-                      {t.replace('-', ' ')}
+                      {t.label}
                     </button>
                   ))}
                 </div>

@@ -33,6 +33,7 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 
 export type SidebarCategory = 'Overview' | 'Learning Suite' | 'Productivity' | 'Mind & Knowledge' | 'Systems';
@@ -112,14 +113,9 @@ function DesktopSidebar() {
 
       {/* Logo area */}
       <div className="flex items-center h-16 px-4 border-b border-white/5">
-        <motion.div
-          className="flex items-center gap-3 overflow-hidden"
-          animate={{ justifyContent: sidebarExpanded ? 'flex-start' : 'center' }}
-        >
+        <Link href="/" className="flex items-center gap-3 overflow-hidden w-full">
           <div className="relative flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/10 flex items-center justify-center">
-              <Sparkles className="w-4.5 h-4.5 text-white/80" />
-            </div>
+            <Logo size={36} showText={false} />
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black/80" />
           </div>
           <AnimatePresence>
@@ -138,7 +134,7 @@ function DesktopSidebar() {
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </Link>
       </div>
 
       {/* Nav items */}

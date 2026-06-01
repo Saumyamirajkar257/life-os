@@ -1293,10 +1293,8 @@ function RewardsWorkspace() {
   // Unlockables state with theme mapping properties
   const [coins, setCoins] = useState(350);
   const [unlocks, setUnlocks] = useState<{ id: string; name: string; price: number; type: string; themeKey?: string; unlocked?: boolean }[]>([
-    { id: '1', name: 'Cyberpunk Neon Theme', price: 100, type: 'Themes', themeKey: 'cyberpunk', unlocked: false },
-    { id: '2', name: 'Hacker Terminal Theme', price: 120, type: 'Themes', themeKey: 'hacker', unlocked: false },
-    { id: '3', name: 'Minimalist Obsidian Theme', price: 80, type: 'Themes', themeKey: 'minimal-black', unlocked: false },
-    { id: '4', name: 'Glassmorphic Glass Theme', price: 50, type: 'Themes', themeKey: 'glassmorphism', unlocked: true },
+    { id: '1', name: 'White / Light Theme', price: 80, type: 'Themes', themeKey: 'white', unlocked: false },
+    { id: '4', name: 'Dark / Glassmorphic Theme', price: 0, type: 'Themes', themeKey: 'glassmorphism', unlocked: true },
     { id: '5', name: 'Dynamic Neural Graph Widget', price: 200, type: 'Widgets', unlocked: false },
     { id: '6', name: 'Aurora Borealis Aura Profile Effect', price: 300, type: 'Profile Effects', unlocked: false }
   ]);

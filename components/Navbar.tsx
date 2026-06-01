@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Menu, X, Sparkles } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,9 +17,8 @@ export default function Navbar() {
       className="sticky top-0 w-full z-50 bg-black/40 backdrop-blur-[12px] border-b border-white/10"
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter font-display">
-          <Sparkles className="w-5 h-5 text-indigo-400" />
-          LIFE<span className="text-indigo-400">OS</span>
+        <Link href="/">
+          <Logo size={28} showText={true} />
         </Link>
         
         {/* Desktop Nav Links */}
