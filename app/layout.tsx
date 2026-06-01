@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { Inter, Outfit, JetBrains_Mono } from 'next/font/google';
+import { DM_Sans, Syne, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-const outfit = Outfit({
+const syne = Syne({
   subsets: ['latin'],
   variable: '--font-display',
 });
@@ -65,8 +65,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          inter.variable,
-          outfit.variable,
+          dmSans.variable,
+          syne.variable,
           jetbrainsMono.variable
         )}
       >
