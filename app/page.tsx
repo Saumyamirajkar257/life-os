@@ -21,6 +21,7 @@ import { CycleText } from '@/components/landing/CycleText';
 import { ScrollProgress } from '@/components/landing/ScrollProgress';
 import { LiveAiDemo } from '@/components/landing/LiveAiDemo';
 import { NumberTicker } from '@/components/landing/NumberTicker';
+import { WaitlistModal } from '@/components/landing/WaitlistModal';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -46,41 +47,6 @@ export default function Home() {
 
   // Waitlist Modal States
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const handleWaitlistSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!waitlistEmail) return;
-
-    setIsSubmitting(true);
-    setErrorMsg('');
-
-    try {
-      const timestamp = Date.now().toString();
-      const docRef = doc(db, 'waitlist', timestamp);
-      await setDoc(docRef, {
-        email: waitlistEmail.toLowerCase().trim(),
-        joinedAt: new Date().toISOString(),
-        plan: 'pro'
-      });
-
-      setSubmitSuccess(true);
-      setWaitlistEmail('');
-
-      setTimeout(() => {
-        setIsWaitlistOpen(false);
-        setSubmitSuccess(false);
-      }, 2000);
-    } catch (err: any) {
-      console.error('Waitlist submission error:', err);
-      setErrorMsg('Something went wrong. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   useEffect(() => {
     const bypassed = typeof window !== 'undefined' && localStorage.getItem('life-os-bypass-auth') === 'true';
@@ -374,7 +340,7 @@ export default function Home() {
                 <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
                   Most Popular
                 </div>
-                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/30 text-[#00d4ff] text-[10px] font-semibold tracking-wide">
+                <div className="absolute -top-3 right-4 bg-[#00d4ff15] text-[#00d4ff] border border-[#00d4ff30] rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide">
                   🚀 Launching Soon
                 </div>
                 <div>
@@ -404,7 +370,7 @@ export default function Home() {
             {/* Team Tier */}
             <ScrollReveal direction="up" delay={0.4}>
               <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
-                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa] text-[10px] font-semibold tracking-wide">
+                <div className="absolute -top-3 right-4 bg-[#7c3aed15] text-[#a78bfa] border border-[#7c3aed30] rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide">
                   🔜 Coming Soon
                 </div>
                 <div>
@@ -432,7 +398,7 @@ export default function Home() {
           </div>
 
           {/* Launch Timeline Info */}
-          <div className="text-center mt-12 text-zinc-500 text-xs md:text-sm font-light">
+          <div className="text-center mt-6 text-[#8b8b9e] text-[13px] font-light">
             <span>Pro launching Q3 2026</span>
             <span className="text-[#00d4ff] font-bold mx-2">·</span>
             <span>Team launching Q4 2026</span>
@@ -535,75 +501,10 @@ export default function Home() {
       </footer>
 
       {/* Pro Waitlist Modal */}
-      {isWaitlistOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
-          onClick={() => setIsWaitlistOpen(false)}
-        >
-          <div 
-            className="relative w-full max-w-md p-8 overflow-hidden border rounded-2xl transition-all duration-300"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 0 50px rgba(0, 212, 255, 0.15)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button (X) */}
-            <button 
-              onClick={() => setIsWaitlistOpen(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {submitSuccess ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <p className="text-white text-lg font-medium text-center">
-                  ✅ You're on the list!
-                </p>
-              </div>
-            ) : (
-              <>
-                <h3 className="text-2xl font-display font-bold text-white mb-2 flex items-center gap-2">
-                  Join the Pro Waitlist 🚀
-                </h3>
-                <p className="text-white/60 text-sm mb-6 leading-relaxed">
-                  Early birds get 50% off their first month
-                </p>
-
-                <form onSubmit={handleWaitlistSubmit} className="space-y-4">
-                  <div>
-                    <input 
-                      type="email" 
-                      required
-                      value={waitlistEmail}
-                      onChange={(e) => setWaitlistEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] transition-all"
-                    />
-                  </div>
-                  {errorMsg && (
-                    <p className="text-rose-400 text-xs">{errorMsg}</p>
-                  )}
-                  <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black font-semibold hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {isSubmitting ? 'Joining...' : 'Notify Me →'}
-                  </button>
-                </form>
-
-                <p className="text-center text-white/30 text-xs mt-4">
-                  No spam. Unsubscribe anytime.
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <WaitlistModal 
+        isOpen={isWaitlistOpen}
+        onClose={() => setIsWaitlistOpen(false)}
+      />
     </motion.main>
   );
 }

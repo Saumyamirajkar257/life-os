@@ -6,8 +6,8 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
     match /waitlist/{email} {
-      allow create: if true;
-      allow read, update, delete: if false;
+      allow create, read: if true;
+      allow update, delete: if false;
     }
   }
 }
