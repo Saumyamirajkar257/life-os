@@ -69,11 +69,15 @@ export const useAppStore = create<AppState>()(
       name: 'life-os-app-settings',
       storage: createJSONStorage(() => createFirestoreStorage()),
       skipHydration: true,
+      partialize: (state) => {
+        const { userPfp, ...rest } = state;
+        return rest;
+      },
       onRehydrateStorage: () => {
         return (hydratedState) => {
           if (hydratedState && typeof window !== 'undefined') {
             const cachedPfp = localStorage.getItem('life-os-pfp-cache');
-            if (cachedPfp && !hydratedState.userPfp) {
+            if (cachedPfp) {
               hydratedState.userPfp = cachedPfp;
             }
           }
