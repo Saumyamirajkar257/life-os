@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { AppShell } from '@/components/layout/AppShell';
 import { DashboardGrid } from '@/features/dashboard/components/DashboardGrid';
@@ -230,12 +231,46 @@ Week 4: Review progression reports and adjust weekly metrics to scale cognitive 
     }, 15);
   };
 
-  // Waitlist access registration
-  const handleWaitlistSubmit = (e: React.FormEvent) => {
+  // Waitlist access registration (Beta testers form)
+  const [waitlistError, setWaitlistError] = useState('');
+  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!waitlistEmail.trim()) return;
-    setWaitlistSuccess(true);
-    setAdoptersCount(prev => prev + 1);
+
+    setWaitlistError('');
+    setWaitlistSubmitting(true);
+    const trimmedEmail = waitlistEmail.toLowerCase().trim();
+
+    try {
+      // Check duplicate
+      const q = query(collection(db, 'waitlist'), where('email', '==', trimmedEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setWaitlistError("You're already on the list! 🎉");
+        setWaitlistSuccess(true);
+        setWaitlistSubmitting(false);
+        return;
+      }
+
+      // Save to Firebase waitlist collection
+      await addDoc(collection(db, 'waitlist'), {
+        email: trimmedEmail,
+        plan: 'pro',
+        joinedAt: serverTimestamp(),
+        source: 'beta-section'
+      });
+
+      setWaitlistSuccess(true);
+      setAdoptersCount(prev => prev + 1);
+    } catch (err) {
+      console.error("Waitlist error: ", err);
+      setWaitlistError("Something went wrong. Please try again.");
+    } finally {
+      setWaitlistSubmitting(false);
+    }
   };
 
   return (
@@ -1301,27 +1336,63 @@ function NumberTicker({ value }: { value: number }) {
   return <span>{count}</span>;
 }
 
-// Local mock waitlist modal component
+// Firebase Firestore early adopter waitlist modal component
 function WaitlistModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (emailStr: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email) return;
+
+    setErrorMsg('');
+    const trimmedEmail = email.toLowerCase().trim();
+
+    if (!validateEmail(trimmedEmail)) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+
+    try {
+      const q = query(collection(db, 'waitlist'), where('email', '==', trimmedEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setErrorMsg("You're already on the list! 🎉");
+        setSuccess(true);
+        setSubmitting(false);
+        return;
+      }
+
+      await addDoc(collection(db, 'waitlist'), {
+        email: trimmedEmail,
+        plan: 'pro',
+        joinedAt: serverTimestamp(),
+        source: 'pricing-section'
+      });
+
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         setEmail('');
         onClose();
-      }, 2000);
-    }, 1000);
+      }, 2500);
+    } catch (err: any) {
+      console.error("Waitlist error: ", err);
+      setErrorMsg("Something went wrong. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -1347,18 +1418,26 @@ function WaitlistModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <p className="text-xs text-[#8B8B9E] leading-relaxed mb-4">Secure your permanent AES-256 synced license with 50% discount locked forever.</p>
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com" 
-                className="bg-[#0A0A0F] border border-white/10 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-[#0CDBC1]"
-              />
+              <div>
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errorMsg) setErrorMsg('');
+                  }}
+                  placeholder="your@email.com" 
+                  className="w-full bg-[#0A0A0F] border border-white/10 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-[#0CDBC1]"
+                />
+                {errorMsg && (
+                  <p className="text-[10px] text-rose-500 font-mono mt-1 text-left">{errorMsg}</p>
+                )}
+              </div>
               <button 
                 type="submit" 
                 disabled={submitting}
-                className="w-full py-2.5 rounded bg-[#0CDBC1] hover:bg-[#0ac8b0] text-black font-bold text-xs border-none"
+                className="w-full py-2.5 rounded bg-[#0CDBC1] hover:bg-[#0ac8b0] text-black font-bold text-xs border-none cursor-pointer"
               >
                 {submitting ? 'Registering...' : 'Lock Lifetime Discount →'}
               </button>
