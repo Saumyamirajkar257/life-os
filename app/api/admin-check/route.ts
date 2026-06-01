@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = verifyToken(token, jwtSecret);
-    if (!payload || !payload.verified || payload.adminEmail !== adminEmail) {
+    if (!payload || !payload.verified || payload.adminEmail?.toLowerCase().trim() !== adminEmail?.toLowerCase().trim()) {
       return NextResponse.json({ verified: false }, { status: 401 });
     }
 

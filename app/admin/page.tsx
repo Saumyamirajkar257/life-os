@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       if (!u) {
         // Redirect to login if not authenticated
         router.push('/login');
-      } else if (u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+      } else if (u.email?.toLowerCase().trim() !== process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase().trim()) {
         // Wait, keep user loaded, but session verification will fail Layer 1
         setVerifyingSession(false);
       } else {
