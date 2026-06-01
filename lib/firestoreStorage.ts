@@ -82,7 +82,8 @@ export const createFirestoreStorage = (): StateStorage => ({
   getItem: async (name: string): Promise<string | null> => {
     const user = auth.currentUser;
     if (!user) {
-      return sanitizeMonolithicStorageString(localStorage.getItem(name), name);
+      // Disabled localStorage fallback entirely per user request
+      return null;
     }
     try {
       const docRef = doc(db, 'users', user.uid, 'store', name);
@@ -153,7 +154,7 @@ export const createFirestoreStorage = (): StateStorage => ({
   setItem: async (name: string, value: string): Promise<void> => {
     const user = auth.currentUser;
     if (!user) {
-      localStorage.setItem(name, value);
+      // Disabled localStorage fallback entirely per user request
       return;
     }
     

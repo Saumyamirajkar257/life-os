@@ -3,14 +3,13 @@ package com.lifeos.app;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import android.app.Activity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     
     private WebView webView;
     
-    // CHANGE THIS TO YOUR WEBSITE URL
-    private static final String WEBSITE_URL = "https://yoursite.netlify.app";
+    private static final String WEBSITE_URL = "https://lifetrackr-premium.netlify.app";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,10 +18,16 @@ public class MainActivity extends AppCompatActivity {
         webView = new WebView(this);
         setContentView(webView);
         
-        // Enable JavaScript
+        // Enable JavaScript and storage APIs
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setDatabaseEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
+        
+        // Support mixed content on Lollipop and above
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            webView.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
         
         // Load website
         webView.setWebViewClient(new WebViewClient());

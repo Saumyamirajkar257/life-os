@@ -3,16 +3,30 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  updateProfile
+} from 'firebase/auth';
+import { HeroParticles } from '@/components/landing/HeroParticles';
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [infoMsg, setInfoMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Redirect to dashboard if authenticated
@@ -25,31 +39,52 @@ export default function LoginPage() {
     return () => unsubscribe();
   }, [router]);
 
+  const getFriendlyError = (code: string, fallbackMessage: string) => {
+    switch (code) {
+      case 'auth/wrong-password':
+        return "Incorrect password. Try again.";
+      case 'auth/user-not-found':
+        return "No account found with this email.";
+      case 'auth/too-many-requests':
+        return "Too many attempts. Try again later.";
+      case 'auth/invalid-email':
+        return "Please enter a valid email address.";
+      case 'auth/email-already-in-use':
+        return "This email is already registered. Please sign in instead.";
+      case 'auth/weak-password':
+        return "Password is too weak. Please use at least 6 characters.";
+      case 'auth/invalid-credential':
+        return "Incorrect email or password. Try again.";
+      default:
+        return fallbackMessage || "Authentication failed. Please try again.";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setInfoMsg('');
+
+    if (!isLogin && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        if (fullName && userCredential.user) {
+          await updateProfile(userCredential.user, { displayName: fullName });
+        }
       }
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/invalid-credential' || err.message?.includes('auth/invalid-credential')) {
-        setError(isLogin 
-          ? "Invalid Credentials. If you haven't created an account yet, click 'Create one' at the bottom to sign up first. Otherwise, please check your passcode spelling."
-          : "Account creation failed. That email may be registered already or the passcode is too short. Try again or sign in."
-        );
-      } else if (err.code === 'auth/email-already-in-use') {
-        setError("This email identifier is already active. Please switch to 'Authenticate' below to sign in.");
-      } else if (err.code === 'auth/weak-password') {
-        setError("Passcode is too weak. Please use at least 6 characters.");
-      } else {
-        setError(err.message || 'Authentication failed. Check your credentials.');
-      }
+      const code = err?.code || '';
+      setError(getFriendlyError(code, err.message));
     } finally {
       setLoading(false);
     }
@@ -57,6 +92,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setError('');
+    setInfoMsg('');
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -69,80 +105,206 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address to reset your password.");
+      setInfoMsg('');
+      return;
+    }
+    setError('');
+    setInfoMsg('');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setInfoMsg("Password reset email sent! Check your inbox.");
+    } catch (err: any) {
+      console.error(err);
+      const code = err?.code || '';
+      setError(getFriendlyError(code, err.message));
+    }
+  };
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-black">
-      {/* Background gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-white/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-white/5 rounded-full blur-[120px] pointer-events-none" />
+    <div 
+      className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]"
+      style={{ background: 'radial-gradient(circle at center, #7c3aed15 0%, #0a0a0f 100%)' }}
+    >
+      {/* Constellation Particle Background */}
+      <HeroParticles />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md glass-panel-strong p-8 rounded-2xl relative z-10"
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full max-w-[440px] backdrop-blur-xl bg-[#ffffff08] border border-[#ffffff15] rounded-[24px] p-6 md:p-12 relative z-10 shadow-[0_0_40px_#00d4ff10]"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 mb-4 glow-border">
-            {isLogin ? <LogIn className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
+          {/* Cyan Hexagon Logo */}
+          <div className="flex justify-center mb-4">
+            <svg 
+              className="w-12 h-12 text-[#00d4ff] drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="1.5"
+            >
+              <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" />
+            </svg>
           </div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">
-            {isLogin ? 'Access Neural Link' : 'Initialize Account'}
+          <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">
+            LIFE OS
           </h1>
           <p className="text-white/60 text-sm">
-            {isLogin ? 'Authenticate to access your synchronized LIFE OS data.' : 'Create a new encrypted local and cloud storage profile.'}
+            {isLogin ? 'Welcome back 👋' : 'Create your free account'}
           </p>
         </div>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mb-6 p-4 rounded-xl bg-destructive/20 border border-destructive/50 flex items-start gap-3"
-          >
-            <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-            <p className="text-sm text-destructive font-medium">{error}</p>
-          </motion.div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Full Name field (Signup only) */}
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-white/60 mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">
+                  <User className="w-5 h-5" />
+                </span>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                  placeholder="Your Name"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Email field */}
           <div>
-            <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
-              Email Identifier
+            <label className="block text-sm font-medium text-white/60 mb-2">
+              Email
             </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
-              placeholder="commander@life.os"
-            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">
+                <Mail className="w-5 h-5" />
+              </span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                placeholder="you@example.com"
+              />
+            </div>
           </div>
 
+          {/* Password field */}
           <div>
-            <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
-              Passcode
+            <label className="block text-sm font-medium text-white/60 mb-2">
+              Password
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
-              placeholder="••••••••••••"
-            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">
+                <Lock className="w-5 h-5" />
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            {isLogin && (
+              <div className="text-right mt-1.5">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs text-[#00d4ff] hover:underline bg-transparent border-none cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Confirm Password field (Signup only) */}
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-white/60 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">
+                  <Lock className="w-5 h-5" />
+                </span>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Inline Mapped Error / Success Messages */}
+          {(error || infoMsg) && (
+            <div className="mt-2">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-rose-500 font-medium flex items-start gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+              {infoMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-emerald-400 font-medium flex items-start gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{infoMsg}</span>
+                </motion.div>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 mt-4 bg-white text-black font-semibold rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all glow-hover flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            className="w-full py-4 mt-6 bg-[#00d4ff] text-black font-semibold rounded-full hover:shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
             ) : isLogin ? (
-              'Initialize Connection'
+              'Sign In'
             ) : (
-              'Create Profile'
+              'Create Account →'
             )}
           </button>
         </form>
@@ -157,7 +319,7 @@ export default function LoginPage() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-3.5 mt-4 bg-white/5 border border-white/10 text-white font-medium rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none"
+          className="w-full py-3.5 mt-4 bg-white/5 border border-white/10 text-white font-medium rounded-full hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.02)]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -186,21 +348,26 @@ export default function LoginPage() {
             localStorage.setItem('life-os-bypass-auth', 'true');
             window.location.href = '/';
           }}
-          className="w-full py-3.5 mt-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-sm font-semibold rounded-xl"
+          className="py-2 px-4 bg-transparent border border-white/10 hover:border-white/20 text-white/50 hover:text-white/80 active:scale-[0.98] transition-all duration-300 text-xs font-semibold rounded-full w-fit mx-auto block mt-4 cursor-pointer"
         >
-          ⚡ Go Offline / Sandbox Mode (No Auth)
+          ⚡ Try without account
         </button>
 
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-white/60 hover:text-white transition-colors"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError('');
+              setInfoMsg('');
+            }}
+            className="text-sm text-[#00d4ff] hover:underline transition-colors cursor-pointer font-medium"
           >
-            {isLogin ? "Don't have a profile? Create one." : "Already have a profile? Authenticate."}
+            {isLogin ? "New to LIFE OS? Create free account →" : "Already have account? Sign in →"}
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+
