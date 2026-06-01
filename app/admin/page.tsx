@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   // Auth and verification states
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const [verifyingSession, setVerifyingSession] = useState(true);
   
@@ -74,8 +75,22 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, [lockoutTime]);
 
+  // Fetch admin email from server config to bypass static inlining issues
+  useEffect(() => {
+    fetch('/api/admin-config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.adminEmail) {
+          setAdminEmail(data.adminEmail.toLowerCase().trim());
+        }
+      })
+      .catch(err => console.error("Failed to load admin config:", err));
+  }, []);
+
   // Layer 1: Check Firebase Auth & Admin Email
   useEffect(() => {
+    if (adminEmail === null) return;
+
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       setAuthLoading(false);
@@ -83,7 +98,7 @@ export default function AdminDashboard() {
       if (!u) {
         // Redirect to login if not authenticated
         router.push('/login');
-      } else if (u.email?.toLowerCase().trim() !== process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase().trim()) {
+      } else if (u.email?.toLowerCase().trim() !== adminEmail) {
         // Wait, keep user loaded, but session verification will fail Layer 1
         setVerifyingSession(false);
       } else {
@@ -93,7 +108,7 @@ export default function AdminDashboard() {
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, adminEmail]);
 
   // Layer 2: Check server-side httpOnly cookie verification
   const checkAdminSession = async () => {
@@ -242,7 +257,7 @@ export default function AdminDashboard() {
   );
 
   // Loading indicator for authentication check
-  if (authLoading || verifyingSession) {
+  if (authLoading || verifyingSession || adminEmail === null) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-black relative">
         <HeroParticles />
@@ -257,7 +272,7 @@ export default function AdminDashboard() {
   }
 
   // Layer 1 Failure: Logged in with wrong email
-  if (user && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+  if (user && user.email?.toLowerCase().trim() !== adminEmail) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center p-4 bg-black relative">
         <HeroParticles />
