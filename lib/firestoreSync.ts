@@ -90,6 +90,8 @@ export function startRealtimeSync(userId: string) {
         useAppStore.setState({
           userName: data.displayName || '',
           userEmail: data.email || '',
+          userHandle: data.handle || '',
+          userPfp: data.photoURL || '',
         });
         setSyncingFromServer(false);
       }
@@ -444,6 +446,8 @@ export async function migrateLocalDataToFirestore(userId: string): Promise<boole
         await setDoc(profileDocRef, {
           displayName: state.userName || '',
           email: state.userEmail || '',
+          handle: state.userHandle || '',
+          photoURL: state.userPfp || '',
           createdAt: new Date().toISOString(),
           isPro: true
         }, { merge: true });
