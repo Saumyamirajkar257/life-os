@@ -123,20 +123,28 @@ export default function AdminDashboard() {
     setLoadingData(true);
     try {
       // 1. Fetch waitlist signups
-      const waitlistSnap = await getDocs(query(collection(db, 'waitlist'), orderBy('joinedAt', 'desc')));
-      const waitlistData = waitlistSnap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setWaitlist(waitlistData);
+      try {
+        const waitlistSnap = await getDocs(query(collection(db, 'waitlist'), orderBy('joinedAt', 'desc')));
+        const waitlistData = waitlistSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setWaitlist(waitlistData);
+      } catch (waitlistErr) {
+        console.error("Error fetching waitlist:", waitlistErr);
+      }
 
       // 2. Fetch admin security logs (last 30 for safe buffer, show last 10)
-      const logsSnap = await getDocs(query(collection(db, 'adminLogs'), orderBy('timestamp', 'desc'), limit(30)));
-      const logsData = logsSnap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setAdminLogs(logsData);
+      try {
+        const logsSnap = await getDocs(query(collection(db, 'adminLogs'), orderBy('timestamp', 'desc'), limit(30)));
+        const logsData = logsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setAdminLogs(logsData);
+      } catch (logsErr) {
+        console.error("Error fetching admin logs:", logsErr);
+      }
 
       // Update last synced time stamp
       setLastSyncedTime(new Date().toLocaleTimeString('en-US', {
