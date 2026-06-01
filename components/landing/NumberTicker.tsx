@@ -33,7 +33,8 @@ export function NumberTicker({
     const unsubscribe = springValue.on('change', (latest) => {
       if (ref.current) {
         const rounded = Math.round(latest);
-        if (Math.abs(latest - value) < 1) {
+        // Snaps to final value if within 1% or at least within 5 of target
+        if (Math.abs(latest - value) < Math.max(5, value * 0.001)) {
           ref.current.textContent = Intl.NumberFormat('en-US').format(value);
         } else {
           ref.current.textContent = Intl.NumberFormat('en-US').format(

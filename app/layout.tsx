@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://lifetrackr-premium.netlify.app'),
   title: 'LIFE OS — AI-Powered Life Command Center',
-  description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI.',
+  description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
   keywords: ['productivity', 'life os', 'ai', 'task manager', 'habits', 'journal'],
   icons: {
     icon: '/favicon.svg',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'LIFE OS — AI-Powered Life Command Center',
-    description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI.',
+    description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
     url: 'https://lifetrackr-premium.netlify.app',
     siteName: 'LIFE OS',
     images: [
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'LIFE OS — AI-Powered Life Command Center',
-    description: 'Your entire life. One command center.',
+    description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
     images: ['/og-image.png'],
   },
 };

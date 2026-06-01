@@ -48,18 +48,18 @@ export function FeatureShowcase() {
 
   return (
     <div ref={containerRef} className="py-12 relative z-10 w-full max-w-7xl mx-auto px-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative items-stretch">
         {features.map((feature, idx) => (
           <motion.div 
             key={idx}
-            className="group perspective-1000 h-full"
+            className="group perspective-1000 flex flex-col h-full"
           >
             <motion.div
               whileHover={{ rotateX: 5, rotateY: -5, scale: 1.02 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="relative h-full"
+              className="relative flex flex-col flex-1 h-full"
             >
-              <GlassCard variant="elevated" className="h-full p-8 overflow-hidden relative flex flex-col justify-between">
+              <GlassCard variant="elevated" className="h-full p-8 overflow-hidden relative flex flex-col justify-between w-full">
                 <div>
                   {/* Glow behind icon */}
                   <div className={`absolute top-8 left-8 w-16 h-16 rounded-full bg-gradient-to-br ${feature.color} blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />

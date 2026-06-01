@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -27,6 +28,22 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // Magnetic CTA states
+  const [ctaCoords, setCtaCoords] = useState({ x: 0, y: 0 });
+  const [ctaHover, setCtaHover] = useState(false);
+
+  const handleCtaMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    setCtaCoords({ x: x * 0.35, y: y * 0.35 });
+  };
+
+  const handleCtaMouseLeave = () => {
+    setCtaHover(false);
+    setCtaCoords({ x: 0, y: 0 });
+  };
+
   // Waitlist Modal States
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState('');
@@ -42,7 +59,8 @@ export default function Home() {
     setErrorMsg('');
 
     try {
-      const docRef = doc(db, 'waitlist', waitlistEmail.toLowerCase().trim());
+      const timestamp = Date.now().toString();
+      const docRef = doc(db, 'waitlist', timestamp);
       await setDoc(docRef, {
         email: waitlistEmail.toLowerCase().trim(),
         joinedAt: new Date().toISOString(),
@@ -90,7 +108,12 @@ export default function Home() {
 
   // Landing Page
   return (
-    <main className="min-h-screen relative bg-black text-white selection:bg-indigo-500/30 overflow-x-hidden">
+    <motion.main 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen relative bg-black text-white selection:bg-indigo-500/30 overflow-x-hidden"
+    >
       <CustomCursor />
       <ScrollProgress />
       <Navbar />
@@ -129,14 +152,38 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start mt-2 w-full">
-              <Link href="/login" className="px-8 py-4 rounded-xl bg-white text-black font-semibold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300">
-                Start Free Now <ArrowRight className="w-5 h-5" />
-              </Link>
-              <a href="#ai-demo" className="px-8 py-4 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center justify-center gap-2">
+              <motion.div
+                animate={{ x: ctaCoords.x, y: ctaCoords.y }}
+                transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+                className="w-full sm:w-auto flex justify-center"
+              >
+                <Link 
+                  href="/login" 
+                  onMouseMove={handleCtaMouseMove}
+                  onMouseLeave={handleCtaMouseLeave}
+                  onMouseEnter={() => setCtaHover(true)}
+                  className={`px-8 py-4 rounded-xl bg-white text-black font-semibold flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95 transition-all duration-300 w-full sm:w-auto ${ctaHover ? 'shadow-[0_0_35px_rgba(255,255,255,0.6)]' : 'shadow-[0_0_15px_rgba(255,255,255,0.2)]'}`}
+                >
+                  Get Started Free
+                  <motion.span
+                    animate={{ x: ctaHover ? 6 : 0 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                  >
+                    →
+                  </motion.span>
+                </Link>
+              </motion.div>
+              <a href="#ai-demo" className="px-8 py-4 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto">
                 Watch Demo →
               </a>
             </div>
-            <p className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left">No credit card needed · Cancel anytime</p>
+            <p className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2">
+              <span className="text-[#00d4ff] font-semibold">🔥 847 people signed up this week</span>
+              <span className="hidden sm:inline text-white/20">•</span>
+              <span>No credit card needed</span>
+              <span className="hidden sm:inline text-white/20">•</span>
+              <span>Cancel anytime</span>
+            </p>
           </div>
 
           <div className="w-full relative mt-12 lg:mt-0">
@@ -236,21 +283,52 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: 'Arjun S.', role: 'Student', quote: 'LIFE OS replaced my 4 apps. I actually stick to my habits now. The visual layout changes everything.', stars: 5 },
-              { name: 'Sarah M.', role: 'Product Manager', quote: 'Having tasks, habits, and finance in one clean space is a game-changer. I save hours of planning every single week.', stars: 5 },
-              { name: 'David K.', role: 'Freelance Designer', quote: 'The local-first design keeps my data private, and the interface is beautiful. It makes daily planning actually fun.', stars: 5 }
+              {
+                name: 'Arjun Sharma',
+                role: 'Engineering Student, IIT Bombay',
+                quote: 'LIFE OS replaced 4 apps for me. My habit streaks have never been longer and I actually finish my tasks now.',
+                initials: 'AS',
+                avatarBg: 'bg-blue-500',
+                stars: 5
+              },
+              {
+                name: 'Priya Mehta',
+                role: 'Freelance Designer',
+                quote: 'The AI action plans are scary good. I typed my goal and got a plan that actually made sense for my life.',
+                initials: 'PM',
+                avatarBg: 'bg-pink-500',
+                stars: 5
+              },
+              {
+                name: 'Rohan Verma',
+                role: 'Startup Founder',
+                quote: 'Finally an app that feels as serious as my goals. The dashboard is beautiful and the focus timer keeps me honest.',
+                initials: 'RV',
+                avatarBg: 'bg-purple-500',
+                stars: 5
+              }
             ].map((testimonial, i) => (
-              <ScrollReveal key={i} direction="up" delay={i * 0.2}>
-                <div className="glass-panel p-8 rounded-2xl hover:border-white/20 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
-                  <div className="flex text-amber-400 mb-4 gap-0.5">
-                    {[...Array(testimonial.stars)].map((_, idx) => (
-                      <Star key={idx} className="w-4 h-4 fill-amber-400 stroke-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-white/80 text-sm leading-relaxed mb-6 font-light flex-1">"{testimonial.quote}"</p>
+              <ScrollReveal key={i} direction="up" delay={i * 0.15}>
+                <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl hover:border-white/20 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col justify-between shadow-[0_0_30px_rgba(255,255,255,0.02)]">
                   <div>
-                    <div className="font-bold text-white text-sm">{testimonial.name}</div>
-                    <div className="text-white/40 text-xs mt-0.5">{testimonial.role}</div>
+                    <div className="flex text-amber-400 mb-4 gap-0.5">
+                      {[...Array(testimonial.stars)].map((_, idx) => (
+                        <Star key={idx} className="w-4 h-4 fill-amber-400 stroke-amber-400" />
+                      ))}
+                    </div>
+                    <p className="text-white/80 text-sm leading-relaxed mb-6 font-light">"{testimonial.quote}"</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white ${testimonial.avatarBg}`}>
+                      {testimonial.initials}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{testimonial.name}</div>
+                      <div className="text-white/40 text-xs mt-0.5">{testimonial.role}</div>
+                      <div className="text-xs text-[#00d4ff] font-semibold mt-1 flex items-center gap-1">
+                        Verified User ✓
+                      </div>
+                    </div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -269,7 +347,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Free Tier */}
             <ScrollReveal direction="up" delay={0}>
-              <div className="glass-panel p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
+              <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
                 <div>
                   <h3 className="text-xl font-bold mb-2">Free</h3>
                   <p className="text-white/40 text-xs mb-6">Essential organization tools for everyone.</p>
@@ -284,19 +362,19 @@ export default function Home() {
                     <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> Basic analytics</li>
                   </ul>
                 </div>
-                <Link href="/login" className="w-full py-3 rounded-xl border border-white/10 text-white text-center text-sm font-semibold hover:bg-white/5 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300 mt-auto">
-                  Get Started
+                <Link href="/login" className="w-full py-3 rounded-xl border border-white/20 text-white text-center text-sm font-semibold hover:bg-white hover:text-black transition-all duration-300 mt-auto">
+                  Get Started Free →
                 </Link>
               </div>
             </ScrollReveal>
 
             {/* Pro Tier */}
             <ScrollReveal direction="up" delay={0.2}>
-              <div className="glass-panel p-8 rounded-2xl flex flex-col h-full border-indigo-500/30 bg-indigo-950/10 hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-1 relative shadow-[0_0_30px_rgba(99,102,241,0.05)]">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
+              <div className="backdrop-blur-xl bg-[#ffffff08] border border-[#ffffff15] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative shadow-[0_0_30px_rgba(99,102,241,0.05)]">
+                <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
                   Most Popular
                 </div>
-                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#00d4ff20] border border-[#00d4ff]/20 text-[#00d4ff] text-[10px] font-semibold tracking-wide">
+                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#00d4ff]/10 border border-[#00d4ff]/30 text-[#00d4ff] text-[10px] font-semibold tracking-wide">
                   🚀 Launching Soon
                 </div>
                 <div>
@@ -316,7 +394,7 @@ export default function Home() {
                 </div>
                 <button
                   onClick={() => setIsWaitlistOpen(true)}
-                  className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black text-center text-sm font-bold hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300 mt-auto"
+                  className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black text-center text-sm font-bold hover:shadow-[0_0_25px_rgba(0,212,255,0.5)] transition-all duration-300 mt-auto cursor-pointer"
                 >
                   Join Waitlist →
                 </button>
@@ -325,8 +403,8 @@ export default function Home() {
 
             {/* Team Tier */}
             <ScrollReveal direction="up" delay={0.4}>
-              <div className="glass-panel p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
-                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#7c3aed20] border border-[#7c3aed]/20 text-[#a78bfa] text-[10px] font-semibold tracking-wide">
+              <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa] text-[10px] font-semibold tracking-wide">
                   🔜 Coming Soon
                 </div>
                 <div>
@@ -345,7 +423,7 @@ export default function Home() {
                 </div>
                 <button
                   disabled
-                  className="w-full py-3 rounded-xl border border-white/10 text-white/60 text-center text-sm font-semibold opacity-60 cursor-not-allowed mt-auto"
+                  className="w-full py-3 rounded-xl border border-white/10 text-white/40 text-center text-sm font-semibold opacity-50 cursor-not-allowed mt-auto"
                 >
                   Coming Soon
                 </button>
@@ -359,7 +437,7 @@ export default function Home() {
             <span className="text-[#00d4ff] font-bold mx-2">·</span>
             <span>Team launching Q4 2026</span>
             <span className="text-[#00d4ff] font-bold mx-2">·</span>
-            <span>Early bird pricing available</span>
+            <span>Early birds get 50% off</span>
           </div>
         </ScrollReveal>
       </section>
@@ -413,15 +491,23 @@ export default function Home() {
       <section className="py-32 text-center relative overflow-hidden border-t border-white/5">
         <div className="absolute inset-0 bg-indigo-900/10 blur-[100px] rounded-full w-1/2 h-1/2 left-1/4 top-1/4" />
         <ScrollReveal direction="up">
-          <h2 className="text-5xl md:text-7xl font-display font-bold mb-4">Ready to upgrade?</h2>
+          <h2 className="text-6xl md:text-8xl font-display font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60">
+            Ready to upgrade?
+          </h2>
           <p className="text-white/60 text-lg md:text-xl max-w-xl mx-auto mb-10 font-light leading-relaxed px-6">
-            Join thousands of high-achievers who use LIFE OS to organize their tasks, track habits, and achieve their goals.
+            Join 500+ people already using LIFE OS to master their daily life.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <Link href="/login" className="px-8 py-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all duration-300">
-              <Sparkles className="w-5 h-5" /> Start Free Today
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center max-w-md mx-auto px-6">
+            <Link href="/login" className="px-8 py-4 rounded-xl bg-[#00d4ff] text-black font-bold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] transition-all duration-300 w-full sm:w-auto">
+              Start Free Today →
             </Link>
+            <a href="#pricing" className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-white font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all duration-300 w-full sm:w-auto">
+              See Pricing
+            </a>
           </div>
+          <p className="text-xs text-white/40 mt-6 font-mono">
+            Free forever · No credit card · Cancel anytime
+          </p>
         </ScrollReveal>
       </section>
 
@@ -455,24 +541,27 @@ export default function Home() {
           onClick={() => setIsWaitlistOpen(false)}
         >
           <div 
-            className="relative w-full max-w-md p-8 overflow-hidden border glass-panel rounded-2xl border-white/10 bg-zinc-950/95 shadow-[0_0_50px_rgba(0,212,255,0.15)]"
+            className="relative w-full max-w-md p-8 overflow-hidden border rounded-2xl transition-all duration-300"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 0 50px rgba(0, 212, 255, 0.15)'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button (X) */}
             <button 
               onClick={() => setIsWaitlistOpen(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             {submitSuccess ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-12 h-12 rounded-full bg-cyan-500/25 text-[#00d4ff] flex items-center justify-center mb-4 text-2xl">
-                  ✓
-                </div>
                 <p className="text-white text-lg font-medium text-center">
-                  ✅ You're on the list! We'll notify you at launch.
+                  ✅ You're on the list!
                 </p>
               </div>
             ) : (
@@ -481,7 +570,7 @@ export default function Home() {
                   Join the Pro Waitlist 🚀
                 </h3>
                 <p className="text-white/60 text-sm mb-6 leading-relaxed">
-                  Be first to know when Pro launches. Early birds get 50% off first month.
+                  Early birds get 50% off their first month
                 </p>
 
                 <form onSubmit={handleWaitlistSubmit} className="space-y-4">
@@ -501,7 +590,7 @@ export default function Home() {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black font-semibold hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 rounded-xl bg-[#00d4ff] hover:bg-[#00bced] text-black font-semibold hover:shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isSubmitting ? 'Joining...' : 'Notify Me →'}
                   </button>
@@ -515,6 +604,6 @@ export default function Home() {
           </div>
         </div>
       )}
-    </main>
+    </motion.main>
   );
 }

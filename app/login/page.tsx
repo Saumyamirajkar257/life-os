@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { auth } from '@/lib/firebase';
@@ -25,7 +25,12 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+
+  // Field-specific error states
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [fullNameError, setFullNameError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,18 +44,40 @@ export default function LoginPage() {
     return () => unsubscribe();
   }, [router]);
 
+  const getPasswordStrength = (pwd: string) => {
+    if (!pwd) return { score: 0, label: 'Weak', color: 'bg-zinc-800', textColor: 'text-zinc-500' };
+    let score = 0;
+    if (pwd.length >= 6) score += 1;
+    if (pwd.length >= 10) score += 1;
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    switch (score) {
+      case 0:
+      case 1:
+        return { score: 1, label: 'Weak', color: 'bg-rose-500', textColor: 'text-rose-500' };
+      case 2:
+        return { score: 2, label: 'Fair', color: 'bg-orange-500', textColor: 'text-orange-500' };
+      case 3:
+        return { score: 3, label: 'Good', color: 'bg-yellow-500', textColor: 'text-yellow-500' };
+      case 4:
+      default:
+        return { score: 4, label: 'Strong', color: 'bg-green-500', textColor: 'text-green-500' };
+    }
+  };
+
   const getFriendlyError = (code: string, fallbackMessage: string) => {
     switch (code) {
       case 'auth/wrong-password':
         return "Incorrect password. Try again.";
       case 'auth/user-not-found':
-        return "No account found with this email.";
+        return "No account with this email.";
       case 'auth/too-many-requests':
-        return "Too many attempts. Try again later.";
+        return "Too many attempts. Try later.";
       case 'auth/invalid-email':
-        return "Please enter a valid email address.";
+        return "Please enter a valid email.";
       case 'auth/email-already-in-use':
-        return "This email is already registered. Please sign in instead.";
+        return "Email already registered. Sign in instead.";
       case 'auth/weak-password':
         return "Password is too weak. Please use at least 6 characters.";
       case 'auth/invalid-credential':
@@ -60,13 +87,25 @@ export default function LoginPage() {
     }
   };
 
+  const clearErrors = () => {
+    setEmailError('');
+    setPasswordError('');
+    setFullNameError('');
+    setGeneralError('');
+    setInfoMsg('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setInfoMsg('');
+    clearErrors();
+
+    if (!isLogin && !fullName.trim()) {
+      setFullNameError("Full Name is required.");
+      return;
+    }
 
     if (!isLogin && password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setPasswordError("Passwords do not match.");
       return;
     }
 
@@ -84,22 +123,29 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error(err);
       const code = err?.code || '';
-      setError(getFriendlyError(code, err.message));
+      const message = getFriendlyError(code, err.message);
+
+      if (code === 'auth/invalid-email' || code === 'auth/user-not-found' || code === 'auth/email-already-in-use') {
+        setEmailError(message);
+      } else if (code === 'auth/wrong-password' || code === 'auth/weak-password') {
+        setPasswordError(message);
+      } else {
+        setGeneralError(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setError('');
-    setInfoMsg('');
+    clearErrors();
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Google authentication failed.');
+      setGeneralError(err.message || 'Google authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -107,24 +153,31 @@ export default function LoginPage() {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      setError("Please enter your email address to reset your password.");
+      setEmailError("Please enter your email address to reset your password.");
       setInfoMsg('');
       return;
     }
-    setError('');
-    setInfoMsg('');
+    clearErrors();
     try {
       await sendPasswordResetEmail(auth, email);
-      setInfoMsg("Password reset email sent! Check your inbox.");
+      setInfoMsg("Reset link sent to your email ✅");
     } catch (err: any) {
       console.error(err);
       const code = err?.code || '';
-      setError(getFriendlyError(code, err.message));
+      const message = getFriendlyError(code, err.message);
+      if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
+        setEmailError(message);
+      } else {
+        setGeneralError(message);
+      }
     }
   };
 
   return (
-    <div 
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
       className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]"
       style={{ background: 'radial-gradient(circle at center, #7c3aed15 0%, #0a0a0f 100%)' }}
     >
@@ -132,29 +185,34 @@ export default function LoginPage() {
       <HeroParticles />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-[440px] backdrop-blur-xl bg-[#ffffff08] border border-[#ffffff15] rounded-[24px] p-6 md:p-12 relative z-10 shadow-[0_0_40px_#00d4ff10]"
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-[440px] backdrop-blur-xl rounded-[24px] p-6 md:p-12 relative z-10 transition-all duration-300"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 0 60px rgba(0, 212, 255, 0.08)'
+        }}
       >
         <div className="text-center mb-8">
           {/* Cyan Hexagon Logo */}
           <div className="flex justify-center mb-4">
             <svg 
-              className="w-12 h-12 text-[#00d4ff] drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]" 
+              className="w-8 h-8 text-[#00d4ff] drop-shadow-[0_0_15px_rgba(0,212,255,0.5)]" 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
-              strokeWidth="1.5"
+              strokeWidth="2"
             >
               <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" />
             </svg>
           </div>
           <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">
-            LIFE OS
+            {isLogin ? 'LIFE OS' : 'Create your free account'}
           </h1>
           <p className="text-white/60 text-sm">
-            {isLogin ? 'Welcome back 👋' : 'Create your free account'}
+            {isLogin ? 'Welcome back 👋' : 'Start your journey today 🚀'}
           </p>
         </div>
 
@@ -173,11 +231,24 @@ export default function LoginPage() {
                   type="text"
                   required
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (fullNameError) setFullNameError('');
+                  }}
+                  className="w-full bg-[#ffffff08] border border-[#ffffff15] rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-[#00d4ff40] focus:border-[#00d4ff] transition-all duration-300"
                   placeholder="Your Name"
                 />
               </div>
+              {fullNameError && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1.5"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {fullNameError}
+                </motion.p>
+              )}
             </div>
           )}
 
@@ -194,11 +265,24 @@ export default function LoginPage() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                className="w-full bg-[#ffffff08] border border-[#ffffff15] rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-[#00d4ff40] focus:border-[#00d4ff] transition-all duration-300"
                 placeholder="you@example.com"
               />
             </div>
+            {emailError && (
+              <motion.p 
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1.5"
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {emailError}
+              </motion.p>
+            )}
           </div>
 
           {/* Password field */}
@@ -214,8 +298,11 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError('');
+                }}
+                className="w-full bg-[#ffffff08] border border-[#ffffff15] rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-[#00d4ff40] focus:border-[#00d4ff] transition-all duration-300"
                 placeholder="Enter your password"
               />
               <button
@@ -226,6 +313,32 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
+            {/* Password strength indicator (Signup only) */}
+            {!isLogin && password && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-2.5"
+              >
+                <div className="flex gap-1 h-1 w-full bg-white/5 rounded-full overflow-hidden mb-1">
+                  {[1, 2, 3, 4].map((bar) => {
+                    const strength = getPasswordStrength(password);
+                    const isActive = bar <= strength.score;
+                    return (
+                      <div 
+                        key={bar} 
+                        className={`h-full flex-1 transition-all duration-300 ${isActive ? strength.color : 'bg-white/10'}`} 
+                      />
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-white/40 text-right font-medium tracking-wide">
+                  Strength: <span className={getPasswordStrength(password).textColor}>{getPasswordStrength(password).label}</span>
+                </p>
+              </motion.div>
+            )}
+
             {isLogin && (
               <div className="text-right mt-1.5">
                 <button
@@ -253,8 +366,11 @@ export default function LoginPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   required
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] focus:shadow-[0_0_10px_rgba(0,212,255,0.15)] transition-all"
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (passwordError) setPasswordError('');
+                  }}
+                  className="w-full bg-[#ffffff08] border border-[#ffffff15] rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-[#00d4ff40] focus:border-[#00d4ff] transition-all duration-300"
                   placeholder="Confirm your password"
                 />
                 <button
@@ -269,27 +385,37 @@ export default function LoginPage() {
           )}
 
           {/* Inline Mapped Error / Success Messages */}
-          {(error || infoMsg) && (
+          {(passwordError || generalError || infoMsg) && (
             <div className="mt-2">
-              {error && (
-                <motion.div
+              {passwordError && (
+                <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-rose-500 font-medium flex items-start gap-2"
+                  className="text-xs text-rose-500 font-medium flex items-start gap-1.5"
                 >
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </motion.div>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>{passwordError}</span>
+                </motion.p>
+              )}
+              {generalError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-rose-500 font-medium flex items-start gap-1.5"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>{generalError}</span>
+                </motion.p>
               )}
               {infoMsg && (
-                <motion.div
+                <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-emerald-400 font-medium flex items-start gap-2"
+                  className="text-xs text-emerald-400 font-medium flex items-start gap-1.5"
                 >
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                   <span>{infoMsg}</span>
-                </motion.div>
+                </motion.p>
               )}
             </div>
           )}
@@ -297,12 +423,12 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 mt-6 bg-[#00d4ff] text-black font-semibold rounded-full hover:shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+            className="w-full py-4 mt-6 bg-[#00d4ff] text-black font-bold rounded-[12px] hover:shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
             ) : isLogin ? (
-              'Sign In'
+              'Sign In →'
             ) : (
               'Create Account →'
             )}
@@ -315,11 +441,12 @@ export default function LoginPage() {
           <div className="h-px bg-white/10 flex-1" />
         </div>
 
+        {/* Google Authentication */}
         <button
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-3.5 mt-4 bg-white/5 border border-white/10 text-white font-medium rounded-full hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.02)]"
+          className="w-full py-3.5 mt-4 bg-white/5 border border-white/10 text-white font-medium rounded-[12px] hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.02)]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -342,6 +469,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
+        {/* Offline Bypass */}
         <button
           type="button"
           onClick={() => {
@@ -353,21 +481,20 @@ export default function LoginPage() {
           ⚡ Try without account
         </button>
 
+        {/* Navigation Switch */}
         <div className="mt-6 text-center">
           <button
             type="button"
             onClick={() => {
               setIsLogin(!isLogin);
-              setError('');
-              setInfoMsg('');
+              clearErrors();
             }}
             className="text-sm text-[#00d4ff] hover:underline transition-colors cursor-pointer font-medium"
           >
-            {isLogin ? "New to LIFE OS? Create free account →" : "Already have account? Sign in →"}
+            {isLogin ? "New to LIFE OS? Create free account →" : "Already have an account? Sign in →"}
           </button>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
-
