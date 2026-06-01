@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Server Configuration Error" }, { status: 500 });
     }
 
-    if (password === expectedPasscode && email?.toLowerCase().trim() === adminEmail?.toLowerCase().trim()) {
+    if (password?.trim() === expectedPasscode?.trim() && email?.toLowerCase().trim() === adminEmail?.toLowerCase().trim()) {
       // Create session payload (expires in 8 hours = 28800 seconds)
       const exp = Math.floor(Date.now() / 1000) + 28800;
       const iat = Math.floor(Date.now() / 1000);
