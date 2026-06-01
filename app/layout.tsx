@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Syne, JetBrains_Mono } from 'next/font/google';
+import { Inter, Outfit, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-const syne = Syne({
+const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-display',
 });
@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://lifeos-257.vercel.app'),
+  metadataBase: new URL('https://lifetrackr-premium.netlify.app'),
   title: 'LIFE OS — AI-Powered Life Command Center',
   description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
   keywords: ['productivity', 'life os', 'ai', 'task manager', 'habits', 'journal'],
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'LIFE OS — AI-Powered Life Command Center',
     description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
-    url: 'https://lifeos-257.vercel.app',
+    url: 'https://lifetrackr-premium.netlify.app',
     siteName: 'LIFE OS',
     images: [
       {
@@ -65,8 +65,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          dmSans.variable,
-          syne.variable,
+          inter.variable,
+          outfit.variable,
           jetbrainsMono.variable
         )}
       >
