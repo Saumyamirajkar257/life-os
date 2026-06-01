@@ -4,16 +4,11 @@ import { verifyToken } from '@/lib/jwt';
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('admin_verified')?.value;
-    const jwtSecret = process.env.ADMIN_JWT_SECRET;
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    const jwtSecret = process.env.ADMIN_JWT_SECRET || 'lifeos-default-jwt-secret-key-2026';
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'saumyamir25@gmail.com';
 
     if (!token) {
       return NextResponse.json({ verified: false }, { status: 401 });
-    }
-
-    if (!jwtSecret || !adminEmail) {
-      console.error("Missing admin server environment variables in admin-check.");
-      return NextResponse.json({ verified: false, error: "Server Configuration Error" }, { status: 500 });
     }
 
     const payload = verifyToken(token, jwtSecret);

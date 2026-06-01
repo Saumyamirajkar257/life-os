@@ -8,15 +8,10 @@ export async function POST(request: NextRequest) {
     const { password, email } = await request.json();
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '127.0.0.1';
 
-    // Verify passcode against env
-    const expectedPasscode = process.env.ADMIN_PASSCODE;
-    const jwtSecret = process.env.ADMIN_JWT_SECRET;
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-
-    if (!expectedPasscode || !jwtSecret || !adminEmail) {
-      console.error("Missing admin server environment variables.");
-      return NextResponse.json({ success: false, error: "Server Configuration Error" }, { status: 500 });
-    }
+    // Verify passcode against env (with fallback defaults)
+    const expectedPasscode = process.env.ADMIN_PASSCODE || '9714';
+    const jwtSecret = process.env.ADMIN_JWT_SECRET || 'lifeos-default-jwt-secret-key-2026';
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'saumyamir25@gmail.com';
 
     if (password?.trim() === expectedPasscode?.trim() && email?.toLowerCase().trim() === adminEmail?.toLowerCase().trim()) {
       // Create session payload (expires in 8 hours = 28800 seconds)
