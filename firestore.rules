@@ -9,5 +9,9 @@ service cloud.firestore {
       allow create, read: if true;
       allow update, delete: if false;
     }
+    match /adminLogs/{logId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
   }
 }
