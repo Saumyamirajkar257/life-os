@@ -304,10 +304,6 @@ Week 4: Review progression reports and adjust weekly metrics to scale cognitive 
               </a>
             </div>
             <p className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2">
-              <span className="text-[#00d4ff] font-semibold">🔥 847 people signed up this week</span>
-              <span className="hidden sm:inline text-white/20">•</span>
-              <span>No credit card needed</span>
-              <span className="hidden sm:inline text-white/20">•</span>
               <span>Cancel anytime</span>
             </p>
           </div>
