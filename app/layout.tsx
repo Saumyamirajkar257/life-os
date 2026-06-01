@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://lifetrackr-premium.netlify.app'),
+  metadataBase: new URL('https://lifeos-257.vercel.app'),
   title: 'LIFE OS — AI-Powered Life Command Center',
   description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
   keywords: ['productivity', 'life os', 'ai', 'task manager', 'habits', 'journal'],
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'LIFE OS — AI-Powered Life Command Center',
     description: 'Replace 6 apps with one intelligent dashboard. Manage tasks, habits, journal, finance and focus — powered by AI. Free forever.',
-    url: 'https://lifetrackr-premium.netlify.app',
+    url: 'https://lifeos-257.vercel.app',
     siteName: 'LIFE OS',
     images: [
       {

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
 import { AppShell } from '@/components/layout/AppShell';
 import { DashboardGrid } from '@/features/dashboard/components/DashboardGrid';
 import Navbar from '@/components/Navbar';
@@ -13,7 +12,7 @@ import { HeroParticles } from '@/components/landing/HeroParticles';
 import { TypewriterText } from '@/components/landing/TypewriterText';
 import { ScrollReveal } from '@/components/landing/ScrollReveal';
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase';
-import { ArrowRight, Sparkles, Target, Shield, Activity, Star, Plus, X } from 'lucide-react';
+import { ArrowRight, Sparkles, Target, Shield, Activity, Star, Plus } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Link from 'next/link';
 import { AnimatedMockup } from '@/components/landing/AnimatedMockup';
@@ -29,10 +28,9 @@ export default function Home() {
   const [isBypassed, setIsBypassed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  // Magnetic CTA states
   const [ctaCoords, setCtaCoords] = useState({ x: 0, y: 0 });
   const [ctaHover, setCtaHover] = useState(false);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const handleCtaMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -45,9 +43,6 @@ export default function Home() {
     setCtaHover(false);
     setCtaCoords({ x: 0, y: 0 });
   };
-
-  // Waitlist Modal States
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   useEffect(() => {
     const bypassed = typeof window !== 'undefined' && localStorage.getItem('life-os-bypass-auth') === 'true';
@@ -64,7 +59,6 @@ export default function Home() {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
-  // Show dashboard only after client-side auth is verified and logged in/bypassed
   if (!loading && (user || isBypassed)) {
     return (
       <AppShell>
@@ -73,7 +67,30 @@ export default function Home() {
     );
   }
 
-  // Landing Page
+  const animContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const animItem = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring' as const,
+        stiffness: 100,
+        damping: 15,
+      },
+    },
+  };
+
   return (
     <motion.main 
       initial={{ opacity: 0 }}
@@ -85,40 +102,53 @@ export default function Home() {
       <ScrollProgress />
       <Navbar />
       
-      {/* SECTION 1: Cinematic Hero */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center pt-24 pb-16 overflow-hidden">
-        {/* Dot Grid Background overlay (masked to fade out at edges) */}
+      <section className="relative min-h-[95vh] flex flex-col justify-center pt-24 pb-16 overflow-hidden">
         <div className="absolute inset-0 dot-grid-bg pointer-events-none z-0" />
-        {/* Animated Background Mesh */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-black to-black opacity-80 z-0" />
         <HeroParticles />
         
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-6 max-w-7xl mx-auto w-full">
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-            {/* Version badge animate on mount */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-indigo-300 mb-4 backdrop-blur-md">
+          <motion.div 
+            variants={animContainer}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col items-center lg:items-start text-center lg:text-left"
+          >
+            <motion.div 
+              variants={animItem}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-indigo-300 mb-4 backdrop-blur-md"
+            >
               <Sparkles className="w-4 h-4 text-indigo-400" />
               LIFE OS v2.0
-            </div>
+            </motion.div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tighter mb-4 leading-none">
+            <motion.h1 
+              variants={animItem}
+              className="text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tighter mb-4 leading-none"
+            >
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60 drop-shadow-2xl pb-1">
                 Your
               </span>
-              <span className="block pb-2 h-[1.2em]">
-                <CycleText words={['Tasks.', 'Habits.', 'Goals.', 'Life.']} />
+              <span className="block pb-2 min-h-[1.2em]">
+                <CycleText words={['Life, Organized.', 'Goals, Achieved.', 'Focus, Unlocked.', 'Habits, Built.']} />
               </span>
-            </h1>
+            </motion.h1>
 
-            <div className="h-20 lg:h-16 flex items-center justify-center lg:justify-start mb-6 w-full">
+            <motion.div 
+              variants={animItem}
+              className="h-20 lg:h-16 flex items-center justify-center lg:justify-start mb-6 w-full"
+            >
               <TypewriterText 
                 text="Take control of your daily schedule, habits, and long-term goals in one unified space. Experience a clean, beautiful digital environment built to keep you focused and consistent."
-                delay={0.5}
+                delay={0.4}
                 className="text-base md:text-lg text-zinc-200 max-w-2xl font-light leading-relaxed"
               />
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start mt-2 w-full">
+            <motion.div 
+              variants={animItem}
+              className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start mt-2 w-full"
+            >
               <motion.div
                 animate={{ x: ctaCoords.x, y: ctaCoords.y }}
                 transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
@@ -143,22 +173,50 @@ export default function Home() {
               <a href="#ai-demo" className="px-8 py-4 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto">
                 Watch Demo →
               </a>
-            </div>
-            <p className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2">
-              <span className="text-[#00d4ff] font-semibold">🔥 847 people signed up this week</span>
+            </motion.div>
+            
+            <motion.p 
+              variants={animItem}
+              className="text-xs text-white/40 mt-4 font-mono w-full text-center lg:text-left flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-1 sm:gap-2"
+            >
+              <span className="text-[#00d4ff] font-semibold">🔥 1,200+ people joined</span>
               <span className="hidden sm:inline text-white/20">•</span>
               <span>No credit card needed</span>
               <span className="hidden sm:inline text-white/20">•</span>
               <span>Cancel anytime</span>
-            </p>
-          </div>
+            </motion.p>
+
+            <motion.div 
+              variants={animItem}
+              className="grid grid-cols-3 gap-6 w-full mt-10 pt-8 border-t border-white/10 text-left"
+            >
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-white">
+                  <NumberTicker value={12400} />+
+                </div>
+                <div className="text-xs text-white/40 font-mono mt-1">Tasks Completed</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-indigo-400 flex items-center gap-1">
+                  <span>4.9</span>
+                  <span className="text-amber-400 text-xl leading-none">★</span>
+                </div>
+                <div className="text-xs text-white/40 font-mono mt-1">User Rating</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-emerald-400">
+                  Free
+                </div>
+                <div className="text-xs text-white/40 font-mono mt-1">Forever</div>
+              </div>
+            </motion.div>
+          </motion.div>
 
           <div className="w-full relative mt-12 lg:mt-0">
             <AnimatedMockup />
           </div>
         </div>
 
-        {/* Scroll Indicator */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
           <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center p-1">
             <div className="w-1 h-2 bg-white rounded-full animate-ping" />
@@ -166,11 +224,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF BAR */}
       <section className="relative z-20 mt-12 mb-24 max-w-5xl mx-auto px-6">
         <div className="glass-panel px-8 py-5 rounded-full flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-white/70 font-medium tracking-wide">
-          
-          {/* Avatar Stack */}
           <div className="flex items-center gap-3">
             <div className="flex pl-[10px]">
               {[
@@ -180,16 +235,16 @@ export default function Home() {
                 { bg: 'bg-green-500', text: 'RJ' },
                 { bg: 'bg-pink-500', text: 'NV' },
               ].map((avatar, i) => (
-                <div key={i} className={`w-[36px] h-[36px] rounded-full ${avatar.bg} border-2 border-[#0a0a0f] flex items-center justify-center text-xs text-white font-bold -ml-[10px] relative z-[${5 - i}]`}>
+                <div key={i} className={`w-[36px] h-[36px] rounded-full ${avatar.bg} border-2 border-[#0a0a0f] flex items-center justify-center text-xs text-white font-bold -ml-[10px] relative z-10`}>
                   {avatar.text}
                 </div>
               ))}
             </div>
-            <span className="text-white/60 text-sm">★★★★★ Loved by <NumberTicker value={500} />+ people</span>
+            <span className="text-white/60 text-sm">★★★★★ Loved by 1,200+ people</span>
           </div>
 
           <span className="text-white/20 hidden md:inline">•</span>
-          <span className="flex items-center gap-1.5"><NumberTicker value={50000} />+ Tasks Completed</span>
+          <span className="flex items-center gap-1.5"><NumberTicker value={12400} />+ Tasks Completed</span>
           <span className="text-white/20 hidden md:inline">•</span>
           <span className="flex items-center gap-1.5 text-indigo-300">4.9★ Rating</span>
           <span className="text-white/20 hidden md:inline">•</span>
@@ -197,7 +252,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 2: 3D Feature Showcase */}
       <section id="features" className="relative py-20 bg-gradient-to-b from-black via-zinc-950 to-black">
         <ScrollReveal direction="up">
           <div className="text-center mb-12">
@@ -209,7 +263,6 @@ export default function Home() {
         <FeatureShowcase />
       </section>
 
-      {/* SECTION 3: Stats / Social Proof (The Grid) */}
       <section className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
@@ -230,7 +283,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI DEMO SECTION */}
       <section id="ai-demo" className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5 scroll-mt-24">
         <ScrollReveal direction="up">
           <div className="text-center mb-16">
@@ -241,7 +293,6 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
       <section id="testimonials" className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
         <ScrollReveal direction="up">
           <div className="text-center mb-16">
@@ -304,7 +355,6 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* PRICING SECTION */}
       <section id="pricing" className="py-24 max-w-7xl mx-auto px-6 border-t border-white/5">
         <ScrollReveal direction="up">
           <div className="text-center mb-16">
@@ -312,7 +362,6 @@ export default function Home() {
             <p className="text-white/50 text-base max-w-md mx-auto">Start free and unlock premium features as you level up your productivity.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Free Tier */}
             <ScrollReveal direction="up" delay={0}>
               <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
                 <div>
@@ -335,7 +384,6 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Pro Tier */}
             <ScrollReveal direction="up" delay={0.2}>
               <div className="backdrop-blur-xl bg-[#ffffff08] border border-[#ffffff15] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative shadow-[0_0_30px_rgba(99,102,241,0.05)]">
                 <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
@@ -368,7 +416,6 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Team Tier */}
             <ScrollReveal direction="up" delay={0.4}>
               <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.1] p-8 rounded-2xl flex flex-col h-full hover:border-white/20 transition-all duration-300 hover:-translate-y-1 relative">
                 <div className="absolute -top-3 right-4 bg-[#7c3aed15] text-[#a78bfa] border border-[#7c3aed30] rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide">
@@ -398,7 +445,6 @@ export default function Home() {
             </ScrollReveal>
           </div>
 
-          {/* Launch Timeline Info */}
           <div className="text-center mt-6 text-[#8b8b9e] text-[13px] font-light">
             <span>Pro launching Q3 2026</span>
             <span className="text-[#00d4ff] font-bold mx-2">·</span>
@@ -409,7 +455,6 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* FAQ SECTION */}
       <section id="faq" className="py-24 max-w-4xl mx-auto px-6 border-t border-white/5">
         <ScrollReveal direction="up">
           <div className="text-center mb-16">
@@ -454,7 +499,6 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* SECTION 4: Final CTA */}
       <section className="py-32 text-center relative overflow-hidden border-t border-white/5">
         <div className="absolute inset-0 bg-indigo-900/10 blur-[100px] rounded-full w-1/2 h-1/2 left-1/4 top-1/4" />
         <ScrollReveal direction="up">
@@ -462,7 +506,7 @@ export default function Home() {
             Ready to upgrade?
           </h2>
           <p className="text-white/60 text-lg md:text-xl max-w-xl mx-auto mb-10 font-light leading-relaxed px-6">
-            Join 500+ people already using LIFE OS to master their daily life.
+            Join 1,200+ people already using LIFE OS to master their daily life.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center max-w-md mx-auto px-6">
             <Link href="/login" className="px-8 py-4 rounded-xl bg-[#00d4ff] text-black font-bold flex items-center justify-center gap-2 hover:scale-105 active:scale-95 hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] transition-all duration-300 w-full sm:w-auto">
@@ -478,7 +522,6 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* FOOTER */}
       <footer className="border-t border-white/5 bg-zinc-950/20 py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
@@ -500,7 +543,6 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Pro Waitlist Modal */}
       <WaitlistModal 
         isOpen={isWaitlistOpen}
         onClose={() => setIsWaitlistOpen(false)}
