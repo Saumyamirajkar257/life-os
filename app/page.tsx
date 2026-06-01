@@ -245,7 +245,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-3">
             <span className="font-display font-black text-xl tracking-[0.1em] text-[#F0F0F5] flex items-center gap-2">
               <span className="w-5 h-5 rounded bg-[#0CDBC1] inline-block animate-pulse" />
-              KORTEX
+              LIFE OS
             </span>
           </Link>
           
@@ -298,7 +298,7 @@ export default function Home() {
           <div className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#13131A] border border-white/10 text-xs font-mono text-[#0CDBC1] mb-6 tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              KORTEX: PERSONAL INTELLIGENCE ENGINE
+              LIFE OS: PERSONAL INTELLIGENCE ENGINE
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tighter mb-6 leading-[0.9] text-[#F0F0F5]">
@@ -309,7 +309,7 @@ export default function Home() {
             </h1>
 
             <p className="text-base md:text-lg text-[#8B8B9E] max-w-xl font-light leading-relaxed mb-8">
-              Kortex is a private, local-first productivity workspace. Your tasks, habits, budgets, and focus timers reside in a zero-knowledge ecosystem. No accounts required. No cloud access. Free forever.
+              LIFE OS is a private, local-first productivity workspace. Your tasks, habits, budgets, and focus timers reside in a zero-knowledge ecosystem. No accounts required. No cloud access. Free forever.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start w-full">
@@ -367,7 +367,7 @@ export default function Home() {
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
                   <div className="w-2.5 h-2.5 rounded-full bg-[#0CDBC1]/80" />
                 </div>
-                <div className="text-[10px] font-mono text-[#8B8B9E]">kortex_dashboard_v1.0</div>
+                <div className="text-[10px] font-mono text-[#8B8B9E]">lifeos_dashboard_v1.0</div>
               </div>
 
               <div className="grid grid-cols-12 gap-4">
@@ -469,14 +469,14 @@ export default function Home() {
         <div className="text-center">
           <h2 className="font-display text-4xl md:text-5xl font-black mb-6 tracking-tight">Built Paranoid. By Design.</h2>
           <p className="text-lg md:text-xl text-[#F0F0F5] leading-relaxed font-light mb-8 italic">
-            "Kortex represents an absolute departure from central storage architectures. Our core advantage is our total, mathematical inability to view or compromise your personal workspace."
+            "LIFE OS represents an absolute departure from central storage architectures. Our core advantage is our total, mathematical inability to view or compromise your personal workspace."
           </p>
           <div className="text-left text-base text-[#8B8B9E] leading-relaxed font-light space-y-4 max-w-2xl mx-auto">
             <p>
               Most productivity apps treat your daily plans, thoughts, and financial reports as server training logs. We engineered a workspace where your core database resides completely inside your browser's private sandbox (IndexedDB). 
             </p>
             <p>
-              If you decide to coordinate sync between your devices, Kortex performs client-side AES-256 zero-knowledge encryption before a single bit leaves your sandbox. We never hold your encryption key because you are the exclusive root owner of your data. Technically impossible for us to track; built secure by architectural physics.
+              If you decide to coordinate sync between your devices, LIFE OS performs client-side AES-256 zero-knowledge encryption before a single bit leaves your sandbox. We never hold your encryption key because you are the exclusive root owner of your data. Technically impossible for us to track; built secure by architectural physics.
             </p>
           </div>
         </div>
@@ -536,7 +536,7 @@ export default function Home() {
                 <td className="p-4 text-right font-mono text-rose-400">₹4,896 / month</td>
               </tr>
               <tr className="bg-[#0CDBC1]/5 font-black text-[#0CDBC1]">
-                <td className="p-4">KORTEX OS</td>
+                <td className="p-4">LIFE OS</td>
                 <td className="p-4 font-light">All Core Utilities Integrated</td>
                 <td className="p-4 text-right font-mono">₹0 / month</td>
               </tr>
@@ -563,7 +563,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-display font-bold mb-3">One Place For Everything — No More Tab Chaos</h3>
               <p className="text-[#8B8B9E] text-sm leading-relaxed max-w-xl font-light">
-                Consolidate your daily actions under a single window. Kortex combines standard task mapping, micro habit streaking, budgetary checkouts, Pomodoro shielding, and secure journals. No syncing delay. No web lookup friction.
+                Consolidate your daily actions under a single window. LIFE OS combines standard task mapping, micro habit streaking, budgetary checkouts, Pomodoro shielding, and secure journals. No syncing delay. No web lookup friction.
               </p>
             </div>
             <div className="mt-8 border-t border-white/5 pt-6 flex flex-wrap gap-4 text-xs font-mono text-[#8B8B9E]">
@@ -724,7 +724,7 @@ export default function Home() {
             <div className="bg-[#0A0A0F] border border-white/5 rounded-lg p-4 font-mono text-[11px] text-[#8B8B9E] min-h-[160px] max-h-[300px] overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
               {demoGoalOutput ? (
                 <div>
-                  <span className="text-[#0CDBC1] font-bold">KORTEX AI ENGINE OUTPUT:</span>
+                  <span className="text-[#0CDBC1] font-bold">LIFE OS AI ENGINE OUTPUT:</span>
                   <div className="mt-2 text-white">{demoGoalOutput}</div>
                 </div>
               ) : (
@@ -781,7 +781,7 @@ export default function Home() {
       <section className="py-24 border-t border-white/5 relative z-10 max-w-4xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="font-display text-4xl md:text-5xl font-black mb-4 tracking-tight">Radical Transparency</h2>
-          <p className="text-base text-[#8B8B9E] max-w-md mx-auto">We build for specific workflows. Here is an honest audit to verify if Kortex matches your cognitive demands.</p>
+          <p className="text-base text-[#8B8B9E] max-w-md mx-auto">We build for specific workflows. Here is an honest audit to verify if LIFE OS matches your cognitive demands.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1015,7 +1015,7 @@ export default function Home() {
           <div className="md:col-span-4 flex flex-col items-start text-left">
             <span className="font-display font-black text-lg tracking-wider text-[#F0F0F5] mb-3 flex items-center gap-2">
               <span className="w-4 h-4 rounded bg-[#0CDBC1]" />
-              KORTEX
+              LIFE OS
             </span>
             <p className="text-[#8B8B9E] text-xs max-w-xs leading-relaxed font-light mb-4">
               A private, local-first productivity command center. Own your personal actions, streaks, and routines with total encryption sanity.
@@ -1070,7 +1070,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto mt-8 flex flex-col md:flex-row items-center justify-between text-xs text-[#8B8B9E]/50 font-mono gap-4">
-          <p>© 2026 KORTEX. All rights reserved. Zero-knowledge productivity.</p>
+          <p>© 2026 LIFE OS. All rights reserved. Zero-knowledge productivity.</p>
           <div className="flex gap-6">
             <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#F0F0F5] transition-colors">GitHub Repository</a>
             <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#F0F0F5] transition-colors">Twitter Updates</a>
