@@ -130,7 +130,11 @@ export default function SettingsPage() {
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setUserPfp(reader.result as string);
+                          const newPfp = reader.result as string;
+                          setUserPfp(newPfp);
+                          updateProfile(userName, email, userHandle, newPfp);
+                          setIsSaved(true);
+                          setTimeout(() => setIsSaved(false), 2000);
                         };
                         reader.readAsDataURL(file);
                       }
@@ -162,7 +166,13 @@ export default function SettingsPage() {
                         <button
                           key={idx}
                           type="button"
-                          onClick={() => setUserPfp(preset.url)}
+                          onClick={() => {
+                            const newPfp = preset.url;
+                            setUserPfp(newPfp);
+                            updateProfile(userName, email, userHandle, newPfp);
+                            setIsSaved(true);
+                            setTimeout(() => setIsSaved(false), 2000);
+                          }}
                           className="w-9 h-9 rounded-full border border-white/5 hover:border-white/20 overflow-hidden transition-all duration-300 active:scale-95 shadow-md flex items-center justify-center bg-black/40 hover:scale-105"
                           title={`Select ${preset.label} Preset`}
                         >
@@ -175,7 +185,12 @@ export default function SettingsPage() {
                   {userPfp && (
                     <button
                       type="button"
-                      onClick={() => setUserPfp('')}
+                      onClick={() => {
+                        setUserPfp('');
+                        updateProfile(userName, email, userHandle, '');
+                        setIsSaved(true);
+                        setTimeout(() => setIsSaved(false), 2000);
+                      }}
                       className="text-[9px] font-mono text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider flex items-center justify-center md:justify-start gap-1 pt-1 transition-colors"
                     >
                       <Trash2 className="w-3 h-3" /> Remove Picture
