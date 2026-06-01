@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Activity, Clock, LogOut, Search, ShieldAlert,
-  Layers, Mail, Database, Bell, Shield, Lock, Eye, EyeOff, AlertCircle
+  Layers, Mail, Database, Bell, Shield, Lock, Eye, EyeOff, AlertCircle, Trash2
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { HeroParticles } from '@/components/landing/HeroParticles';
 import { Logo } from '@/components/Logo';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -227,6 +227,17 @@ export default function AdminDashboard() {
       router.push('/login');
     } catch (err) {
       console.error("Sign out failed:", err);
+    }
+  };
+
+  // Delete waitlist entry from Firestore
+  const handleDeleteWaitlist = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this subscriber?")) return;
+    try {
+      await deleteDoc(doc(db, 'waitlist', id));
+      setWaitlist(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      console.error("Failed to delete waitlist entry:", err);
     }
   };
 
@@ -458,7 +469,7 @@ export default function AdminDashboard() {
 
   // Active verified page: Show Admin Dashboard
   return (
-    <div className="min-h-screen bg-[#0d0d0f] text-white relative flex flex-col font-sans overflow-x-hidden selection:bg-indigo-500/30 pb-16">
+    <div className="min-h-screen bg-[#0d0d0f] text-white relative flex flex-col font-sans overflow-x-hidden selection:bg-indigo-500/30 pb-32">
       <HeroParticles />
 
       {/* ADMIN HEADER TOP BAR */}
@@ -656,30 +667,32 @@ export default function AdminDashboard() {
                   {/* LEFT COLUMN: Waitlist Registrations Section (8 cols) */}
                   <div className="lg:col-span-7 space-y-4">
                     <GlassCard className="p-6 border-white/10 overflow-hidden">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4">
-                        <div>
-                          <h3 className="text-lg font-display font-bold">Waitlist Registrations</h3>
-                          <p className="text-white/45 text-xs">Direct list of users subscribed to LIFE OS Pro.</p>
+                      <div className="border-b border-white/5 pb-4 mb-4">
+                        <div className="flex items-baseline justify-between">
+                          <h3 className="text-lg font-display font-bold text-white">Waitlist Registrations</h3>
+                          <button
+                            onClick={handleExportCSV}
+                            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white text-white hover:text-black font-semibold text-xs transition-all active:scale-[0.98] cursor-pointer font-mono shrink-0"
+                          >
+                            Export CSV
+                          </button>
                         </div>
-                        <button
-                          onClick={handleExportCSV}
-                          className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white text-white hover:text-black font-semibold text-xs transition-all active:scale-[0.98] cursor-pointer"
-                        >
-                          Export CSV
-                        </button>
+                        <p className="text-white/45 text-xs mt-1">Direct list of users subscribed to LIFE OS Pro.</p>
                       </div>
 
-                      {/* COMPACT SEARCH */}
-                      <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2.5 rounded-xl mb-4">
-                        <Search className="w-4 h-4 text-white/30 shrink-0 ml-1.5" />
-                        <input
-                          type="text"
-                          placeholder="Search waitlist emails..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="flex-grow bg-transparent border-none text-white text-xs focus:outline-none placeholder-white/20 font-mono"
-                        />
-                      </div>
+                      {/* COMPACT SEARCH (Visible only when 5+ waitlist entries exist) */}
+                      {waitlist.length >= 5 && (
+                        <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2.5 rounded-xl mb-4 animate-fade-in">
+                          <Search className="w-4 h-4 text-white/30 shrink-0 ml-1.5" />
+                          <input
+                            type="text"
+                            placeholder="Search waitlist emails..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="flex-grow bg-transparent border-none text-white text-xs focus:outline-none placeholder-white/20 font-mono"
+                          />
+                        </div>
+                      )}
 
                       {/* WAITLIST TABLE WITH AVATARS & PLAN BADGES */}
                       <div className="overflow-x-auto">
@@ -689,6 +702,7 @@ export default function AdminDashboard() {
                               <th className="p-3 font-semibold">User</th>
                               <th className="p-3 font-semibold">Assigned Plan</th>
                               <th className="p-3 font-semibold">Date Registered</th>
+                              <th className="p-3 font-semibold text-right">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/5">
@@ -696,7 +710,7 @@ export default function AdminDashboard() {
                               const date = item.joinedAt?.toDate ? item.joinedAt.toDate().toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
-                                year: '2-digit'
+                                year: 'numeric'
                               }) : 'Just now';
 
                               return (
@@ -716,13 +730,22 @@ export default function AdminDashboard() {
                                     </span>
                                   </td>
                                   <td className="p-3 text-white/45 font-mono text-[10px]">{date}</td>
+                                  <td className="p-3 text-right">
+                                    <button
+                                      onClick={() => handleDeleteWaitlist(item.id)}
+                                      className="p-1 border border-white/10 bg-white/5 hover:bg-rose-500/10 hover:border-rose-500/20 text-white/40 hover:text-rose-400 rounded-md transition-all cursor-pointer"
+                                      title="Delete Registration"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
                                 </tr>
                               );
                             })}
 
                             {filteredWaitlist.length === 0 && (
                               <tr>
-                                <td colSpan={3} className="p-8 text-center text-white/30 italic font-mono">
+                                <td colSpan={4} className="p-8 text-center text-white/30 italic font-mono">
                                   No waitlist subscribers found.
                                 </td>
                               </tr>
@@ -795,7 +818,7 @@ export default function AdminDashboard() {
                             </div>
                             <div className="space-y-1">
                               <p className="text-white/80 font-mono text-xs font-bold uppercase tracking-wider">No access events logged yet</p>
-                              <p className="text-white/30 text-[10px] max-w-[200px] mx-auto leading-relaxed">
+                              <p className="text-white/50 font-mono text-[11px] max-w-[220px] mx-auto leading-relaxed">
                                 Your security log is clean. All connection nodes are established and fully monitored.
                               </p>
                             </div>
@@ -848,6 +871,7 @@ export default function AdminDashboard() {
                           <th className="p-4 font-semibold">Assigned Plan</th>
                           <th className="p-4 font-semibold">Conversion Source</th>
                           <th className="p-4 font-semibold">Signed Up Date</th>
+                          <th className="p-4 font-semibold text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -875,13 +899,22 @@ export default function AdminDashboard() {
                               </td>
                               <td className="p-4 text-white/45 font-mono text-[11px]">{item.source || 'pricing'}</td>
                               <td className="p-4 text-white/45 font-mono text-[11px]">{date}</td>
+                              <td className="p-4 text-right">
+                                <button
+                                  onClick={() => handleDeleteWaitlist(item.id)}
+                                  className="p-1.5 border border-white/10 bg-white/5 hover:bg-rose-500/10 hover:border-rose-500/20 text-white/40 hover:text-rose-400 rounded-lg transition-all cursor-pointer"
+                                  title="Delete Registration"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
                             </tr>
                           );
                         })}
 
                         {filteredWaitlist.length === 0 && (
                           <tr>
-                            <td colSpan={4} className="p-8 text-center text-white/20 italic">
+                            <td colSpan={5} className="p-8 text-center text-white/20 italic">
                               No waitlist subscribers found matching search query.
                             </td>
                           </tr>
