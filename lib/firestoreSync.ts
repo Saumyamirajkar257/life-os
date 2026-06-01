@@ -87,11 +87,12 @@ export function startRealtimeSync(userId: string) {
       if (snap.exists()) {
         const data = snap.data();
         setSyncingFromServer(true);
+        const currentPfp = useAppStore.getState().userPfp;
         useAppStore.setState({
           userName: data.displayName || '',
           userEmail: data.email || '',
           userHandle: data.handle || '',
-          userPfp: data.photoURL || '',
+          userPfp: data.photoURL || currentPfp || '',
         });
         setSyncingFromServer(false);
       }

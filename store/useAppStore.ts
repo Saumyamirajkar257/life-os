@@ -18,7 +18,7 @@ export const useAppStore = create<AppState>()(
       userName: 'Saumya',
       userEmail: 'saumya@lifeos.ai',
       userHandle: '@Sam_257',
-      userPfp: '',
+      userPfp: typeof window !== 'undefined' ? (localStorage.getItem('life-os-pfp-cache') || '') : '',
       setActivePage: (page) => set({ activePage: page }),
       toggleSidebar: () => set((state) => ({ sidebarExpanded: !state.sidebarExpanded })),
       setSidebarExpanded: (expanded) => set({ sidebarExpanded: expanded }),
@@ -31,6 +31,15 @@ export const useAppStore = create<AppState>()(
       updateProfile: (name, email, handle, pfp) => {
         set((state) => {
           const updatedPfp = pfp !== undefined ? pfp : state.userPfp;
+          
+          // Write to local cache for instant retrieval and persistence (even if Firestore rejects large base64 strings due to limits)
+          if (typeof window !== 'undefined') {
+            if (updatedPfp) {
+              localStorage.setItem('life-os-pfp-cache', updatedPfp);
+            } else {
+              localStorage.removeItem('life-os-pfp-cache');
+            }
+          }
           
           // Write to Firestore users/{userId}/profile/info in the background
           const user = auth.currentUser;
@@ -60,6 +69,16 @@ export const useAppStore = create<AppState>()(
       name: 'life-os-app-settings',
       storage: createJSONStorage(() => createFirestoreStorage()),
       skipHydration: true,
+      onRehydrateStorage: () => {
+        return (hydratedState) => {
+          if (hydratedState && typeof window !== 'undefined') {
+            const cachedPfp = localStorage.getItem('life-os-pfp-cache');
+            if (cachedPfp && !hydratedState.userPfp) {
+              hydratedState.userPfp = cachedPfp;
+            }
+          }
+        };
+      },
     }
   )
 );
