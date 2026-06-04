@@ -106,10 +106,10 @@ export function TopBar() {
       variants={fadeInDown}
       initial="initial"
       animate="animate"
-      className="fixed top-0 right-0 z-30 h-16 flex items-center justify-between px-4 md:px-6"
+      className="fixed top-2 right-4 z-30 h-14 flex items-center justify-between px-4 glass-panel rounded-full shadow-lg"
       style={{
-        left: isMobile ? 0 : sidebarExpanded ? 240 : 72,
-        transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        left: isMobile ? 16 : sidebarExpanded ? 256 : 88,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {/* Left side */}
@@ -311,21 +311,21 @@ export function TopBar() {
         {/* Clickable PFP Profile Avatar with Aura Glow */}
         <Link href="/settings" className="relative group shrink-0 block select-none" title="Settings Profile">
           {/* Pulsing Breathing Aura Background */}
-          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-pink-500/40 blur-md opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 animate-pulse-slow" style={{ animationDuration: '4s' }} />
+          <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-pink-500/30 blur-sm opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 animate-pulse-slow" style={{ animationDuration: '4s' }} />
           
           {/* Main avatar container */}
-          <div className="relative w-14 h-14 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/15 flex items-center justify-center shrink-0 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 group-hover:border-white/30 group-hover:scale-105 group-active:scale-95">
+          <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/15 flex items-center justify-center shrink-0 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all duration-300 group-hover:border-white/30 group-hover:scale-105 group-active:scale-95">
             {isHydrated && userPfp ? (
               <img src={userPfp} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-6 h-6 text-white/40 group-hover:text-white/60 transition-colors" />
+              <User className="w-4.5 h-4.5 text-white/40 group-hover:text-white/60 transition-colors" />
             )}
           </div>
 
           {/* Active Status Pulse Indicator Dot */}
-          <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5">
+          <span className="absolute bottom-0 right-0 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-black/80" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 border border-black/80" />
           </span>
         </Link>
       </div>

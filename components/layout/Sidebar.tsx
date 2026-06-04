@@ -169,9 +169,9 @@ function DesktopSidebar() {
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-active-bg"
-                          className="absolute inset-0 rounded-xl bg-white/10 border border-white/10"
+                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20"
                           style={{
-                            boxShadow: '0 0 20px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)',
+                            boxShadow: '0 0 25px rgba(129, 140, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
                           }}
                           transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                         />
@@ -179,15 +179,15 @@ function DesktopSidebar() {
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-accent-bar"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-gradient-to-b from-white/70 to-white/20"
-                          style={{ boxShadow: '0 0 8px rgba(255,255,255,0.3)' }}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-gradient-to-b from-cyan-400 to-indigo-500"
+                          style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.6)' }}
                           transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                         />
                       )}
                       <Icon
                         className={cn(
                           'w-5 h-5 flex-shrink-0 relative z-10 transition-all duration-200',
-                          isActive && 'drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                          isActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]' : 'text-white/40'
                         )}
                       />
                       <AnimatePresence>
@@ -197,7 +197,10 @@ function DesktopSidebar() {
                             animate={{ opacity: 1, width: 'auto' }}
                             exit={{ opacity: 0, width: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="text-sm font-medium relative z-10 overflow-hidden whitespace-nowrap"
+                            className={cn(
+                              "text-sm font-medium relative z-10 overflow-hidden whitespace-nowrap transition-colors duration-200",
+                              isActive ? "text-cyan-400" : "text-white/80"
+                            )}
                           >
                             {item.label}
                           </motion.span>

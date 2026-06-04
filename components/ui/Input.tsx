@@ -15,9 +15,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              'flex h-10 w-full rounded-xl bg-white/5 pl-10 pr-4 py-2 text-sm text-white placeholder:text-white/30',
-              'border border-white/10 backdrop-blur-sm',
-              'focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20',
+              'flex h-10 w-full rounded-xl bg-indigo-500/[0.03] pl-10 pr-4 py-2 text-sm text-white placeholder:text-white/20',
+              'border border-indigo-500/15 backdrop-blur-md',
+              'focus:outline-none focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500/35 focus:bg-black/60 focus:shadow-[0_0_12px_rgba(129,140,248,0.15)]',
               'transition-all duration-200',
               className
             )}
@@ -31,9 +31,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={cn(
-          'flex h-10 w-full rounded-xl bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/30',
-          'border border-white/10 backdrop-blur-sm',
-          'focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20',
+          'flex h-10 w-full rounded-xl bg-indigo-500/[0.03] px-4 py-2 text-sm text-white placeholder:text-white/20',
+          'border border-indigo-500/15 backdrop-blur-md',
+          'focus:outline-none focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500/35 focus:bg-black/60 focus:shadow-[0_0_12px_rgba(129,140,248,0.15)]',
           'transition-all duration-200',
           className
         )}

@@ -28,11 +28,20 @@ const variantClasses = {
 
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   ({ variant = 'default', glowOnHover = true, animated = true, gradientBorder = false, header, icon, className, children, style }, ref) => {
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+      e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+    };
+
     return (
       <motion.div
         ref={ref}
         variants={animated ? staggerItem : undefined}
         whileHover={glowOnHover ? hoverLift : undefined}
+        onMouseMove={glowOnHover ? handleMouseMove : undefined}
         className={cn(
           variantClasses[variant],
           'rounded-2xl p-6 relative transition-colors duration-300',
@@ -45,12 +54,12 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
       >
         {gradientBorder && (
           <>
-            <div className="absolute inset-[-100%] animate-[border-rotate_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_340deg,rgba(255,255,255,0.3)_360deg)] pointer-events-none" />
-            <div className="absolute inset-[1px] rounded-[calc(1rem-1px)] bg-black/60 backdrop-blur-xl -z-10" />
+            <div className="absolute inset-[-100%] animate-[border-rotate_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_300deg,rgba(129,140,248,0.4)_330deg,rgba(6,182,212,0.4)_360deg)] pointer-events-none" />
+            <div className="absolute inset-[1px] rounded-[calc(1.25rem-1px)] bg-black/70 backdrop-blur-2xl -z-10" />
           </>
         )}
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
         {(header || icon) && (
           <div className="flex items-center gap-3 mb-4 relative z-10">

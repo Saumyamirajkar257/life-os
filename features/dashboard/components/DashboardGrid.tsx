@@ -428,13 +428,13 @@ export function DashboardGrid() {
           animate={{ opacity: 1, y: 0 }}
           className="col-span-12 lg:col-span-8"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/10 via-background/40 to-blue-500/10 p-6 backdrop-blur-md h-full flex flex-col justify-between breathe-glow">
+          <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-500/15 via-[#030206]/55 to-cyan-500/10 p-6 backdrop-blur-md h-full flex flex-col justify-between breathe-glow">
             <div className="absolute top-0 right-0 p-4 opacity-15 pointer-events-none">
-              <Sparkles className="w-24 h-24 text-primary animate-pulse" />
+              <Sparkles className="w-24 h-24 text-indigo-400 animate-pulse" />
             </div>
             <div className="relative z-10 flex flex-col justify-between h-full min-h-[170px]">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-[10px] font-semibold mb-4 uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-semibold mb-4 uppercase tracking-wider">
                   <Sparkles className="w-3.5 h-3.5" /> What should I do next?
                 </div>
                 <h2 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight leading-snug">
@@ -455,7 +455,7 @@ export function DashboardGrid() {
                       setFocusActive(true);
                     }
                   }}
-                  className="px-4 py-2 rounded-xl bg-white text-black text-xs font-semibold hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5 shadow-lg shadow-white/10"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 active:scale-95 transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-500/20"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" /> 
                   <span>{nextRecommendedAction.actionLabel}</span>
@@ -473,7 +473,7 @@ export function DashboardGrid() {
           className="col-span-12 lg:col-span-4"
         >
           <GlassCard
-            icon={<Target className="w-5 h-5 text-emerald-400" />}
+            icon={<Target className="w-5 h-5 text-cyan-400" />}
             header="Today's Mission"
             className="h-full flex flex-col justify-between"
             animated={false}
@@ -500,8 +500,8 @@ export function DashboardGrid() {
 
                   <div className="space-y-3">
                     {missionObjectives.map((obj, index) => (
-                      <div key={index} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center gap-3">
-                        <CheckCircle2 className={`w-4 h-4 shrink-0 ${obj.completed ? 'text-emerald-400' : 'text-white/20'}`} />
+                      <div key={index} className="p-3 bg-indigo-500/[0.02] border border-indigo-500/10 hover:bg-indigo-500/[0.05] hover:border-indigo-500/15 rounded-xl flex items-center gap-3 transition-all duration-200">
+                        <CheckCircle2 className={`w-4 h-4 shrink-0 transition-colors ${obj.completed ? 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]' : 'text-white/20'}`} />
                         <div className="text-xs min-w-0">
                           <span className={`font-semibold text-white block truncate ${obj.completed ? 'line-through text-white/40' : ''}`}>{obj.title}</span>
                           <span className="text-white/40 block truncate">{obj.desc}</span>
@@ -514,18 +514,18 @@ export function DashboardGrid() {
                 <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1 font-mono">PROGRESS</span>
-                    <div className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+                    <div className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
                       {todayMissions.percentage}%
                     </div>
                   </div>
                   <div className="relative w-12 h-12">
-                    <svg className="w-full h-full -rotate-90 drop-shadow-lg" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mission-gradient)" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 - (todayMissions.percentage / 100) * 251.2} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mission-gradient)" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 - (todayMissions.percentage / 100) * 251.2} strokeLinecap="round" className="transition-all duration-1000 ease-out drop-shadow-[0_0_4px_rgba(6,182,212,0.4)]" />
                       <defs>
                         <linearGradient id="mission-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#34d399" />
-                          <stop offset="100%" stopColor="#3b82f6" />
+                          <stop offset="0%" stopColor="#00f0ff" />
+                          <stop offset="100%" stopColor="#6366f1" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -544,7 +544,7 @@ export function DashboardGrid() {
           className="col-span-12 md:col-span-6 lg:col-span-4"
         >
           <GlassCard
-            icon={<Clock className="w-5 h-5 text-white animate-pulse" />}
+            icon={<Clock className="w-5 h-5 text-indigo-300 animate-pulse" />}
             header="Focus Timer"
             className="h-full flex flex-col justify-between"
             animated={false}
@@ -557,10 +557,10 @@ export function DashboardGrid() {
                     <button
                       key={mins}
                       onClick={() => selectPresetTime(mins)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all duration-200 ${
                         selectedPreset === mins
-                          ? 'bg-white text-black font-bold'
-                          : 'bg-white/5 hover:bg-white/10 text-white/50'
+                          ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(129,140,248,0.4)] font-bold border border-indigo-500/20'
+                          : 'bg-indigo-500/5 hover:bg-indigo-500/15 border border-indigo-500/10 text-indigo-300'
                       }`}
                     >
                       {mins}m
@@ -569,15 +569,15 @@ export function DashboardGrid() {
                 </div>
               </div>
 
-              <div className="py-6 bg-black/60 border border-white/5 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center">
+              <div className="py-6 bg-indigo-500/[0.01] border border-indigo-500/10 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center">
                 <div className="relative w-40 h-40 flex items-center justify-center">
                   <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-2xl" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#focus-gradient)" strokeWidth="4" strokeDasharray={282.7} strokeDashoffset={282.7 - ((focusTime) / (selectedPreset * 60)) * 282.7} strokeLinecap="round" className="transition-all duration-1000 ease-linear" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="2" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#focus-gradient)" strokeWidth="4" strokeDasharray={282.7} strokeDashoffset={282.7 - ((focusTime) / (selectedPreset * 60)) * 282.7} strokeLinecap="round" className="transition-all duration-1000 ease-linear drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]" />
                     <defs>
                       <linearGradient id="focus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#a855f7" />
-                        <stop offset="100%" stopColor="#ec4899" />
+                        <stop offset="0%" stopColor="#00f0ff" />
+                        <stop offset="100%" stopColor="#a855f7" />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -591,7 +591,7 @@ export function DashboardGrid() {
                     {equalizerBars.map((val, idx) => (
                       <div
                         key={idx}
-                        className="w-0.5 bg-primary/70 rounded-full transition-all duration-300"
+                        className="w-0.5 bg-gradient-to-t from-indigo-400 to-cyan-400 rounded-full transition-all duration-300"
                         style={{ height: `${val}%` }}
                       />
                     ))}
@@ -602,9 +602,9 @@ export function DashboardGrid() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between gap-2 mt-4 p-2 bg-white/5 rounded-xl border border-white/5">
+              <div className="flex items-center justify-between gap-2 mt-4 p-2 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
                 <span className="text-[10px] font-mono text-white/40 flex items-center gap-1.5">
-                  <Volume2 className="w-3.5 h-3.5" /> AMBIENT:
+                  <Volume2 className="w-3.5 h-3.5 text-indigo-300" /> AMBIENT:
                 </span>
                 <div className="flex gap-1.5">
                   {[
@@ -618,8 +618,8 @@ export function DashboardGrid() {
                       onClick={() => setAmbientSound(sound.id as any)}
                       className={`px-2 py-1 rounded text-[9px] font-semibold transition-all ${
                         ambientSound === sound.id
-                          ? 'bg-white/20 text-white border border-white/20'
-                          : 'text-white/40 hover:text-white/60'
+                          ? 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/30'
+                          : 'bg-transparent text-white/40 hover:text-white/60'
                       }`}
                     >
                       {sound.label}
@@ -634,8 +634,8 @@ export function DashboardGrid() {
                 onClick={() => setFocusActive(!focusActive)}
                 className={`flex-1 py-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                   focusActive
-                    ? 'bg-destructive text-white hover:opacity-90'
-                    : 'bg-white text-black hover:opacity-95'
+                    ? 'bg-red-500/80 text-white hover:bg-red-500'
+                    : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_0_15px_rgba(129,140,248,0.2)] hover:opacity-95'
                 }`}
               >
                 {focusActive ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -646,7 +646,7 @@ export function DashboardGrid() {
                   setFocusActive(false);
                   setFocusTime(selectedPreset * 60);
                 }}
-                className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+                className="p-3 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/15 rounded-xl text-white transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -678,7 +678,7 @@ export function DashboardGrid() {
             ) : (
               <>
                 <div>
-                  <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4 bg-black/40 border border-white/5 p-2 rounded-xl">
+                  <form onSubmit={handleQuickTaskAdd} className="flex gap-2 mb-4 bg-indigo-500/[0.02] border border-indigo-500/15 focus-within:border-indigo-500/35 focus-within:shadow-[0_0_12px_rgba(129,140,248,0.15)] p-1.5 rounded-xl transition-all duration-200">
                     <input
                       type="text"
                       placeholder="Quick capture task..."
@@ -686,15 +686,15 @@ export function DashboardGrid() {
                       onChange={(e) => setQuickTaskTitle(e.target.value)}
                       className="flex-1 bg-transparent border-none text-xs text-white placeholder-white/20 focus:outline-none pl-2"
                     />
-                    <button type="submit" className="p-2 bg-white text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center">
+                    <button type="submit" className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all flex items-center justify-center">
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </form>
 
                   <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                     {activeTasks.slice(0, 4).map((task) => (
-                      <div key={task.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between gap-3 hover:bg-white/10 transition-all">
-                        <button onClick={() => toggleTask(task.id)} className="w-4.5 h-4.5 rounded-md border border-white/20 hover:border-white/40 flex items-center justify-center">
+                      <div key={task.id} className="p-3 bg-indigo-500/[0.02] border border-indigo-500/10 hover:bg-indigo-500/[0.06] hover:border-indigo-500/20 rounded-xl flex items-center justify-between gap-3 transition-all duration-200">
+                        <button onClick={() => toggleTask(task.id)} className="w-4.5 h-4.5 rounded-md border border-indigo-500/20 hover:border-indigo-500/40 hover:bg-indigo-500/10 flex items-center justify-center transition-all">
                           <div className="w-2 h-2 bg-transparent rounded-[2px]" />
                         </button>
                         <div className="flex-1 min-w-0">
@@ -714,7 +714,7 @@ export function DashboardGrid() {
                   </div>
                 </div>
 
-                <Link href="/tasks" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                <Link href="/tasks" className="mt-4 w-full py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
                   <span>Open Task Manager</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -731,7 +731,7 @@ export function DashboardGrid() {
           className="col-span-12 md:col-span-6 lg:col-span-4"
         >
           <GlassCard
-            icon={<Flame className="w-5 h-5 text-amber-500" />}
+            icon={<Flame className="w-5 h-5 text-amber-500 animate-pulse" />}
             header="Habit Streaks"
             className="h-full flex flex-col justify-between"
             animated={false}
@@ -750,7 +750,7 @@ export function DashboardGrid() {
                   {habits.slice(0, 3).map((habit) => {
                     const isDoneToday = habit.completedDates.includes(todayStr);
                     return (
-                      <div key={habit.id} className="p-3 bg-black/40 border border-white/5 rounded-xl flex items-center justify-between gap-3">
+                      <div key={habit.id} className="p-3 bg-indigo-500/[0.02] border border-indigo-500/10 hover:bg-indigo-500/[0.06] hover:border-indigo-500/20 rounded-xl flex items-center justify-between gap-3 transition-all duration-200">
                         <div className="min-w-0">
                           <span className="text-xs font-semibold text-white block truncate">{habit.title}</span>
                           <span className="text-[10px] text-white/40 block mt-0.5 truncate">{habit.description}</span>
@@ -763,8 +763,8 @@ export function DashboardGrid() {
                             onClick={() => toggleHabitComplete(habit.id, todayStr)}
                             className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase transition-all ${
                               isDoneToday
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-white text-black hover:opacity-90'
+                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
+                                : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_0_10px_rgba(129,140,248,0.2)] hover:opacity-95'
                             }`}
                           >
                             {isDoneToday ? 'Done ✓' : 'Complete'}
@@ -775,7 +775,7 @@ export function DashboardGrid() {
                   })}
                 </div>
 
-                <Link href="/habits" className="mt-4 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                <Link href="/habits" className="mt-4 w-full py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 font-sans">
                   <span>Open Habit Dashboard</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -808,21 +808,21 @@ export function DashboardGrid() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                <div className="p-3.5 bg-indigo-500/[0.02] border border-indigo-500/10 rounded-xl text-center hover:border-indigo-500/25 hover:bg-indigo-500/[0.06] transition-all hover:scale-[1.03] duration-300">
                   <span className="text-[9px] text-white/30 font-mono block uppercase">Balance</span>
-                  <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFinanceBalance}</span>
+                  <span className="text-base font-bold font-mono tracking-tight text-indigo-200 mt-1 block truncate">{dynamicFinanceBalance}</span>
                 </div>
-                <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                <div className="p-3.5 bg-indigo-500/[0.02] border border-indigo-500/10 rounded-xl text-center hover:border-indigo-500/25 hover:bg-indigo-500/[0.06] transition-all hover:scale-[1.03] duration-300">
                   <span className="text-[9px] text-white/30 font-mono block uppercase">Projects</span>
-                  <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicProjectsCount}</span>
+                  <span className="text-base font-bold font-mono tracking-tight text-indigo-200 mt-1 block truncate">{dynamicProjectsCount}</span>
                 </div>
-                <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                <div className="p-3.5 bg-indigo-500/[0.02] border border-indigo-500/10 rounded-xl text-center hover:border-indigo-500/25 hover:bg-indigo-500/[0.06] transition-all hover:scale-[1.03] duration-300">
                   <span className="text-[9px] text-white/30 font-mono block uppercase">Courses</span>
-                  <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicCoursesCount}</span>
+                  <span className="text-base font-bold font-mono tracking-tight text-indigo-200 mt-1 block truncate">{dynamicCoursesCount}</span>
                 </div>
-                <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                <div className="p-3.5 bg-indigo-500/[0.02] border border-indigo-500/10 rounded-xl text-center hover:border-indigo-500/25 hover:bg-indigo-500/[0.06] transition-all hover:scale-[1.03] duration-300">
                   <span className="text-[9px] text-white/30 font-mono block uppercase">Fitness</span>
-                  <span className="text-sm font-bold text-white mt-1 block truncate">{dynamicFitnessIndex}</span>
+                  <span className="text-base font-bold font-mono tracking-tight text-indigo-200 mt-1 block truncate">{dynamicFitnessIndex}</span>
                 </div>
               </div>
             )}
