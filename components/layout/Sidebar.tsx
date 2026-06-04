@@ -36,7 +36,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 
 
-export type SidebarCategory = 'Overview' | 'Learning Suite' | 'Productivity' | 'Mind & Knowledge' | 'Systems';
+export type SidebarCategory = 'Main' | 'More';
 
 interface SidebarNavItem {
   label: string;
@@ -45,37 +45,25 @@ interface SidebarNavItem {
   category: SidebarCategory;
 }
 
-const categories: SidebarCategory[] = ['Overview', 'Learning Suite', 'Productivity', 'Mind & Knowledge', 'Systems'];
+const categories: SidebarCategory[] = ['Main', 'More'];
 
 const navItems: SidebarNavItem[] = [
-  // Overview
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/', category: 'Overview' },
-  { label: 'Timeline', icon: History, href: '/timeline', category: 'Overview' },
+  // Main
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/', category: 'Main' },
+  { label: 'Tasks', icon: CheckSquare, href: '/tasks', category: 'Main' },
+  { label: 'Habits', icon: Target, href: '/habits', category: 'Main' },
+  { label: 'Focus', icon: BrainCircuit, href: '/focus', category: 'Main' },
+  { label: 'Finance', icon: Wallet, href: '/finance', category: 'Main' },
+  { label: 'Second Brain', icon: Compass, href: '/brain', category: 'Main' },
+  { label: 'Journal', icon: BookOpen, href: '/journal', category: 'Main' },
+  { label: 'Study OS', icon: GraduationCap, href: '/study', category: 'Main' },
   
-  // Learning Suite
-  { label: 'Study OS', icon: GraduationCap, href: '/study', category: 'Learning Suite' },
-  { label: 'Student Hub', icon: Trophy, href: '/student-hub', category: 'Learning Suite' },
-  { label: 'PDF Editor', icon: FileText, href: '/pdf-editor', category: 'Learning Suite' },
-  { label: 'Resource Vault', icon: Database, href: '/vault', category: 'Learning Suite' },
-  
-  // Productivity
-  { label: 'Tasks', icon: CheckSquare, href: '/tasks', category: 'Productivity' },
-  { label: 'Habits', icon: Target, href: '/habits', category: 'Productivity' },
-  { label: 'Focus', icon: BrainCircuit, href: '/focus', category: 'Productivity' },
-  { label: 'Finance', icon: Wallet, href: '/finance', category: 'Productivity' },
-  
-  // Mind & Knowledge
-  { label: 'Second Brain', icon: Compass, href: '/brain', category: 'Mind & Knowledge' },
-  { label: 'Life Intelligence', icon: Brain, href: '/life-intelligence', category: 'Mind & Knowledge' },
-  { label: 'Life Vision', icon: Telescope, href: '/life-vision', category: 'Mind & Knowledge' },
-  { label: 'Life Profile', icon: User, href: '/life-profile', category: 'Mind & Knowledge' },
-  { label: 'Journal', icon: BookOpen, href: '/journal', category: 'Mind & Knowledge' },
-  
-  // Systems
-  { label: 'AI Features', icon: Sparkles, href: '/ai-features', category: 'Systems' },
-  { label: 'Analytics', icon: BarChart3, href: '/analytics', category: 'Systems' },
-  { label: 'Automations', icon: Zap, href: '/automations', category: 'Systems' },
-  { label: 'Settings', icon: Settings, href: '/settings', category: 'Systems' },
+  // More
+  { label: 'Analytics', icon: BarChart3, href: '/analytics', category: 'More' },
+  { label: 'PDF Editor', icon: FileText, href: '/pdf-editor', category: 'More' },
+  { label: 'Resource Vault', icon: Database, href: '/vault', category: 'More' },
+  { label: 'AI Features', icon: Sparkles, href: '/ai-features', category: 'More' },
+  { label: 'Settings', icon: Settings, href: '/settings', category: 'More' },
 ];
 
 function NavTooltip({ label, show }: { label: string; show: boolean }) {
