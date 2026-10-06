@@ -216,7 +216,7 @@ export const PersonalDashboardView: React.FC = () => {
               </div>
               
               <button 
-                onClick={() => setActiveSection('ai')}
+                onClick={() => setActiveSection('aura-ai')}
                 className="relative z-10 text-xs font-medium text-[var(--color-text-primary)] flex items-center gap-1.5 hover:gap-2 transition-all mt-4 w-fit"
               >
                 Open Aura <ArrowRight className="w-3.5 h-3.5" />
@@ -334,7 +334,7 @@ export const PersonalDashboardView: React.FC = () => {
             <div className="p-6 rounded-xl bg-[var(--color-surface)]/50 border border-[var(--color-border-subtle)] text-center">
               <p className="text-sm text-[var(--color-text-secondary)] mb-3">Your financial workspace is ready.</p>
               <button
-                onClick={() => setActiveSection('finance')}
+                onClick={() => setActiveSection('finances')}
                 className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
               >
                 <Plus className="w-3.5 h-3.5" /> Add account
