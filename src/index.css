@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "./design-system/css/tokens.css";
+@import "./design-system/css/spatial.css";
 
 @layer base {
   body {

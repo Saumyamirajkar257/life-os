@@ -78,7 +78,7 @@ export const Dock: React.FC<DockProps> = ({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={springTransitions.gentle}
-        className="pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-2xl bg-[var(--color-surface)]/80 backdrop-blur-xl border border-[var(--color-border)] shadow-2xl shadow-black/20 select-none"
+        className="pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-2xl bg-[var(--color-surface)]/70 backdrop-blur-2xl border border-[var(--color-border)] shadow-[var(--spatial-shadow-floating)] select-none spatial-layer-3"
       >
         {dockItems.map((item) => {
           const isActive = item.isActive || activeItemId === item.id;

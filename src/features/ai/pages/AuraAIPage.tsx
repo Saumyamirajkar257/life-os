@@ -19,9 +19,14 @@ export const AuraAIPage: React.FC<AuraAIPageProps> = ({ onNavigateToSection }) =
   const [settingsTab, setSettingsTab] = useState<'provider' | 'memory'>('provider');
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col h-[calc(100vh-6rem)] max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+      {/* Ambient Breathing Glow */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
+        <div className="w-[80%] h-[80%] bg-[var(--color-accent)]/20 blur-[120px] rounded-full animate-pulse duration-1000" style={{ animationDuration: '4s' }} />
+      </div>
+
       {/* Top Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             AURA

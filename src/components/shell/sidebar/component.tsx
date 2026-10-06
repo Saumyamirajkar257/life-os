@@ -202,11 +202,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       animate={{ width: effectiveWidth }}
       transition={springTransitions.gentle}
       className={cn(
-        'relative h-full bg-[var(--color-bg)] border-r border-[var(--color-border)]/30 flex flex-col justify-between shrink-0 select-none z-20 group/sidebar overflow-hidden',
+        'relative h-full bg-[var(--color-bg)] flex flex-col justify-between shrink-0 select-none z-20 group/sidebar',
+        // Make sidebar a floating slab with spatial classes
+        'border-r border-[var(--color-border)]/10 shadow-[var(--spatial-shadow-ambient)] transition-shadow duration-500',
         isResizing ? 'cursor-col-resize select-none border-r-[var(--color-accent)]' : '',
         className
       )}
-      style={{ width: effectiveWidth }}
+      style={{ width: effectiveWidth, clipPath: 'inset(0 -20px 0 0)' /* allows shadow to right */ }}
     >
       {/* Resizable Drag Handle */}
       {resizable && !isCollapsed && (
@@ -304,7 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     const isActive = activeItemId === item.id;
 
                     const itemContent = (
-                      <button
+                      <motion.button
                         ref={isActive ? activeItemRef : undefined}
                         type="button"
                         onClick={() => handleItemClick(item)}
@@ -315,11 +317,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         disabled={item.disabled}
                         tabIndex={0}
                         aria-current={isActive ? 'page' : undefined}
+                        whileHover={!item.disabled ? { scale: 1.015, z: 2, y: -1 } : {}}
+                        whileTap={!item.disabled ? { scale: 0.98, z: 0, y: 0 } : {}}
                         className={cn(
-                          'group/item relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none',
+                          'group/item relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none transform-gpu',
                           isActive
                             ? 'text-[var(--color-accent)] font-bold'
-                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]',
+                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] hover:shadow-[var(--spatial-shadow-ambient)]',
                           isCollapsed ? 'justify-center px-0' : ''
                         )}
                       >
@@ -363,7 +367,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             </div>
                           </div>
                         )}
-                      </button>
+                      </motion.button>
                     );
 
                     return isCollapsed ? (

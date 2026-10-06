@@ -29,6 +29,7 @@ import {
   Wallet,
   Flame,
 } from 'lucide-react';
+import { SpatialCard } from '@/components/ui/spatial/spatial-card';
 
 export const PersonalDashboardView: React.FC = () => {
   const { user } = useAuth();
@@ -215,9 +216,10 @@ export const PersonalDashboardView: React.FC = () => {
             {focusTasks.length > 0 ? (
               <div className="space-y-2">
                 {focusTasks.map((task) => (
-                  <div
+                  <SpatialCard
                     key={task.id}
-                    className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 transition-all flex items-center justify-between gap-4 group"
+                    depth={1}
+                    className="p-3.5 flex items-center justify-between gap-4 group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <button
@@ -227,7 +229,7 @@ export const PersonalDashboardView: React.FC = () => {
                       >
                         <Circle className="w-4 h-4" />
                       </button>
-                      <span className="text-sm text-neutral-200 group-hover:text-white truncate">
+                      <span className="text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] truncate">
                         {task.title}
                       </span>
                     </div>
@@ -249,7 +251,7 @@ export const PersonalDashboardView: React.FC = () => {
                         </span>
                       )}
                     </div>
-                  </div>
+                  </SpatialCard>
                 ))}
               </div>
             ) : (
@@ -277,22 +279,23 @@ export const PersonalDashboardView: React.FC = () => {
             {todayEvents.length > 0 ? (
               <div className="space-y-2">
                 {todayEvents.map((event) => (
-                  <div
+                  <SpatialCard
                     key={event.id}
-                    className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-between gap-4 text-xs"
+                    depth={1}
+                    className="p-3.5 flex items-center justify-between gap-4 text-xs"
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-[var(--color-text-muted)] w-14 shrink-0">
                         {event.startTime}
                       </span>
-                      <span className="font-medium text-neutral-200">{event.title}</span>
+                      <span className="font-medium text-[var(--color-text-primary)]">{event.title}</span>
                     </div>
                     {event.location && (
                       <span className="text-[var(--color-text-muted)] text-[11px] truncate">
                         {event.location}
                       </span>
                     )}
-                  </div>
+                  </SpatialCard>
                 ))}
               </div>
             ) : (
@@ -319,26 +322,26 @@ export const PersonalDashboardView: React.FC = () => {
 
             {accounts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-1">
+                <SpatialCard depth={1} className="p-4 space-y-1">
                   <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
                     Total Net Worth
                   </div>
                   <div className="text-xl font-light text-white">
                     {formatCurrency(netWorthSummary.totalNetWorth, baseCurrency)}
                   </div>
-                </div>
+                </SpatialCard>
 
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-1">
+                <SpatialCard depth={1} className="p-4 space-y-1">
                   <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
                     Monthly Cash Flow
                   </div>
                   <div className="text-xl font-light text-emerald-400">
                     {formatCurrency(monthlyCashFlow.netSavings, baseCurrency)}
                   </div>
-                </div>
+                </SpatialCard>
               </div>
             ) : (
-              <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-between gap-4">
+              <SpatialCard depth={1} className="p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <Wallet className="w-4 h-4 text-neutral-400 shrink-0" />
                   <span className="text-xs text-[var(--color-text-secondary)]">
@@ -351,7 +354,7 @@ export const PersonalDashboardView: React.FC = () => {
                 >
                   Open Finance
                 </button>
-              </div>
+              </SpatialCard>
             )}
           </section>
         </div>
@@ -359,27 +362,29 @@ export const PersonalDashboardView: React.FC = () => {
         {/* RIGHT COLUMN: HABITS, GOALS, AURA RECOMMENDATION (5 cols) */}
         <div className="lg:col-span-5 space-y-10">
           {/* AURA RECOMMENDATION */}
-          <section className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-3 relative overflow-hidden">
-            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-              <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
-              <span>Aura Intelligence</span>
-            </div>
+          <section>
+            <SpatialCard depth={2} className="p-5 space-y-3 relative overflow-hidden">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
+                <span>Aura Intelligence</span>
+              </div>
 
-            <p className="text-sm text-neutral-300 leading-relaxed font-normal">
-              {focusTasks.length > 0
-                ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
-                : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
-            </p>
+              <p className="text-sm text-neutral-300 leading-relaxed font-normal">
+                {focusTasks.length > 0
+                  ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
+                  : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
+              </p>
 
-            <div className="pt-1">
-              <button
-                onClick={() => setActiveSection('ai')}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-white hover:underline cursor-pointer"
-              >
-                <span>Consult Aura Assistant</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
+              <div className="pt-1">
+                <button
+                  onClick={() => setActiveSection('ai')}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white hover:underline cursor-pointer"
+                >
+                  <span>Consult Aura Assistant</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </SpatialCard>
           </section>
 
           {/* HABIT PROGRESS */}
@@ -404,14 +409,15 @@ export const PersonalDashboardView: React.FC = () => {
                   const isCompleted = log?.status === 'completed';
 
                   return (
-                    <div
+                    <SpatialCard
                       key={habit.id}
+                      depth={1}
                       onClick={() => !isCompleted && checkInHabit(habit.id, todayStr)}
-                      className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer group"
+                      className="p-3 hover:border-neutral-700 flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-sm shrink-0">{habit.emoji || '✨'}</span>
-                        <span className="text-neutral-200 group-hover:text-white truncate">
+                        <span className="text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] truncate">
                           {habit.name}
                         </span>
                       </div>
@@ -421,7 +427,7 @@ export const PersonalDashboardView: React.FC = () => {
                       ) : (
                         <Circle className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400 shrink-0" />
                       )}
-                    </div>
+                    </SpatialCard>
                   );
                 })}
               </div>
@@ -450,9 +456,9 @@ export const PersonalDashboardView: React.FC = () => {
             {displayGoals.length > 0 ? (
               <div className="space-y-3">
                 {displayGoals.map((goal) => (
-                  <div key={goal.id} className="space-y-1.5">
+                  <SpatialCard key={goal.id} depth={1} className="p-4 space-y-1.5" interactive={false}>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-neutral-200 truncate">{goal.title}</span>
+                      <span className="text-[var(--color-text-primary)] truncate">{goal.title}</span>
                       <span className="font-mono text-[var(--color-text-muted)]">{goal.progress}%</span>
                     </div>
                     <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
@@ -461,7 +467,7 @@ export const PersonalDashboardView: React.FC = () => {
                         style={{ width: `${goal.progress}%` }}
                       />
                     </div>
-                  </div>
+                  </SpatialCard>
                 ))}
               </div>
             ) : (

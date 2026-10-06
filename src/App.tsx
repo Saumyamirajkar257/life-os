@@ -12,6 +12,7 @@ import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useCommandPaletteStore } from '@/stores/useCommandPaletteStore';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
+import { usePointerTracking } from '@/hooks/use-pointer-tracking';
 import { detectPlatform } from '@/lib/utils/platform';
 import { formatShortcutForOS } from '@/lib/utils/keyboard';
 import { APP_CONFIG } from '@/config/app.config';
@@ -95,6 +96,8 @@ export default function App() {
   const prefersReducedMotion = useReducedMotion();
   const [platform, setPlatform] = useState(() => detectPlatform());
   const activeSection = activeSectionId || 'analytics';
+
+  usePointerTracking();
 
   // Minimal Routing Synchronization
   useEffect(() => {

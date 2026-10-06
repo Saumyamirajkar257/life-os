@@ -9,16 +9,15 @@ import { useLifeScore } from '../hooks/useLifeScore';
 import { useAnalyticsStore } from '../stores/useAnalyticsStore';
 import { ArrowUpRight, ArrowDownRight, Info, Activity } from 'lucide-react';
 
+import { SpatialCard } from '@/components/ui/spatial/spatial-card';
+
 export const LifeScoreOverviewWidget: React.FC = () => {
   const { summary } = useLifeScore();
   const { timeRange, setTimeRange } = useAnalyticsStore();
   const [showInfo, setShowInfo] = useState(false);
 
   return (
-    <div className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-sm transition-all hover:border-[var(--color-border-hover)]">
-      {/* Subtle Background Elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-accent)]/5 rounded-full blur-3xl pointer-events-none" />
-
+    <SpatialCard depth={2} className="w-full p-6 sm:p-8 relative overflow-hidden" gradient>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -89,6 +88,6 @@ export const LifeScoreOverviewWidget: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </SpatialCard>
   );
 };

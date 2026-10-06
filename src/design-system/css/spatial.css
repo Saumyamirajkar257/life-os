@@ -1,0 +1,111 @@
+/**
+ * @file spatial.css
+ * @description 3D Spatial tokens and global cursor-tracking variables for Aura Core.
+ */
+
+:root {
+  /* Global Spatial CSS Variables updated by usePointerTracking */
+  --pointer-x: 50vw;
+  --pointer-y: 50vh;
+  --pointer-x-norm: 0; /* -1 to 1 */
+  --pointer-y-norm: 0; /* -1 to 1 */
+  --pointer-x-pct: 50%;
+  --pointer-y-pct: 50%;
+
+  /* Parallax scaling for different depths */
+  --parallax-scale-1: 1deg;
+  --parallax-scale-2: 2deg;
+  --parallax-scale-3: 3deg;
+  --parallax-translate-1: 2px;
+  --parallax-translate-2: 4px;
+  --parallax-translate-3: 8px;
+
+  /* Spatial Shadows */
+  --spatial-shadow-ambient: 0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --spatial-shadow-elevated: 0 16px 48px -8px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.4);
+  --spatial-shadow-floating: 0 32px 64px -12px rgba(0, 0, 0, 0.6), 0 16px 24px -8px rgba(0, 0, 0, 0.5);
+  
+  /* Inner Glows for 3D edges */
+  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 20px 0 rgba(255, 255, 255, 0.05);
+
+  /* Hover Lift */
+  --spatial-hover-lift: translateY(-2px) scale(1.005);
+  --spatial-hover-lift-strong: translateY(-4px) scale(1.015);
+  
+  /* Active Press */
+  --spatial-active-press: translateY(1px) scale(0.995);
+
+  /* Background Ambient Light (Follows cursor) */
+  --spatial-ambient-light: radial-gradient(
+    circle 800px at var(--pointer-x) var(--pointer-y),
+    rgba(255, 255, 255, 0.03),
+    transparent 80%
+  );
+}
+
+/* Base reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --parallax-scale-1: 0deg;
+    --parallax-scale-2: 0deg;
+    --parallax-scale-3: 0deg;
+    --parallax-translate-1: 0px;
+    --parallax-translate-2: 0px;
+    --parallax-translate-3: 0px;
+    --spatial-hover-lift: none;
+    --spatial-hover-lift-strong: none;
+    --spatial-active-press: none;
+    --spatial-ambient-light: none;
+  }
+}
+
+/* Light theme overrides */
+[data-theme='light'] {
+  --spatial-shadow-ambient: 0 8px 32px -4px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --spatial-shadow-elevated: 0 16px 48px -8px rgba(0, 0, 0, 0.12), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+  --spatial-shadow-floating: 0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 16px 24px -8px rgba(0, 0, 0, 0.1);
+  
+  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 1), inset 0 0 20px 0 rgba(255, 255, 255, 0.5);
+
+  --spatial-ambient-light: radial-gradient(
+    circle 800px at var(--pointer-x) var(--pointer-y),
+    rgba(0, 0, 0, 0.02),
+    transparent 80%
+  );
+}
+
+/* Shared Spatial Utilities */
+.spatial-perspective-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.spatial-layer-1 {
+  box-shadow: var(--spatial-shadow-ambient);
+  transform: translateZ(var(--parallax-translate-1));
+}
+
+.spatial-layer-2 {
+  box-shadow: var(--spatial-shadow-elevated);
+  transform: translateZ(var(--parallax-translate-2));
+}
+
+.spatial-layer-3 {
+  box-shadow: var(--spatial-shadow-floating);
+  transform: translateZ(var(--parallax-translate-3));
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  :root {
+    --parallax-scale-1: 0deg;
+    --parallax-scale-2: 0deg;
+    --parallax-scale-3: 0deg;
+    --parallax-translate-1: 0px;
+    --parallax-translate-2: 0px;
+    --parallax-translate-3: 0px;
+    --spatial-ambient-light: none;
+  }
+}
