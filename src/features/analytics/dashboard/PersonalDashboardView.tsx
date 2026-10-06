@@ -195,13 +195,13 @@ export const PersonalDashboardView: React.FC = () => {
       </section>
 
       {/* 3. PRIMARY CONTENT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
-        {/* LEFT COLUMN: FOCUS TASKS & CALENDAR (7 cols) */}
-        <div className="lg:col-span-7 space-y-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 pb-12">
+        {/* COLUMN 1: FOCUS & SCHEDULE (5 cols) */}
+        <div className="lg:col-span-5 space-y-10">
           {/* IMPORTANT TASKS */}
           <section className="space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-primary)] font-semibold">
                 Focus Today
               </h2>
               <button
@@ -219,7 +219,7 @@ export const PersonalDashboardView: React.FC = () => {
                   <SpatialCard
                     key={task.id}
                     depth={1}
-                    className="p-3.5 flex items-center justify-between gap-4 group"
+                    className="p-4 flex items-center justify-between gap-4 group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <button
@@ -255,8 +255,15 @@ export const PersonalDashboardView: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
-                No pending focus tasks for today.
+              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
+                <p className="text-sm text-[var(--color-text-secondary)]">Your focus queue is clear.</p>
+                <button
+                  onClick={() => setActiveSection('tasks')}
+                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add your first focus task</span>
+                </button>
               </div>
             )}
           </section>
@@ -299,10 +306,46 @@ export const PersonalDashboardView: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
-                No events scheduled on today's calendar.
+              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
+                <p className="text-sm text-[var(--color-text-secondary)]">Your calendar is open.</p>
+                <button
+                  onClick={() => setActiveSection('calendar')}
+                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add an event</span>
+                </button>
               </div>
             )}
+          </section>
+        </div>
+
+        {/* COLUMN 2: AURA & FINANCE (4 cols) */}
+        <div className="lg:col-span-4 space-y-10">
+          {/* AURA RECOMMENDATION */}
+          <section>
+            <SpatialCard depth={2} className="p-6 space-y-4 relative overflow-hidden bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-surface-sunken)]">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                <span>Aura Intelligence</span>
+              </div>
+
+              <p className="text-sm text-[var(--color-text-primary)] leading-relaxed font-normal">
+                {focusTasks.length > 0
+                  ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
+                  : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
+              </p>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => setActiveSection('ai')}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors cursor-pointer"
+                >
+                  <span>Consult Aura Assistant</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </SpatialCard>
           </section>
 
           {/* FINANCE SNAPSHOT */}
@@ -321,7 +364,7 @@ export const PersonalDashboardView: React.FC = () => {
             </div>
 
             {accounts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                 <SpatialCard depth={1} className="p-4 space-y-1">
                   <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
                     Total Net Worth
@@ -341,52 +384,22 @@ export const PersonalDashboardView: React.FC = () => {
                 </SpatialCard>
               </div>
             ) : (
-              <SpatialCard depth={1} className="p-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Wallet className="w-4 h-4 text-neutral-400 shrink-0" />
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    No accounts linked yet. Start your clean personal ledger.
-                  </span>
-                </div>
+              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
+                <p className="text-sm text-[var(--color-text-secondary)]">Start your clean personal ledger.</p>
                 <button
                   onClick={() => setActiveSection('finance')}
-                  className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors cursor-pointer shrink-0"
+                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  Open Finance
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Link an account</span>
                 </button>
-              </SpatialCard>
+              </div>
             )}
           </section>
         </div>
 
-        {/* RIGHT COLUMN: HABITS, GOALS, AURA RECOMMENDATION (5 cols) */}
-        <div className="lg:col-span-5 space-y-10">
-          {/* AURA RECOMMENDATION */}
-          <section>
-            <SpatialCard depth={2} className="p-5 space-y-3 relative overflow-hidden">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
-                <span>Aura Intelligence</span>
-              </div>
-
-              <p className="text-sm text-neutral-300 leading-relaxed font-normal">
-                {focusTasks.length > 0
-                  ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
-                  : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
-              </p>
-
-              <div className="pt-1">
-                <button
-                  onClick={() => setActiveSection('ai')}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white hover:underline cursor-pointer"
-                >
-                  <span>Consult Aura Assistant</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </SpatialCard>
-          </section>
-
+        {/* COLUMN 3: HABITS & GOALS (3 cols) */}
+        <div className="lg:col-span-3 space-y-10">
           {/* HABIT PROGRESS */}
           <section className="space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
@@ -432,8 +445,15 @@ export const PersonalDashboardView: React.FC = () => {
                 })}
               </div>
             ) : (
-              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
-                No habits configured.
+              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
+                <p className="text-sm text-[var(--color-text-secondary)] text-center">Build your first routine.</p>
+                <button
+                  onClick={() => setActiveSection('habits')}
+                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add a habit</span>
+                </button>
               </div>
             )}
           </section>
@@ -456,10 +476,10 @@ export const PersonalDashboardView: React.FC = () => {
             {displayGoals.length > 0 ? (
               <div className="space-y-3">
                 {displayGoals.map((goal) => (
-                  <SpatialCard key={goal.id} depth={1} className="p-4 space-y-1.5" interactive={false}>
+                  <SpatialCard key={goal.id} depth={1} className="p-4 space-y-2" interactive={false}>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[var(--color-text-primary)] truncate">{goal.title}</span>
-                      <span className="font-mono text-[var(--color-text-muted)]">{goal.progress}%</span>
+                      <span className="text-[var(--color-text-primary)] truncate pr-2">{goal.title}</span>
+                      <span className="font-mono text-[var(--color-text-muted)] shrink-0">{goal.progress}%</span>
                     </div>
                     <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
                       <div
@@ -471,8 +491,15 @@ export const PersonalDashboardView: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
-                No active goals in progress.
+              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
+                <p className="text-sm text-[var(--color-text-secondary)] text-center">Define what you're working toward.</p>
+                <button
+                  onClick={() => setActiveSection('goals')}
+                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create a goal</span>
+                </button>
               </div>
             )}
           </section>
