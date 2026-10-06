@@ -9,7 +9,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Avatar } from '@/components/ui/avatar';
 import { Tooltip } from '@/components/ui/tooltip';
-import { getCurrentUserStub } from '@/lib/firebase';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileTriggerProps } from './types';
 
 export const ProfileTrigger: React.FC<ProfileTriggerProps> = ({
@@ -19,13 +19,33 @@ export const ProfileTrigger: React.FC<ProfileTriggerProps> = ({
   className,
   disabled = false,
 }) => {
-  const stubUser = getCurrentUserStub();
+  const { user: authUser } = useAuth();
+  const [guestPfp, setGuestPfp] = React.useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('aura_pfp_guest') : null
+  );
+  const [guestName, setGuestName] = React.useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('aura_guest_displayName') : null
+  );
+
+  React.useEffect(() => {
+    const handleSync = () => {
+      setGuestPfp(localStorage.getItem('aura_pfp_guest'));
+      setGuestName(localStorage.getItem('aura_guest_displayName'));
+    };
+    window.addEventListener('aura_profile_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('aura_profile_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
   const user = {
-    name: customUser?.name || stubUser?.displayName || 'Aura User',
-    email: customUser?.email || stubUser?.email || 'user@auracore.internal',
-    avatarUrl: customUser?.avatarUrl || stubUser?.photoURL || undefined,
-    role: customUser?.role || 'Architect',
-    status: customUser?.status || 'online',
+    name: customUser?.name || authUser?.displayName || guestName || 'Aura User',
+    email: customUser?.email || authUser?.email || 'Click to Sign In',
+    avatarUrl: customUser?.avatarUrl || authUser?.photoURL || guestPfp || undefined,
+    role: customUser?.role || (authUser ? 'Member' : 'Guest'),
+    status: customUser?.status || (authUser ? 'online' : 'away'),
   };
 
   if (variant === 'compact') {

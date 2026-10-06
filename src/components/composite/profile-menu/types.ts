@@ -12,12 +12,17 @@ export interface UserProfile {
   avatarUrl?: string;
   role?: string;
   status?: 'online' | 'busy' | 'away' | 'offline';
+  isLoggedIn?: boolean;
 }
 
 export interface ProfileMenuProps {
   user: UserProfile;
+  onOpenProfile?: () => void;
   onOpenPreferences?: () => void;
   onOpenSettings?: () => void;
+  onOpenLogin?: () => void;
+  onGoogleLogin?: () => void;
+  onUploadPfp?: (photoUrl: string) => void;
   onLogout?: () => void;
   customActions?: Array<{
     id: string;

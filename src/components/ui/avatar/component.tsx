@@ -43,6 +43,10 @@ export const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
 
+  React.useEffect(() => {
+    setImageError(false);
+  }, [src]);
+
   const getInitials = (n?: string) => {
     if (!n) return '';
     const parts = n.trim().split(' ');
@@ -64,6 +68,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           <img
             src={src}
             alt={alt || name || 'Avatar'}
+            referrerPolicy="no-referrer"
             onError={() => setImageError(true)}
             className="w-full h-full object-cover"
           />

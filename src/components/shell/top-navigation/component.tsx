@@ -4,7 +4,7 @@
  * @module AuraShell/TopNavigation/Component
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useSidebarStore } from '@/stores/useSidebarStore';
@@ -20,7 +20,8 @@ import { ThemeSwitcher } from '@/components/composite/theme-switcher';
 import { AmbientControlsPopover } from '@/components/ambient/AmbientControlsPopover';
 import { Tooltip } from '@/components/ui/tooltip';
 import { Popover } from '@/components/ui/popover';
-import { getCurrentUserStub } from '@/lib/firebase';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuthActions } from '@/features/auth/hooks/useAuthActions';
 import { TopNavigationProps } from './types';
 
 export const TopNavigation: React.FC<TopNavigationProps> = ({
@@ -35,22 +36,47 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   className,
   sticky = true,
 }) => {
-  const { isCollapsed, toggleSidebar } = useSidebarStore();
+  const { isCollapsed, toggleSidebar, setActiveSection } = useSidebarStore();
   const { notifications } = useNotificationStore();
   const [showNotificationsPopover, setShowNotificationsPopover] = useState(false);
+  const { user, navigateToPage } = useAuth();
+  const { logout, loginWithGoogle, updateUserProfile } = useAuthActions();
 
-  const stubUser = getCurrentUserStub();
-  const userProfile = stubUser ? {
-    name: stubUser.displayName || 'Aura User',
-    email: stubUser.email || '',
-    avatarUrl: stubUser.photoURL || undefined,
-    status: 'online' as const,
-  } : {
-    name: 'Guest Mode',
-    email: 'Local session only',
-    avatarUrl: undefined,
-    status: 'offline' as const,
-  };
+  const [guestPfp, setGuestPfp] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('aura_pfp_guest') : null
+  );
+  const [guestName, setGuestName] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('aura_guest_displayName') : null
+  );
+
+  useEffect(() => {
+    const handleSync = () => {
+      setGuestPfp(localStorage.getItem('aura_pfp_guest'));
+      setGuestName(localStorage.getItem('aura_guest_displayName'));
+    };
+    window.addEventListener('aura_profile_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('aura_profile_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const userProfile = user
+    ? {
+        name: user.displayName || user.email?.split('@')[0] || 'Aura Member',
+        email: user.email || '',
+        avatarUrl: user.photoURL || undefined,
+        status: 'online' as const,
+        isLoggedIn: true,
+      }
+    : {
+        name: guestName || 'Guest User',
+        email: 'Click to Sign In',
+        avatarUrl: guestPfp || undefined,
+        status: 'away' as const,
+        isLoggedIn: false,
+      };
 
   const defaultBreadcrumbItems = breadcrumbs || [
     { id: 'home', label: 'Aura OS', onClick: () => onBreadcrumbClick?.({ id: 'home', label: 'Aura OS' }) },
@@ -143,7 +169,23 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
         {/* Profile Trigger & Menu */}
         <div className="pl-1 border-l border-[var(--color-border)]/60">
-          <ProfileMenu user={userProfile} />
+          <ProfileMenu
+            user={userProfile}
+            onOpenProfile={() => {
+              setActiveSection('user-profile');
+              navigateToPage('profile');
+            }}
+            onOpenSettings={() => setActiveSection('settings')}
+            onOpenLogin={() => {
+              setActiveSection('user-profile');
+              navigateToPage('login');
+            }}
+            onGoogleLogin={loginWithGoogle}
+            onUploadPfp={async (dataUrl) => {
+              await updateUserProfile(user?.displayName || guestName || 'Aura Member', dataUrl);
+            }}
+            onLogout={user ? logout : undefined}
+          />
         </div>
 
         {rightActions}

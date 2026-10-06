@@ -221,7 +221,7 @@ export default function App() {
           ? 'Cloud'
           : activeSection === 'auth-portal'
           ? 'Account'
-          : activeSection === 'user-profile'
+          : activeSection === 'user-profile' || activeSection === 'profile'
           ? 'Profile'
           : activeSection === 'aura-core-status'
           ? 'System Inspector'
@@ -293,7 +293,7 @@ export default function App() {
       )}
 
       {/* View 0B: User Profile View */}
-      {activeSection === 'user-profile' && <ProfilePage />}
+      {(activeSection === 'user-profile' || activeSection === 'profile') && <ProfilePage />}
       {activeSection === 'aura-core-status' && (
         <div className="space-y-8">
           <div>

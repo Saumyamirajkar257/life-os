@@ -186,18 +186,33 @@ export function useAuthActions() {
   };
 
   const handleUpdateProfile = async (displayName: string, photoURL?: string): Promise<boolean> => {
-    if (!auth.currentUser) return false;
     setIsSubmitting(true);
     clearError();
     try {
-      await firebaseUpdateProfile(auth.currentUser, {
-        displayName: displayName || undefined,
-        photoURL: photoURL || undefined,
-      });
-      await reloadUser();
+      if (auth.currentUser) {
+        if (photoURL) {
+          localStorage.setItem(`aura_pfp_${auth.currentUser.uid}`, photoURL);
+        }
+        // Only pass photoURL to Firebase Auth if it's a valid HTTP URL under 2048 chars
+        const safePhotoURL = photoURL && photoURL.startsWith('http') && photoURL.length < 2048 ? photoURL : undefined;
+        await firebaseUpdateProfile(auth.currentUser, {
+          displayName: displayName || undefined,
+          photoURL: safePhotoURL,
+        });
+        await reloadUser();
+      } else {
+        // Guest mode profile customization
+        if (displayName) localStorage.setItem('aura_guest_displayName', displayName);
+        if (photoURL) localStorage.setItem('aura_pfp_guest', photoURL);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('aura_profile_updated'));
+      }
+
       addNotification({
         title: 'Profile Updated',
-        message: 'User details updated successfully.',
+        message: 'Your profile picture and details have been updated.',
         type: 'success',
       });
       return true;

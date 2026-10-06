@@ -27,7 +27,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, initialPag
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const mapped = mapFirebaseUser(firebaseUser);
-        setUser(mapped ? { ...mapped } : null);
+        const customPfp = typeof window !== 'undefined' ? localStorage.getItem(`aura_pfp_${firebaseUser.uid}`) : null;
+        setUser(mapped ? { ...mapped, photoURL: customPfp || mapped.photoURL } : null);
 
         // Synchronize all domain stores with authenticated user UID
         try {
@@ -101,6 +102,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, initialPag
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      if (auth.currentUser) {
+        const mapped = mapFirebaseUser(auth.currentUser);
+        const customPfp = typeof window !== 'undefined' ? localStorage.getItem(`aura_pfp_${auth.currentUser.uid}`) : null;
+        setUser(mapped ? { ...mapped, photoURL: customPfp || mapped.photoURL } : null);
+      }
+    };
+    window.addEventListener('aura_profile_updated', handleProfileUpdate);
+    return () => window.removeEventListener('aura_profile_updated', handleProfileUpdate);
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -114,7 +127,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, initialPag
     if (auth.currentUser) {
       await reload(auth.currentUser);
       const mapped = mapFirebaseUser(auth.currentUser);
-      setUser(mapped ? { ...mapped } : null);
+      const customPfp = typeof window !== 'undefined' ? localStorage.getItem(`aura_pfp_${auth.currentUser.uid}`) : null;
+      setUser(mapped ? { ...mapped, photoURL: customPfp || mapped.photoURL } : null);
     }
   }, []);
 
