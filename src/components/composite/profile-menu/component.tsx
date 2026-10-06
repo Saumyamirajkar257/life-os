@@ -44,9 +44,10 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
     <button
       type="button"
       className={cn(
-        'flex items-center gap-2.5 p-1.5 pl-2 pr-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-elevated)] transition-all cursor-pointer shadow-2xs group',
+        'flex items-center justify-center p-1 rounded-full border border-transparent hover:border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)] transition-all cursor-pointer group',
         className
       )}
+      aria-label={`Open Profile Menu for ${user.name}`}
     >
       <Avatar
         src={user.avatarUrl}
@@ -54,15 +55,6 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
         size="sm"
         status={user.status || (user.isLoggedIn ? 'online' : 'away')}
       />
-      <div className="hidden sm:flex flex-col text-left leading-tight">
-        <span className="text-xs font-bold text-[var(--color-text-primary)] truncate max-w-[130px] group-hover:text-[var(--color-accent)] transition-colors">
-          {user.name}
-        </span>
-        <span className="text-[10px] text-[var(--color-text-muted)] font-mono truncate max-w-[130px]">
-          {user.email || 'Local session'}
-        </span>
-      </div>
-      <ChevronDown className="w-3.5 h-3.5 text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)] transition-transform shrink-0" />
     </button>
   );
 

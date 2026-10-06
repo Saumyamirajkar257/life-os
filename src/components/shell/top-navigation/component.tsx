@@ -95,7 +95,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   return (
     <header
       className={cn(
-        'h-14 bg-[var(--color-surface)]/60 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between gap-4 z-30 select-none transition-shadow border-b border-[var(--color-border)]/20 shadow-[var(--spatial-shadow-elevated)] transform-gpu',
+        'h-14 bg-[var(--color-bg)] px-4 sm:px-6 flex items-center justify-between gap-4 z-30 select-none border-b border-[var(--color-border-subtle)]',
         sticky ? 'sticky top-0' : 'relative',
         showWindowSafeSpacing ? 'pl-20' : '',
         className

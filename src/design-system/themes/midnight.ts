@@ -16,27 +16,27 @@ export const midnightTheme: ThemeDefinition = {
 
   colors: {
     // Backgrounds & Surfaces (Monochrome Near-Black Scale)
-    bg: '#050505',
-    surface: '#0A0A0A',
-    surfaceElevated: '#111111',
-    surfaceMuted: '#0D0D0D',
+    bg: '#070707',
+    surface: '#0D0D0D',
+    surfaceElevated: '#141414',
+    surfaceMuted: '#1A1A1A', // Using surfaceMuted for highest surface
 
     // Borders
     border: 'rgba(255, 255, 255, 0.08)',
     borderSubtle: 'rgba(255, 255, 255, 0.04)',
-    borderFocus: '#ffffff',
+    borderFocus: '#F5F5F5',
 
     // Typography
-    textPrimary: '#ffffff',
-    textSecondary: 'rgba(255, 255, 255, 0.62)',
-    textMuted: 'rgba(255, 255, 255, 0.38)',
-    textInverse: '#050505',
+    textPrimary: '#F5F5F5',
+    textSecondary: '#A3A3A3',
+    textMuted: '#666666',
+    textInverse: '#070707',
 
     // Accent (Monochrome Pure White / High Contrast)
-    accent: '#ffffff',
-    accentHover: 'rgba(255, 255, 255, 0.88)',
-    accentMuted: 'rgba(255, 255, 255, 0.1)',
-    accentForeground: '#050505',
+    accent: '#F5F5F5',
+    accentHover: 'rgba(245, 245, 245, 0.88)',
+    accentMuted: 'rgba(245, 245, 245, 0.1)',
+    accentForeground: '#070707',
 
     // Status Colors (Restrained)
     success: '#34d399',

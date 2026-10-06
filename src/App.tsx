@@ -163,13 +163,10 @@ export default function App() {
   // Secondary Pane for Split Workspace View in Component Library view
   const secondaryPaneContent = (
     <div className="p-6 space-y-6 overflow-y-auto h-full">
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] flex items-center gap-2">
-          <Sliders className="w-3.5 h-3.5 text-[var(--color-accent)]" /> Shell Diagnostics Inspector
+      <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] pb-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-2">
+          <Sliders className="w-3.5 h-3.5 text-[var(--color-accent)]" /> App Settings
         </h3>
-        <Badge variant="accent" size="sm">
-          Live Split View
-        </Badge>
       </div>
 
       <div className="space-y-4">
@@ -180,15 +177,9 @@ export default function App() {
           status="success"
         />
 
-        <StatsCard
-          title="Milestone Progress"
-          value="Milestone 7 Complete"
-          progress={100}
-        />
-
         <InfoCard
-          title="Aura Core Architecture"
-          description="Desktop Shell orchestration wrapper containing Sidebar, TopNav, Workspace, Dock, Footer, and Command Palette."
+          title="Aura Core"
+          description="Aura Life OS runs in a unified workspace."
           variant="info"
         />
       </div>
@@ -228,9 +219,9 @@ export default function App() {
           : activeSection === 'user-profile' || activeSection === 'profile'
           ? 'Profile'
           : activeSection === 'aura-core-status'
-          ? 'System Inspector'
+          ? 'System Status'
           : activeSection === 'architecture'
-          ? 'Architecture Tree'
+          ? 'Architecture'
           : activeSection === 'performance'
           ? 'Performance'
           : activeSection === 'components'
@@ -301,14 +292,11 @@ export default function App() {
       {activeSection === 'aura-core-status' && (
         <div className="space-y-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-accent-muted)] border border-[var(--color-accent)]/20 text-xs font-semibold text-[var(--color-accent)] mb-3">
-              <Zap className="w-3.5 h-3.5" /> Milestone 7 — Desktop Application Shell
-            </div>
-            <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-3">
-              The Desktop Workspace Shell is Live.
+            <h1 className="text-3xl md:text-4xl font-normal tracking-tight mb-3">
+              System Status
             </h1>
             <p className="text-sm text-[var(--color-text-secondary)] max-w-2xl leading-relaxed">
-              Aura Life OS runs inside a responsive, token-driven desktop shell featuring a resizable sidebar, sticky top navigation, floating dock, status footer, and command palette integration.
+              All core services and modules are currently operational. Aura Life OS is running smoothly.
             </p>
           </div>
 

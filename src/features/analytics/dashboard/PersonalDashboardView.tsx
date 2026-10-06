@@ -1,6 +1,6 @@
 /**
  * @file PersonalDashboardView.tsx
- * @description Master personal dashboard assembling Today's Command Center for Aura Life OS 2.0.
+ * @description Premium, spatial, calm Overview page for Aura Life OS.
  * @module Features/Analytics/Dashboard
  */
 
@@ -15,26 +15,21 @@ import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useFinance } from '../../finance/hooks/useFinance';
 import { formatCurrency } from '../../finance/utils/financeUtils';
 import {
-  CheckCircle2,
-  Circle,
-  Clock,
-  Calendar as CalendarIcon,
-  Target,
-  Sparkles,
-  Plus,
-  ArrowRight,
-  TrendingUp,
-  BrainCircuit,
-  Activity,
-  Wallet,
-  Flame,
+  CheckCircle2, Circle, Clock, Calendar as CalendarIcon, Target, Sparkles, Plus, ArrowRight, Wallet, Flame
 } from 'lucide-react';
-import { SpatialCard } from '@/components/ui/spatial/spatial-card';
 
 export const PersonalDashboardView: React.FC = () => {
   const { user } = useAuth();
-  const userName = user?.displayName?.split(' ')[0] || 'Architect';
+  const userName = user?.displayName?.split(' ')[0];
   const today = new Date();
+  
+  const timeGreeting = useMemo(() => {
+    const hour = today.getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }, [today]);
+
   const dateString = today.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -48,463 +43,305 @@ export const PersonalDashboardView: React.FC = () => {
   const { summary } = useLifeScore();
   const setActiveSection = useSidebarStore((state) => state.setActiveSection);
 
-  const { accounts, netWorthSummary, monthlyCashFlow } = useFinance();
-  const baseCurrency = accounts.length > 0 ? accounts[0].currency : 'USD';
+  // Derive today's tasks
+  const todayTasks = useMemo(() => {
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
+    return tasks.filter((t) => {
+      if (t.status === 'completed') return false;
+      if (!t.dueDate) return true; // Show inbox/unplanned
+      const d = new Date(t.dueDate);
+      return d >= start && d <= end;
+    });
+  }, [tasks, today]);
+  const focusTasks = todayTasks.filter((t) => t.priority === 'urgent' || t.priority === 'high');
 
-  // 1. Data Processing
+  // Derive today's habits
   const todayStr = today.toISOString().split('T')[0];
-
-  // Tasks
-  const allTodayTasks = tasks.filter((t) => t.dueDate === todayStr && t.status !== 'archived');
-  const completedTasks = allTodayTasks.filter((t) => t.status === 'done');
-  const focusTasks = allTodayTasks
-    .filter((t) => t.status !== 'done')
-    .sort((a, b) => {
-      const priorityWeight: Record<string, number> = { urgent: 4, high: 3, medium: 2, low: 1, none: 0 };
-      return priorityWeight[b.priority] - priorityWeight[a.priority];
-    })
-    .slice(0, 3);
-
-  // Habits
-  const activeHabits = habits.filter((h) => h.status === 'active');
   const todayLogs = logs.filter((l) => l.date === todayStr);
-  const completedHabitsCount = activeHabits.filter((h) => {
-    const log = todayLogs.find((l) => l.habitId === h.id);
-    return log && log.status === 'completed';
-  }).length;
-  const displayHabits = activeHabits.slice(0, 4);
+  const displayHabits = habits.slice(0, 5); // Limit for widget
 
-  // Calendar
-  const todayEvents = events
-    .filter((e) => e.startDate === todayStr && e.status !== 'archived' && e.status !== 'cancelled')
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  // Derive today's events
+  const todayEvents = useMemo(() => {
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
+    return events.filter((e) => {
+      const eStart = new Date(e.startDate);
+      return eStart >= start && eStart <= end;
+    }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  }, [events, today]);
 
-  // Focus Time
-  const focusTime = allTodayTasks.reduce((acc, t) => acc + (t.estimatedDuration || 0), 0);
-
-  // Goals
-  const displayGoals = goals.filter((g) => g.status === 'in_progress').slice(0, 3);
-
-  // Dynamic Status Message
-  const getDynamicStatus = () => {
-    if (focusTasks.length > 0) return `${focusTasks.length} high-priority tasks requiring attention.`;
-    if (allTodayTasks.length > 0 && completedTasks.length === allTodayTasks.length)
-      return "All daily commitments fulfilled. Excellent cadence.";
-    return "Schedule and focus priorities calibrated for today.";
-  };
+  // Finance snapshot
+  const { accounts, netWorthSummary, baseCurrency } = useFinance();
+  const displayGoals = goals.slice(0, 4);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-10 py-2">
-      {/* 1. EDITORIAL HEADER & CURRENT CONTEXT */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--color-border)]/60 pb-8">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Today's Command Center</span>
-            <span>·</span>
-            <span>{dateString}</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-light tracking-tight text-[var(--color-text-primary)]">
-            Good morning, <span className="font-semibold text-white">{userName}</span>.
+    <div className="w-full flex flex-col space-y-12 animate-in fade-in duration-500 pt-6">
+      
+      {/* 1. GREETING & CONTEXT */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-normal tracking-tight text-[var(--color-text-primary)]">
+            {timeGreeting}{userName ? `, ${userName}` : '.'}
           </h1>
-
-          <p className="text-sm text-[var(--color-text-secondary)] font-normal max-w-xl">
-            {getDynamicStatus()}
+          <p className="text-[var(--color-text-secondary)] mt-1.5 text-sm">
+            {dateString} <span className="mx-2 opacity-30">•</span> Here's what matters today.
           </p>
-        </div>
-
-        {/* QUICK ACTIONS */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveSection('tasks')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Task</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('calendar')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Event</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('habits')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Habit</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('journal')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Note</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('ai')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black hover:bg-neutral-200 transition-colors text-xs font-semibold cursor-pointer ml-1"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Aura AI</span>
-          </button>
-        </div>
-      </header>
-
-      {/* 2. TODAY'S SUMMARY — MINIMAL METRICS ROW (NO CARD WALL) */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-6 py-2">
-        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" /> Tasks Done
-          </div>
-          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-            {completedTasks.length} <span className="text-sm text-[var(--color-text-muted)] font-mono">/ {allTodayTasks.length}</span>
-          </div>
-        </div>
-
-        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-neutral-400" /> Habits
-          </div>
-          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-            {completedHabitsCount} <span className="text-sm text-[var(--color-text-muted)] font-mono">/ {activeHabits.length}</span>
-          </div>
-        </div>
-
-        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-neutral-400" /> Focus Time
-          </div>
-          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-            {focusTime} <span className="text-xs text-[var(--color-text-muted)] font-mono">min</span>
-          </div>
-        </div>
-
-        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-neutral-400" /> Life Score
-          </div>
-          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight flex items-baseline gap-2">
-            {summary.overallScore}
-            <span className="text-xs font-mono text-emerald-400 font-normal">+{summary.netChange}</span>
-          </div>
         </div>
       </section>
 
-      {/* 3. PRIMARY CONTENT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 pb-12">
-        {/* COLUMN 1: FOCUS & SCHEDULE (5 cols) */}
+      {/* 2. TODAY SUMMARY (Simple Row) */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-6 py-4 border-y border-[var(--color-border-subtle)]">
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Tasks</span>
+          <span className="text-xl text-[var(--color-text-primary)] font-medium">{todayTasks.length} pending</span>
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Focus</span>
+          <span className="text-xl text-[var(--color-text-primary)] font-medium">{focusTasks.length} high priority</span>
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Habits</span>
+          <span className="text-xl text-[var(--color-text-primary)] font-medium">{displayHabits.length} routines</span>
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Life Score</span>
+          <span className="text-xl text-[var(--color-text-primary)] font-medium">{summary.overallScore.toFixed(1)}</span>
+        </div>
+      </section>
+
+      {/* 3. MAIN WORKSPACE */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        
+        {/* LEFT COLUMN: Focus & Schedule (Col 1-5) */}
         <div className="lg:col-span-5 space-y-10">
-          {/* IMPORTANT TASKS */}
+          
+          {/* FOCUS TODAY */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-primary)] font-semibold">
-                Focus Today
-              </h2>
-              <button
-                onClick={() => setActiveSection('tasks')}
-                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>View all</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
-            {focusTasks.length > 0 ? (
+            <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2">
+              Focus Today
+            </h2>
+            {todayTasks.length > 0 ? (
               <div className="space-y-2">
-                {focusTasks.map((task) => (
-                  <SpatialCard
-                    key={task.id}
-                    depth={1}
-                    className="p-4 flex items-center justify-between gap-4 group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <button
-                        onClick={() => completeTask(task.id)}
-                        className="text-neutral-500 hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
-                        title="Mark complete"
-                      >
-                        <Circle className="w-4 h-4" />
-                      </button>
-                      <span className="text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] truncate">
-                        {task.title}
-                      </span>
+                {todayTasks.slice(0, 5).map((task) => (
+                  <div key={task.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[var(--color-surface)] transition-colors group">
+                    <button
+                      onClick={() => completeTask(task.id)}
+                      className="mt-0.5 text-[var(--color-text-muted)] hover:text-emerald-400 transition-colors"
+                    >
+                      <Circle className="w-4 h-4" />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[var(--color-text-primary)] truncate">{task.title}</p>
+                      {task.priority === 'urgent' && <span className="text-[10px] text-red-400 font-mono mt-1 block">URGENT</span>}
                     </div>
-
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      {task.priority === 'urgent' && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">
-                          urgent
-                        </span>
-                      )}
-                      {task.priority === 'high' && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
-                          high
-                        </span>
-                      )}
-                      {task.estimatedDuration && (
-                        <span className="text-xs font-mono text-[var(--color-text-muted)]">
-                          {task.estimatedDuration}m
-                        </span>
-                      )}
-                    </div>
-                  </SpatialCard>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
-                <p className="text-sm text-[var(--color-text-secondary)]">Your focus queue is clear.</p>
+              <div className="p-6 rounded-xl bg-[var(--color-surface)]/50 border border-[var(--color-border-subtle)] text-center">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-3">Your focus queue is clear.</p>
                 <button
                   onClick={() => setActiveSection('tasks')}
-                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add your first focus task</span>
+                  <Plus className="w-3.5 h-3.5" /> Add your first focus task
                 </button>
               </div>
             )}
           </section>
 
-          {/* SCHEDULE / TIMELINE */}
+          {/* SCHEDULE */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                Today's Schedule
-              </h2>
-              <button
-                onClick={() => setActiveSection('calendar')}
-                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>Calendar</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
+            <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2">
+              Today's Schedule
+            </h2>
             {todayEvents.length > 0 ? (
-              <div className="space-y-2">
-                {todayEvents.map((event) => (
-                  <SpatialCard
-                    key={event.id}
-                    depth={1}
-                    className="p-3.5 flex items-center justify-between gap-4 text-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[var(--color-text-muted)] w-14 shrink-0">
-                        {event.startTime}
-                      </span>
-                      <span className="font-medium text-[var(--color-text-primary)]">{event.title}</span>
+              <div className="space-y-3">
+                {todayEvents.map((event) => {
+                  const d = new Date(event.startDate);
+                  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={event.id} className="flex items-center gap-4 p-2">
+                      <div className="w-16 text-xs text-[var(--color-text-muted)] text-right font-medium">{time}</div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-border)]" />
+                      <div className="text-sm text-[var(--color-text-primary)] truncate">{event.title}</div>
                     </div>
-                    {event.location && (
-                      <span className="text-[var(--color-text-muted)] text-[11px] truncate">
-                        {event.location}
-                      </span>
-                    )}
-                  </SpatialCard>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
-                <p className="text-sm text-[var(--color-text-secondary)]">Your calendar is open.</p>
+              <div className="p-6 rounded-xl bg-[var(--color-surface)]/50 border border-[var(--color-border-subtle)] text-center">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-3">Your calendar is open.</p>
                 <button
                   onClick={() => setActiveSection('calendar')}
-                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add an event</span>
+                  <Plus className="w-3.5 h-3.5" /> Add an event
                 </button>
               </div>
             )}
           </section>
+
         </div>
 
-        {/* COLUMN 2: AURA & FINANCE (4 cols) */}
+        {/* CENTER COLUMN: Aura Intelligence (Col 6-9) */}
         <div className="lg:col-span-4 space-y-10">
-          {/* AURA RECOMMENDATION */}
-          <section>
-            <SpatialCard depth={2} className="p-6 space-y-4 relative overflow-hidden bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-surface-sunken)]">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                <Sparkles className="w-3.5 h-3.5 text-[var(--color-accent)]" />
-                <span>Aura Intelligence</span>
+          <section className="space-y-4 h-full">
+            <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[var(--color-accent)]" /> Aura Intelligence
+            </h2>
+            
+            <div className="h-[280px] p-6 rounded-2xl bg-[var(--color-surface-elevated)] border border-[var(--color-border)] shadow-sm relative overflow-hidden group flex flex-col justify-between">
+              {/* Subtle ambient glow inside the box */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/[0.02] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+              
+              <div className="relative z-10 space-y-3">
+                <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+                  {todayEvents.length === 0 
+                    ? "Your day looks open. A good time for deep work or a short planning session."
+                    : `You have ${todayEvents.length} events scheduled today. Remember to take short breaks between contexts.`}
+                </p>
+                {focusTasks.length > 0 && (
+                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mt-2">
+                    Focus on completing "{focusTasks[0].title}" first.
+                  </p>
+                )}
               </div>
-
-              <p className="text-sm text-[var(--color-text-primary)] leading-relaxed font-normal">
-                {focusTasks.length > 0
-                  ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
-                  : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
-              </p>
-
-              <div className="pt-2">
-                <button
-                  onClick={() => setActiveSection('ai')}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors cursor-pointer"
-                >
-                  <span>Consult Aura Assistant</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </SpatialCard>
-          </section>
-
-          {/* FINANCE SNAPSHOT */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                Finance Snapshot
-              </h2>
-              <button
-                onClick={() => setActiveSection('finance')}
-                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              
+              <button 
+                onClick={() => setActiveSection('ai')}
+                className="relative z-10 text-xs font-medium text-[var(--color-text-primary)] flex items-center gap-1.5 hover:gap-2 transition-all mt-4 w-fit"
               >
-                <span>Ledger</span>
-                <ArrowRight className="w-3 h-3" />
+                Open Aura <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            {accounts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                <SpatialCard depth={1} className="p-4 space-y-1">
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                    Total Net Worth
-                  </div>
-                  <div className="text-xl font-light text-white">
-                    {formatCurrency(netWorthSummary.totalNetWorth, baseCurrency)}
-                  </div>
-                </SpatialCard>
-
-                <SpatialCard depth={1} className="p-4 space-y-1">
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                    Monthly Cash Flow
-                  </div>
-                  <div className="text-xl font-light text-emerald-400">
-                    {formatCurrency(monthlyCashFlow.netSavings, baseCurrency)}
-                  </div>
-                </SpatialCard>
-              </div>
-            ) : (
-              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
-                <p className="text-sm text-[var(--color-text-secondary)]">Start your clean personal ledger.</p>
-                <button
-                  onClick={() => setActiveSection('finance')}
-                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Link an account</span>
-                </button>
-              </div>
-            )}
           </section>
         </div>
 
-        {/* COLUMN 3: HABITS & GOALS (3 cols) */}
+        {/* RIGHT COLUMN: Habits & Goals (Col 10-12) */}
         <div className="lg:col-span-3 space-y-10">
-          {/* HABIT PROGRESS */}
+          
+          {/* HABITS */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                Habit Cadence
-              </h2>
-              <button
-                onClick={() => setActiveSection('habits')}
-                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>Habits</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
+            <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2">
+              Habits
+            </h2>
             {displayHabits.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {displayHabits.map((habit) => {
                   const log = todayLogs.find((l) => l.habitId === habit.id);
                   const isCompleted = log?.status === 'completed';
 
                   return (
-                    <SpatialCard
+                    <button
                       key={habit.id}
-                      depth={1}
                       onClick={() => !isCompleted && checkInHabit(habit.id, todayStr)}
-                      className="p-3 hover:border-neutral-700 flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer group"
+                      className="w-full p-2.5 rounded-lg hover:bg-[var(--color-surface)] flex items-center justify-between text-left transition-colors cursor-pointer group"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="text-sm shrink-0">{habit.emoji || '✨'}</span>
-                        <span className="text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] truncate">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-sm">{habit.emoji || 'o'}</span>
+                        <span className="text-sm text-[var(--color-text-primary)] truncate">
                           {habit.name}
                         </span>
                       </div>
-
                       {isCompleted ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       ) : (
-                        <Circle className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400 shrink-0" />
+                        <Circle className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)]" />
                       )}
-                    </SpatialCard>
+                    </button>
                   );
                 })}
               </div>
             ) : (
-              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
-                <p className="text-sm text-[var(--color-text-secondary)] text-center">Build your first routine.</p>
+              <div className="p-4 text-center">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-3">Build your first routine.</p>
                 <button
                   onClick={() => setActiveSection('habits')}
-                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add a habit</span>
+                  <Plus className="w-3.5 h-3.5" /> Add habit
                 </button>
               </div>
             )}
           </section>
 
-          {/* GOALS PROGRESS */}
+          {/* GOALS */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-                Active Goals
-              </h2>
-              <button
-                onClick={() => setActiveSection('goals')}
-                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>Goals</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
+            <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2">
+              Goals
+            </h2>
             {displayGoals.length > 0 ? (
               <div className="space-y-3">
                 {displayGoals.map((goal) => (
-                  <SpatialCard key={goal.id} depth={1} className="p-4 space-y-2" interactive={false}>
+                  <div key={goal.id} className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border-subtle)] space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-[var(--color-text-primary)] truncate pr-2">{goal.title}</span>
-                      <span className="font-mono text-[var(--color-text-muted)] shrink-0">{goal.progress}%</span>
+                      <span className="text-[var(--color-text-muted)]">{goal.progress}%</span>
                     </div>
-                    <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-white transition-all duration-500"
-                        style={{ width: `${goal.progress}%` }}
-                      />
+                    <div className="h-1 w-full bg-[var(--color-border)] rounded-full overflow-hidden">
+                      <div className="h-full bg-white" style={{ width: `${goal.progress}%` }} />
                     </div>
-                  </SpatialCard>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="py-8 px-4 flex flex-col items-center justify-center space-y-3">
-                <p className="text-sm text-[var(--color-text-secondary)] text-center">Define what you're working toward.</p>
+              <div className="p-4 text-center">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-3">Define what you're working toward.</p>
                 <button
                   onClick={() => setActiveSection('goals')}
-                  className="text-xs font-medium text-[var(--color-accent)] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create a goal</span>
+                  <Plus className="w-3.5 h-3.5" /> Create a goal
                 </button>
               </div>
             )}
           </section>
         </div>
+
       </div>
+
+      {/* 4. LOWER ROW: FINANCE */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2">
+            Finance Snapshot
+          </h2>
+          {accounts.length > 0 ? (
+            <div className="flex items-center gap-6 p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border-subtle)]">
+              <div>
+                <div className="text-xs text-[var(--color-text-muted)] mb-1">Net Worth</div>
+                <div className="text-lg text-[var(--color-text-primary)] font-medium">
+                  {formatCurrency(netWorthSummary.totalNetWorth, baseCurrency)}
+                </div>
+              </div>
+              <div className="w-px h-8 bg-[var(--color-border-subtle)]" />
+              <div>
+                <div className="text-xs text-[var(--color-text-muted)] mb-1">Monthly Flow</div>
+                <div className="text-lg text-emerald-400 font-medium">
+                  {formatCurrency(monthlyCashFlow.netSavings, baseCurrency)}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 rounded-xl bg-[var(--color-surface)]/50 border border-[var(--color-border-subtle)] text-center">
+              <p className="text-sm text-[var(--color-text-secondary)] mb-3">Your financial workspace is ready.</p>
+              <button
+                onClick={() => setActiveSection('finance')}
+                className="text-xs font-medium text-[var(--color-text-primary)] hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add account
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+
     </div>
   );
 };

@@ -286,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div
                   onClick={() => group.collapsible && toggleGroupCollapse(group.id)}
                   className={cn(
-                    'px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-[var(--color-text-muted)] font-bold flex items-center justify-between select-none',
+                    'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] flex items-center justify-between select-none',
                     group.collapsible ? 'cursor-pointer hover:text-[var(--color-text-primary)]' : ''
                   )}
                 >
@@ -320,7 +320,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         whileHover={!item.disabled ? { scale: 1.015, z: 2, y: -1 } : {}}
                         whileTap={!item.disabled ? { scale: 0.98, z: 0, y: 0 } : {}}
                         className={cn(
-                          'group/item relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none transform-gpu',
+                          'group/item relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none transform-gpu',
                           isActive
                             ? 'text-[var(--color-accent)] font-bold'
                             : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] hover:shadow-[var(--spatial-shadow-ambient)]',

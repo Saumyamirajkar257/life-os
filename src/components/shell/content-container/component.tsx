@@ -13,7 +13,7 @@ import { ContentContainerProps } from './types';
 
 export const ContentContainer: React.FC<ContentContainerProps> = ({
   children,
-  maxWidth = '7xl',
+  maxWidth = '2xl',
   padding = 'lg',
   viewKey,
   showScrollToTop = true,
