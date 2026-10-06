@@ -204,7 +204,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       className={cn(
         'relative h-full bg-[var(--color-bg)] flex flex-col justify-between shrink-0 select-none z-20 group/sidebar',
         // Make sidebar a floating slab with spatial classes
-        'border-r border-[var(--color-border)]/10 shadow-[var(--spatial-shadow-ambient)] transition-shadow duration-500',
+        'border-r border-[var(--color-border)]/10 shadow-[var(--spatial-shadow-elevated)] transition-shadow duration-500',
         isResizing ? 'cursor-col-resize select-none border-r-[var(--color-accent)]' : '',
         className
       )}

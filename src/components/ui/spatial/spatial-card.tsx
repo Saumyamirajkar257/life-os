@@ -30,7 +30,7 @@ export const SpatialCard: React.FC<SpatialCardProps> = ({
   const springY = useSpring(mouseY, springConfig);
 
   // Calculate rotation based on depth
-  const maxRotation = depth * 2; // 2deg, 4deg, 6deg
+  const maxRotation = depth * 3; // 3deg, 6deg, 9deg
   const rotateX = useTransform(springY, [0, 1], [maxRotation, -maxRotation]);
   const rotateY = useTransform(springX, [0, 1], [-maxRotation, maxRotation]);
 
@@ -67,8 +67,8 @@ export const SpatialCard: React.FC<SpatialCardProps> = ({
           rotateY: shouldReduceMotion || !interactive ? 0 : rotateY,
           transformStyle: 'preserve-3d',
         }}
-        whileHover={interactive && !shouldReduceMotion ? { scale: 1.005, z: 5 } : {}}
-        whileTap={interactive && !shouldReduceMotion ? { scale: 0.995, z: 0 } : {}}
+        whileHover={interactive && !shouldReduceMotion ? { scale: 1.015, z: 15 } : {}}
+        whileTap={interactive && !shouldReduceMotion ? { scale: 0.985, z: 0 } : {}}
         {...(props as any)}
       >
         {gradient && (

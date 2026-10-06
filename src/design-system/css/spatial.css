@@ -13,33 +13,33 @@
   --pointer-y-pct: 50%;
 
   /* Parallax scaling for different depths */
-  --parallax-scale-1: 1deg;
-  --parallax-scale-2: 2deg;
-  --parallax-scale-3: 3deg;
-  --parallax-translate-1: 2px;
-  --parallax-translate-2: 4px;
-  --parallax-translate-3: 8px;
+  --parallax-scale-1: 2deg;
+  --parallax-scale-2: 4deg;
+  --parallax-scale-3: 6deg;
+  --parallax-translate-1: 4px;
+  --parallax-translate-2: 8px;
+  --parallax-translate-3: 16px;
 
-  /* Spatial Shadows */
-  --spatial-shadow-ambient: 0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --spatial-shadow-elevated: 0 16px 48px -8px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.4);
-  --spatial-shadow-floating: 0 32px 64px -12px rgba(0, 0, 0, 0.6), 0 16px 24px -8px rgba(0, 0, 0, 0.5);
+  /* Spatial Shadows - Darker and larger for stronger depth */
+  --spatial-shadow-ambient: 0 12px 40px -4px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --spatial-shadow-elevated: 0 24px 64px -8px rgba(0, 0, 0, 0.65), 0 8px 16px -4px rgba(0, 0, 0, 0.5);
+  --spatial-shadow-floating: 0 40px 80px -12px rgba(0, 0, 0, 0.75), 0 20px 32px -8px rgba(0, 0, 0, 0.6);
   
-  /* Inner Glows for 3D edges */
-  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
-  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 20px 0 rgba(255, 255, 255, 0.05);
+  /* Inner Glows for 3D edges - slightly stronger */
+  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), inset 0 0 20px 0 rgba(255, 255, 255, 0.08);
 
-  /* Hover Lift */
-  --spatial-hover-lift: translateY(-2px) scale(1.005);
-  --spatial-hover-lift-strong: translateY(-4px) scale(1.015);
+  /* Hover Lift - More noticeable */
+  --spatial-hover-lift: translateY(-4px) scale(1.015);
+  --spatial-hover-lift-strong: translateY(-6px) scale(1.025);
   
   /* Active Press */
-  --spatial-active-press: translateY(1px) scale(0.995);
+  --spatial-active-press: translateY(2px) scale(0.99);
 
-  /* Background Ambient Light (Follows cursor) */
+  /* Background Ambient Light (Follows cursor) - slightly more visible */
   --spatial-ambient-light: radial-gradient(
-    circle 800px at var(--pointer-x) var(--pointer-y),
-    rgba(255, 255, 255, 0.03),
+    circle 900px at var(--pointer-x) var(--pointer-y),
+    rgba(255, 255, 255, 0.045),
     transparent 80%
   );
 }
@@ -62,16 +62,16 @@
 
 /* Light theme overrides */
 [data-theme='light'] {
-  --spatial-shadow-ambient: 0 8px 32px -4px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --spatial-shadow-elevated: 0 16px 48px -8px rgba(0, 0, 0, 0.12), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
-  --spatial-shadow-floating: 0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 16px 24px -8px rgba(0, 0, 0, 0.1);
+  --spatial-shadow-ambient: 0 12px 40px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --spatial-shadow-elevated: 0 24px 64px -8px rgba(0, 0, 0, 0.18), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+  --spatial-shadow-floating: 0 40px 80px -12px rgba(0, 0, 0, 0.22), 0 20px 32px -8px rgba(0, 0, 0, 0.12);
   
-  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
-  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 1), inset 0 0 20px 0 rgba(255, 255, 255, 0.5);
+  --spatial-glow-subtle: inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+  --spatial-glow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 1), inset 0 0 20px 0 rgba(255, 255, 255, 0.7);
 
   --spatial-ambient-light: radial-gradient(
-    circle 800px at var(--pointer-x) var(--pointer-y),
-    rgba(0, 0, 0, 0.02),
+    circle 900px at var(--pointer-x) var(--pointer-y),
+    rgba(0, 0, 0, 0.035),
     transparent 80%
   );
 }
