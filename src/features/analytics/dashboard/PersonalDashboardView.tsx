@@ -13,6 +13,7 @@ import { useLifeScore } from '../hooks/useLifeScore';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useFinance } from '../../finance/hooks/useFinance';
+import { useFinanceCalculations } from '../../finance/hooks/useFinanceCalculations';
 import { formatCurrency } from '../../finance/utils/financeUtils';
 import {
   CheckCircle2, Circle, Clock, Calendar as CalendarIcon, Target, Sparkles, Plus, ArrowRight, Wallet, Flame
@@ -50,7 +51,7 @@ export const PersonalDashboardView: React.FC = () => {
     const end = new Date(today);
     end.setHours(23, 59, 59, 999);
     return tasks.filter((t) => {
-      if (t.status === 'completed') return false;
+      if (t.status === 'done') return false;
       if (!t.dueDate) return true; // Show inbox/unplanned
       const d = new Date(t.dueDate);
       return d >= start && d <= end;
@@ -76,7 +77,8 @@ export const PersonalDashboardView: React.FC = () => {
   }, [events, today]);
 
   // Finance snapshot
-  const { accounts, netWorthSummary, baseCurrency } = useFinance();
+  const { accounts } = useFinance();
+  const { netWorthSummary, monthlyCashFlow } = useFinanceCalculations();
   const displayGoals = goals.slice(0, 4);
 
   return (
@@ -317,14 +319,14 @@ export const PersonalDashboardView: React.FC = () => {
               <div>
                 <div className="text-xs text-[var(--color-text-muted)] mb-1">Net Worth</div>
                 <div className="text-lg text-[var(--color-text-primary)] font-medium">
-                  {formatCurrency(netWorthSummary.totalNetWorth, baseCurrency)}
+                  {formatCurrency(netWorthSummary.totalNetWorth)}
                 </div>
               </div>
               <div className="w-px h-8 bg-[var(--color-border-subtle)]" />
               <div>
                 <div className="text-xs text-[var(--color-text-muted)] mb-1">Monthly Flow</div>
                 <div className="text-lg text-emerald-400 font-medium">
-                  {formatCurrency(monthlyCashFlow.netSavings, baseCurrency)}
+                  {formatCurrency(monthlyCashFlow.netSavings)}
                 </div>
               </div>
             </div>
