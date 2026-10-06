@@ -1,0 +1,6 @@
+{
+  "name": "Aura Core - Life OS Foundation",
+  "description": "Aura LIFE OS with Aura Intelligence AI Operating System (Milestone 19).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

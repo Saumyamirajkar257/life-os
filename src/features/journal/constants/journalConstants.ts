@@ -1,0 +1,193 @@
+/**
+ * @file journalConstants.ts
+ * @description Master constants, mood definitions, seed data, and defaults for Journal & Second Brain module.
+ * @module Features/Journal/Constants
+ */
+
+import { JournalEntry, NoteItem, FolderItem, TagItem, MoodType, WeatherInfo } from '../types/journal.types';
+
+export const MOOD_DEFINITIONS: Record<
+  MoodType,
+  { label: string; emoji: string; color: string; bg: string; border: string }
+> = {
+  happy: { label: 'Happy', emoji: '😊', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)' },
+  calm: { label: 'Calm', emoji: '🧘', color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.1)', border: 'rgba(6, 182, 212, 0.3)' },
+  focused: { label: 'Focused', emoji: '🎯', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.3)' },
+  energetic: { label: 'Energetic', emoji: '⚡', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.3)' },
+  anxious: { label: 'Anxious', emoji: '😰', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.1)', border: 'rgba(236, 72, 153, 0.3)' },
+  sad: { label: 'Sad', emoji: '🌧️', color: '#64748B', bg: 'rgba(100, 116, 139, 0.1)', border: 'rgba(100, 116, 139, 0.3)' },
+  creative: { label: 'Creative', emoji: '🎨', color: '#A855F7', bg: 'rgba(168, 85, 247, 0.1)', border: 'rgba(168, 85, 247, 0.3)' },
+  neutral: { label: 'Neutral', emoji: '😐', color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)' },
+};
+
+export const JOURNAL_CATEGORIES = [
+  'Personal',
+  'Work & Leadership',
+  'Ideas & Vision',
+  'Health & Wellbeing',
+  'Gratitude',
+  'Reflection & Strategy',
+  'Learning & Notes',
+];
+
+export const DEFAULT_WEATHER_OPTIONS: WeatherInfo[] = [
+  { condition: 'sunny', temperature: 24, unit: 'C', locationName: 'San Francisco, CA' },
+  { condition: 'cloudy', temperature: 18, unit: 'C', locationName: 'San Francisco, CA' },
+  { condition: 'rainy', temperature: 15, unit: 'C', locationName: 'San Francisco, CA' },
+  { condition: 'clear', temperature: 21, unit: 'C', locationName: 'San Francisco, CA' },
+];
+
+export const SEED_FOLDERS: FolderItem[] = [
+  {
+    id: 'folder_1',
+    userId: 'default_user',
+    name: 'Life Strategy & Vision',
+    description: 'Long term horizons, personal principles, and quarterly reviews.',
+    color: '#8B5CF6',
+    icon: 'Folder',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'folder_2',
+    userId: 'default_user',
+    name: 'Engineering & AI Architecture',
+    description: 'Technical insights, agentic design patterns, and full-stack notes.',
+    color: '#3B82F6',
+    icon: 'Code',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'folder_3',
+    userId: 'default_user',
+    name: 'Daily Reflections & Gratitude',
+    description: 'Morning intentions, daily wins, and evening retrospectives.',
+    color: '#10B981',
+    icon: 'BookOpen',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+export const SEED_TAGS: TagItem[] = [
+  { id: 'tag_1', userId: 'default_user', name: 'AI Engineering', color: '#8B5CF6', usageCount: 12, createdAt: new Date().toISOString() },
+  { id: 'tag_2', userId: 'default_user', name: 'Mindfulness', color: '#10B981', usageCount: 8, createdAt: new Date().toISOString() },
+  { id: 'tag_3', userId: 'default_user', name: 'Aura OS', color: '#F59E0B', usageCount: 15, createdAt: new Date().toISOString() },
+  { id: 'tag_4', userId: 'default_user', name: 'Strategy', color: '#EC4899', usageCount: 6, createdAt: new Date().toISOString() },
+];
+
+export const SEED_JOURNALS: JournalEntry[] = [
+  {
+    id: 'journal_1',
+    userId: 'default_user',
+    title: 'Architecting Milestone 16 — The Second Brain Experience',
+    content: `<h2>Mastering Knowledge Operations in Aura Life OS</h2><p>Today marks the breakthrough launch of Milestone 16: <strong>Journal, Notes & Second Brain</strong>. In building this system, the core goal is to unify ephemeral daily thought, structured notes, and long-term knowledge graphs into a single seamless experience.</p><h3>Key Design Pillars</h3><ul><li><strong>Instant Capture:</strong> Write immediately with zero latency, full markdown support, and rich TipTap editor extensions.</li><li><strong>Interconnected Graph:</strong> Link journals directly to <em>Tasks Engine</em>, <em>Habits OS</em>, <em>Goals & Projects</em>, and <em>Calendar Events</em>.</li><li><strong>Bi-directional Memory:</strong> Never lose an insight with smart tag aggregations and global full-text indexing.</li></ul><blockquote><p>"Your mind is for having ideas, not holding them." — David Allen</p></blockquote><p>We are building an engine that empowers human focus while standardizing state persistence across local stores and Firestore.</p>`,
+    summary: 'Mastering Knowledge Operations in Aura Life OS. Unifying ephemeral daily thoughts and structured notes into a seamless Second Brain.',
+    mood: 'focused',
+    energyLevel: 5,
+    weather: { condition: 'clear', temperature: 22, unit: 'C', locationName: 'San Francisco, CA' },
+    tags: ['Aura OS', 'AI Engineering', 'Strategy'],
+    category: 'Work & Leadership',
+    folderId: 'folder_2',
+    date: '2026-08-01',
+    time: '09:00',
+    isFavourite: true,
+    isPinned: true,
+    isArchived: false,
+    isLocked: false,
+    location: 'Aura Studio HQ',
+    attachments: [],
+    wordCount: 138,
+    readingTimeMinutes: 1,
+    linkedTaskIds: ['task_1'],
+    linkedHabitIds: ['habit_1'],
+    linkedGoalIds: ['goal_1'],
+    linkedEventIds: [],
+    linkedNoteIds: ['note_1'],
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+  {
+    id: 'journal_2',
+    userId: 'default_user',
+    title: 'Morning Clarity & Gratitude Reflection',
+    content: `<h2>Morning Reflection</h2><p>Woke up feeling energised and clear-headed after completing yesterday's deep work sprint on the Tasks & Habits engine.</p><h3>3 Things I'm Grateful For Today:</h3><ol><li>The opportunity to design production-grade web operating systems.</li><li>Consistent morning meditation habits keeping cognitive clarity high.</li><li>Clean architecture that scales effortlessly without technical debt.</li></ol><p>Plan for today: Finish Milestone 16, execute thorough integration tests, and ensure full accessibility across all modal dialogs.</p>`,
+    summary: 'Morning reflection on gratitude, cognitive clarity, meditation habits, and execution plan for today.',
+    mood: 'calm',
+    energyLevel: 4,
+    weather: { condition: 'sunny', temperature: 20, unit: 'C', locationName: 'San Francisco, CA' },
+    tags: ['Mindfulness', 'Gratitude'],
+    category: 'Gratitude',
+    folderId: 'folder_3',
+    date: '2026-08-01',
+    time: '07:30',
+    isFavourite: false,
+    isPinned: false,
+    isArchived: false,
+    isLocked: false,
+    location: 'Home Office',
+    attachments: [],
+    wordCount: 78,
+    readingTimeMinutes: 1,
+    linkedTaskIds: [],
+    linkedHabitIds: ['habit_1'],
+    linkedGoalIds: [],
+    linkedEventIds: [],
+    linkedNoteIds: [],
+    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+  },
+];
+
+export const SEED_NOTES: NoteItem[] = [
+  {
+    id: 'note_1',
+    userId: 'default_user',
+    title: 'TipTap & TipTap Extensions Blueprint',
+    content: `<p>TipTap configuration notes for Second Brain editor:</p><ul><li>Use <code>StarterKit</code> for core rich text and markdown commands.</li><li>Include <code>TaskList</code> and <code>TaskItem</code> for interactive checklists.</li><li>Include <code>Table</code>, <code>TableRow</code>, <code>TableCell</code>, <code>TableHeader</code>.</li><li>Autosave timer set to 1500ms debounce.</li></ul>`,
+    type: 'rich',
+    tags: ['AI Engineering', 'Aura OS'],
+    folderId: 'folder_2',
+    isFavourite: true,
+    isPinned: true,
+    isArchived: false,
+    isLocked: false,
+    color: '#3B82F6',
+    wordCount: 42,
+    readingTimeMinutes: 1,
+    attachments: [],
+    linkedTaskIds: [],
+    linkedHabitIds: [],
+    linkedGoalIds: [],
+    linkedEventIds: [],
+    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  },
+  {
+    id: 'note_2',
+    userId: 'default_user',
+    title: 'Voice Thought: Autonomous State Sync',
+    content: `<p>Recorded voice reflection on Firestore real-time state synchronization and offline fallback converters.</p>`,
+    type: 'voice',
+    tags: ['Aura OS'],
+    folderId: 'folder_2',
+    isFavourite: false,
+    isPinned: false,
+    isArchived: false,
+    isLocked: false,
+    color: '#8B5CF6',
+    wordCount: 16,
+    readingTimeMinutes: 1,
+    attachments: [],
+    linkedTaskIds: [],
+    linkedHabitIds: [],
+    linkedGoalIds: [],
+    linkedEventIds: [],
+    audioUrl: 'mock_audio_sample.mp3',
+    audioDurationSeconds: 42,
+    audioTranscript: 'Testing autonomous state synchronization. Firestore converters ensure optimistic UI updates while preserving server authoritativeness.',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+];

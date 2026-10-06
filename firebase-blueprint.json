@@ -1,0 +1,503 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "Task management item for Aura Life OS Productivity Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique task ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Task title" },
+        "description": { "type": "string", "maxLength": 5000, "description": "Rich text task description" },
+        "status": {
+          "type": "string",
+          "enum": ["inbox", "todo", "in_progress", "done", "archived"],
+          "description": "Task workflow status"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high", "urgent"],
+          "description": "Task priority level"
+        },
+        "dueDate": { "type": "string", "description": "Due date ISO string (YYYY-MM-DD)" },
+        "dueTime": { "type": "string", "description": "Due time string (HH:mm)" },
+        "reminder": { "type": "string", "description": "Reminder ISO timestamp" },
+        "category": { "type": "string", "maxLength": 50, "description": "Category or project name" },
+        "tags": { "type": "array", "description": "List of tags" },
+        "labels": { "type": "array", "description": "List of colored labels" },
+        "attachments": { "type": "array", "description": "List of attachment metadata" },
+        "notes": { "type": "string", "maxLength": 2000, "description": "Task extra notes" },
+        "estimatedDuration": { "type": "number", "description": "Estimated minutes" },
+        "actualDuration": { "type": "number", "description": "Actual minutes logged" },
+        "progress": { "type": "number", "description": "Progress completion percentage 0-100" },
+        "color": { "type": "string", "maxLength": 20, "description": "Accent color hex" },
+        "icon": { "type": "string", "maxLength": 30, "description": "Lucide icon key" },
+        "recurrence": { "type": "string", "description": "Recurrence pattern string" },
+        "parentTaskId": { "type": "string", "description": "Parent task ID for subtasks" },
+        "subtasks": { "type": "array", "description": "List of subtask objects" },
+        "isPinned": { "type": "boolean", "description": "Pinned status" },
+        "isFavourite": { "type": "boolean", "description": "Favourite status" },
+        "createdAt": { "type": "string", "description": "Creation ISO date" },
+        "updatedAt": { "type": "string", "description": "Last update ISO date" },
+        "completedAt": { "type": "string", "description": "Completion ISO date" }
+      },
+      "required": ["id", "userId", "title", "status", "priority", "createdAt", "updatedAt"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "Habit entity for Milestone 13 Habits Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique habit ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Habit name" },
+        "description": { "type": "string", "maxLength": 2000, "description": "Habit description" },
+        "icon": { "type": "string", "maxLength": 50, "description": "Lucide icon key" },
+        "emoji": { "type": "string", "maxLength": 10, "description": "Emoji character" },
+        "category": { "type": "string", "maxLength": 50, "description": "Category name" },
+        "color": { "type": "string", "maxLength": 30, "description": "Color hex or class" },
+        "frequency": {
+          "type": "string",
+          "enum": ["daily", "weekly", "monthly", "specific_days", "interval"],
+          "description": "Habit frequency mode"
+        },
+        "frequencyDays": { "type": "array", "description": "Target days of week" },
+        "frequencyInterval": { "type": "number", "description": "Interval days" },
+        "dailyGoal": { "type": "number", "description": "Target daily count" },
+        "dailyGoalUnit": { "type": "string", "maxLength": 30, "description": "Unit of measurement" },
+        "weeklyGoal": { "type": "number", "description": "Target weekly count" },
+        "monthlyGoal": { "type": "number", "description": "Target monthly count" },
+        "timeOfDay": {
+          "type": "string",
+          "enum": ["morning", "afternoon", "evening", "anytime"],
+          "description": "Preferred time slot"
+        },
+        "reminder": { "type": "boolean", "description": "Is reminder enabled" },
+        "reminderTime": { "type": "string", "maxLength": 10, "description": "Time string HH:mm" },
+        "startDate": { "type": "string", "description": "Start ISO date YYYY-MM-DD" },
+        "endDate": { "type": "string", "description": "End ISO date YYYY-MM-DD" },
+        "difficulty": {
+          "type": "string",
+          "enum": ["easy", "medium", "hard"],
+          "description": "Difficulty level"
+        },
+        "motivationNote": { "type": "string", "maxLength": 1000, "description": "Personal motivation" },
+        "habitType": {
+          "type": "string",
+          "enum": ["build", "quit"],
+          "description": "Habit direction"
+        },
+        "tags": { "type": "array", "description": "Tags array" },
+        "notes": { "type": "string", "maxLength": 2000, "description": "Notes" },
+        "status": {
+          "type": "string",
+          "enum": ["active", "paused", "archived"],
+          "description": "Habit lifecycle state"
+        },
+        "isFavourite": { "type": "boolean", "description": "Favourite flag" },
+        "currentStreak": { "type": "number", "description": "Current consecutive streak" },
+        "bestStreak": { "type": "number", "description": "Longest consecutive streak" },
+        "totalCompletions": { "type": "number", "description": "Total lifetime check-ins" },
+        "lastCompletedDate": { "type": "string", "description": "Date YYYY-MM-DD of last complete" },
+        "createdAt": { "type": "string", "description": "Creation ISO date" },
+        "updatedAt": { "type": "string", "description": "Update ISO date" }
+      },
+      "required": ["id", "userId", "name", "category", "frequency", "dailyGoal", "status", "createdAt", "updatedAt"]
+    },
+    "HabitLog": {
+      "title": "HabitLog",
+      "description": "Log entry for habit check-ins and progress",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Log ID log_{habitId}_{date}" },
+        "habitId": { "type": "string", "description": "Parent habit ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "date": { "type": "string", "description": "Date string YYYY-MM-DD" },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "partial", "skipped", "missed"],
+          "description": "Log completion status"
+        },
+        "value": { "type": "number", "description": "Completed progress count" },
+        "target": { "type": "number", "description": "Target goal count" },
+        "notes": { "type": "string", "maxLength": 500, "description": "Daily entry note" },
+        "completedAt": { "type": "string", "description": "ISO timestamp" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "habitId", "userId", "date", "status", "value", "target", "createdAt", "updatedAt"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "Goal entity for Milestone 14 Goals & Projects Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique goal ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Goal title" },
+        "description": { "type": "string", "maxLength": 5000, "description": "Goal description" },
+        "category": { "type": "string", "maxLength": 50, "description": "Goal category" },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "urgent"],
+          "description": "Goal priority level"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["not_started", "in_progress", "completed", "paused", "archived"],
+          "description": "Goal status state"
+        },
+        "icon": { "type": "string", "maxLength": 50, "description": "Lucide icon key" },
+        "color": { "type": "string", "maxLength": 30, "description": "Accent hex or color class" },
+        "startDate": { "type": "string", "description": "Start ISO date YYYY-MM-DD" },
+        "targetDate": { "type": "string", "description": "Target ISO date YYYY-MM-DD" },
+        "completionDate": { "type": "string", "description": "Completion ISO date YYYY-MM-DD" },
+        "progress": { "type": "number", "description": "Progress percentage 0-100" },
+        "motivationStatement": { "type": "string", "maxLength": 2000, "description": "Personal motivation statement" },
+        "visionStatement": { "type": "string", "maxLength": 2000, "description": "Long term vision statement" },
+        "notes": { "type": "string", "maxLength": 5000, "description": "Goal extra notes" },
+        "tags": { "type": "array", "description": "Array of string tags" },
+        "attachments": { "type": "array", "description": "List of attachment metadata placeholders" },
+        "isFavourite": { "type": "boolean", "description": "Is favourite flag" },
+        "isPinned": { "type": "boolean", "description": "Is pinned flag" },
+        "linkedHabitIds": { "type": "array", "description": "Array of linked habit IDs" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "userId", "title", "category", "priority", "status", "createdAt", "updatedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Project entity for Milestone 14 Goals & Projects Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique project ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "goalId": { "type": "string", "description": "Optional linked Goal ID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Project title" },
+        "description": { "type": "string", "maxLength": 5000, "description": "Project description" },
+        "category": { "type": "string", "maxLength": 50, "description": "Project category" },
+        "status": {
+          "type": "string",
+          "enum": ["planning", "active", "on_hold", "completed", "archived"],
+          "description": "Project status state"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "urgent"],
+          "description": "Project priority level"
+        },
+        "icon": { "type": "string", "maxLength": 50, "description": "Lucide icon key" },
+        "color": { "type": "string", "maxLength": 30, "description": "Color code" },
+        "startDate": { "type": "string", "description": "Start ISO date YYYY-MM-DD" },
+        "targetDate": { "type": "string", "description": "Target ISO date YYYY-MM-DD" },
+        "completionDate": { "type": "string", "description": "Completion ISO date YYYY-MM-DD" },
+        "progress": { "type": "number", "description": "Progress percentage 0-100" },
+        "members": { "type": "array", "description": "List of project members" },
+        "notes": { "type": "string", "maxLength": 5000, "description": "Project notes" },
+        "tags": { "type": "array", "description": "Array of tags" },
+        "isFavourite": { "type": "boolean", "description": "Favourite flag" },
+        "isPinned": { "type": "boolean", "description": "Pinned flag" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "userId", "title", "status", "priority", "createdAt", "updatedAt"]
+    },
+    "Milestone": {
+      "title": "Milestone",
+      "description": "Milestone entity for Milestone 14 Goals & Projects Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique milestone ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "projectId": { "type": "string", "description": "Parent project ID" },
+        "goalId": { "type": "string", "description": "Linked goal ID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Milestone title" },
+        "description": { "type": "string", "maxLength": 2000, "description": "Milestone description" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "completed"],
+          "description": "Milestone status"
+        },
+        "dueDate": { "type": "string", "description": "Due date ISO string YYYY-MM-DD" },
+        "progress": { "type": "number", "description": "Progress percentage 0-100" },
+        "linkedTaskIds": { "type": "array", "description": "Array of linked task IDs" },
+        "linkedHabitIds": { "type": "array", "description": "Array of linked habit IDs" },
+        "order": { "type": "number", "description": "Sorting display order" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp" },
+        "completedAt": { "type": "string", "description": "Completion timestamp" }
+      },
+      "required": ["id", "userId", "projectId", "title", "status", "createdAt", "updatedAt"]
+    },
+    "CalendarEvent": {
+      "title": "CalendarEvent",
+      "description": "Calendar event entity for Milestone 15 Calendar & Planner Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique event ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Event title" },
+        "description": { "type": "string", "maxLength": 5000, "description": "Event description" },
+        "category": { "type": "string", "maxLength": 50, "description": "Event category" },
+        "color": { "type": "string", "maxLength": 30, "description": "Color hex or class" },
+        "icon": { "type": "string", "maxLength": 50, "description": "Lucide icon key" },
+        "location": { "type": "string", "maxLength": 300, "description": "Event location or link" },
+        "startDate": { "type": "string", "description": "Start ISO date YYYY-MM-DD" },
+        "endDate": { "type": "string", "description": "End ISO date YYYY-MM-DD" },
+        "startTime": { "type": "string", "description": "Start time HH:mm" },
+        "endTime": { "type": "string", "description": "End time HH:mm" },
+        "isAllDay": { "type": "boolean", "description": "All day event flag" },
+        "timeZone": { "type": "string", "description": "Timezone string" },
+        "reminderMinutes": { "type": "number", "description": "Reminder minutes before event" },
+        "repeatRule": { "type": "string", "description": "Recurrence rule (none, daily, weekly, monthly, yearly)" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled", "archived"] },
+        "isFavourite": { "type": "boolean" },
+        "isPinned": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "startDate", "endDate", "createdAt", "updatedAt"]
+    },
+    "PlannerNote": {
+      "title": "PlannerNote",
+      "description": "Daily productivity planner log for Milestone 15",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique date identifier YYYY-MM-DD" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "date": { "type": "string", "description": "Date YYYY-MM-DD" },
+        "notes": { "type": "string", "maxLength": 10000 },
+        "focusScore": { "type": "number" },
+        "focusMinutes": { "type": "number" },
+        "completedTaskIds": { "type": "array" },
+        "completedHabitIds": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "User tasks collection"
+    },
+    "habits/{habitId}": {
+      "schema": { "$ref": "#/entities/Habit" },
+      "description": "User habits collection"
+    },
+    "habit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/HabitLog" },
+      "description": "User habit log entries collection"
+    },
+    "goals/{goalId}": {
+      "schema": { "$ref": "#/entities/Goal" },
+      "description": "User goals collection"
+    },
+    "projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "User projects collection"
+    },
+    "milestones/{milestoneId}": {
+      "schema": { "$ref": "#/entities/Milestone" },
+      "description": "User milestones collection"
+    },
+    "events/{eventId}": {
+      "schema": { "$ref": "#/entities/CalendarEvent" },
+      "description": "User calendar events collection"
+    },
+    "planner/{plannerId}": {
+      "schema": { "$ref": "#/entities/PlannerNote" },
+      "description": "User daily planner collection"
+    },
+    "journals/{journalId}": {
+      "schema": { "$ref": "#/entities/Journal" },
+      "description": "User journals collection"
+    },
+    "notes/{noteId}": {
+      "schema": { "$ref": "#/entities/Note" },
+      "description": "User notes collection"
+    },
+    "folders/{folderId}": {
+      "schema": { "$ref": "#/entities/Folder" },
+      "description": "User folders collection"
+    },
+    "tags/{tagId}": {
+      "schema": { "$ref": "#/entities/Tag" },
+      "description": "User tags collection"
+    },
+    "accounts/{accountId}": {
+      "schema": { "$ref": "#/entities/Account" },
+      "description": "User financial accounts collection"
+    },
+    "transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "User financial transactions collection"
+    },
+    "budgets/{budgetId}": {
+      "schema": { "$ref": "#/entities/Budget" },
+      "description": "User financial budgets collection"
+    },
+    "bills/{billId}": {
+      "schema": { "$ref": "#/entities/Bill" },
+      "description": "User recurring and one-time bills collection"
+    },
+    "savings_goals/{goalId}": {
+      "schema": { "$ref": "#/entities/SavingsGoal" },
+      "description": "User savings goals and emergency funds collection"
+    }
+  },
+  "entities": {
+    "Account": {
+      "title": "Account",
+      "description": "Financial account entity for Milestone 17 Finance Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique account ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Account name" },
+        "type": {
+          "type": "string",
+          "enum": ["cash", "bank", "credit_card", "savings", "investment", "digital_wallet", "crypto", "custom"],
+          "description": "Account type"
+        },
+        "balance": { "type": "number", "description": "Current balance" },
+        "currency": { "type": "string", "maxLength": 10, "description": "Currency ISO code e.g. USD" },
+        "accountNumberLast4": { "type": "string", "maxLength": 10, "description": "Last 4 digits" },
+        "institution": { "type": "string", "maxLength": 100, "description": "Financial institution name" },
+        "color": { "type": "string", "maxLength": 30, "description": "Account color code" },
+        "icon": { "type": "string", "maxLength": 50, "description": "Lucide icon key" },
+        "creditLimit": { "type": "number", "description": "Optional credit limit" },
+        "interestRate": { "type": "number", "description": "Optional APR or interest rate" },
+        "isHidden": { "type": "boolean", "description": "Hidden flag" },
+        "isArchived": { "type": "boolean", "description": "Archived flag" },
+        "createdAt": { "type": "string", "description": "Creation ISO date" },
+        "updatedAt": { "type": "string", "description": "Update ISO date" }
+      },
+      "required": ["id", "userId", "name", "type", "balance", "currency", "createdAt", "updatedAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial transaction entity for Milestone 17 Finance Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique transaction ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "amount": { "type": "number", "description": "Transaction amount" },
+        "currency": { "type": "string", "maxLength": 10, "description": "Currency code" },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense", "transfer"],
+          "description": "Transaction type"
+        },
+        "category": { "type": "string", "maxLength": 50, "description": "Primary category" },
+        "subcategory": { "type": "string", "maxLength": 50, "description": "Subcategory" },
+        "accountId": { "type": "string", "description": "Primary account ID" },
+        "targetAccountId": { "type": "string", "description": "Target account ID for transfers" },
+        "date": { "type": "string", "description": "Date string YYYY-MM-DD" },
+        "time": { "type": "string", "description": "Time string HH:mm" },
+        "merchant": { "type": "string", "maxLength": 100, "description": "Merchant or payee name" },
+        "paymentMethod": { "type": "string", "maxLength": 50, "description": "Payment method string" },
+        "notes": { "type": "string", "maxLength": 2000, "description": "Transaction notes" },
+        "tags": { "type": "array", "description": "Array of string tags" },
+        "receiptUrl": { "type": "string", "maxLength": 1000, "description": "Receipt image or doc URL" },
+        "attachments": { "type": "array", "description": "Attachments array" },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "pending", "cleared"],
+          "description": "Transaction status"
+        },
+        "isFavorite": { "type": "boolean", "description": "Favorite flag" },
+        "isRecurring": { "type": "boolean", "description": "Is recurring flag" },
+        "recurrenceFrequency": { "type": "string", "maxLength": 30, "description": "Recurrence frequency" },
+        "splitDetails": { "type": "array", "description": "Array of split sub-transactions" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "userId", "amount", "type", "category", "accountId", "date", "status", "createdAt", "updatedAt"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Budget entity for Milestone 17 Finance Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique budget ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Budget name" },
+        "category": { "type": "string", "maxLength": 50, "description": "Category assigned" },
+        "amountLimit": { "type": "number", "description": "Maximum spending budget" },
+        "period": {
+          "type": "string",
+          "enum": ["monthly", "weekly"],
+          "description": "Budget period"
+        },
+        "periodDate": { "type": "string", "description": "Period date identifier YYYY-MM" },
+        "alertThresholdPercent": { "type": "number", "description": "Alert threshold % (e.g. 80)" },
+        "color": { "type": "string", "maxLength": 30, "description": "Color hex" },
+        "icon": { "type": "string", "maxLength": 50, "description": "Icon name" },
+        "isArchived": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "category", "amountLimit", "period", "createdAt", "updatedAt"]
+    },
+    "Bill": {
+      "title": "Bill",
+      "description": "Bill entity for Milestone 17 Finance Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique bill ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Bill name" },
+        "amount": { "type": "number", "description": "Bill amount" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "category": { "type": "string", "maxLength": 50 },
+        "accountId": { "type": "string" },
+        "payee": { "type": "string", "maxLength": 100 },
+        "dueDate": { "type": "string", "description": "Due date YYYY-MM-DD" },
+        "recurrence": {
+          "type": "string",
+          "enum": ["one_time", "monthly", "weekly", "yearly"],
+          "description": "Recurrence frequency"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["unpaid", "paid", "overdue"],
+          "description": "Bill payment status"
+        },
+        "autoPay": { "type": "boolean" },
+        "reminderDays": { "type": "number" },
+        "lastPaidDate": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "amount", "dueDate", "recurrence", "status", "createdAt", "updatedAt"]
+    },
+    "SavingsGoal": {
+      "title": "SavingsGoal",
+      "description": "Savings Goal entity for Milestone 17 Finance Module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique goal ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Goal name" },
+        "targetAmount": { "type": "number", "description": "Target target amount" },
+        "currentAmount": { "type": "number", "description": "Current saved amount" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "category": { "type": "string", "maxLength": 50 },
+        "targetDate": { "type": "string", "description": "Target completion date YYYY-MM-DD" },
+        "monthlyContribution": { "type": "number" },
+        "color": { "type": "string", "maxLength": 30 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "accountId": { "type": "string" },
+        "isCompleted": { "type": "boolean" },
+        "isArchived": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "targetAmount", "currentAmount", "createdAt", "updatedAt"]
+    }
+  }
+}

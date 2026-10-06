@@ -1,0 +1,265 @@
+/**
+ * @file tokens.css
+ * @description Single Source of Truth CSS Custom Properties for Aura Core Design System.
+ * Maps TypeScript tokens directly to CSS variables for runtime theme swapping and Tailwind v4.
+ */
+
+:root {
+  /* ==========================================================================
+     1. TYPOGRAPHY
+     ========================================================================== */
+  --font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Typography Presets */
+  --font-display-xl-size: 3.5rem;
+  --font-display-xl-line: 1.1;
+  --font-display-xl-tracking: -0.03em;
+
+  --font-display-l-size: 2.75rem;
+  --font-display-l-line: 1.15;
+  --font-display-l-tracking: -0.025em;
+
+  --font-display-m-size: 2.25rem;
+  --font-display-m-line: 1.2;
+  --font-display-m-tracking: -0.02em;
+
+  --font-h1-size: 2rem;
+  --font-h1-line: 1.25;
+  --font-h1-tracking: -0.02em;
+
+  --font-h2-size: 1.5rem;
+  --font-h2-line: 1.3;
+  --font-h2-tracking: -0.015em;
+
+  --font-h3-size: 1.25rem;
+  --font-h3-line: 1.35;
+  --font-h3-tracking: -0.01em;
+
+  --font-h4-size: 1.125rem;
+  --font-h4-line: 1.4;
+  --font-h4-tracking: -0.005em;
+
+  --font-body-size: 1rem;
+  --font-body-line: 1.5;
+
+  --font-body-sm-size: 0.875rem;
+  --font-body-sm-line: 1.5;
+
+  --font-caption-size: 0.75rem;
+  --font-caption-line: 1.4;
+
+  --font-label-size: 0.6875rem;
+  --font-label-line: 1.4;
+  --font-label-tracking: 0.05em;
+
+  --font-tiny-size: 0.625rem;
+  --font-tiny-line: 1.3;
+  --font-tiny-tracking: 0.08em;
+
+  /* ==========================================================================
+     2. SPACING SCALE (4px Base Grid)
+     ========================================================================== */
+  --space-0: 0rem;
+  --space-2: 0.125rem;
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-20: 1.25rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+  --space-56: 3.5rem;
+  --space-64: 4rem;
+  --space-80: 5rem;
+  --space-96: 6rem;
+  --space-128: 8rem;
+
+  /* ==========================================================================
+     3. RADIUS SCALE
+     ========================================================================== */
+  --radius-none: 0px;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-pill: 9999px;
+  --radius-full: 50%;
+
+  /* ==========================================================================
+     4. BLUR SCALE
+     ========================================================================== */
+  --blur-none: 0px;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 12px;
+  --blur-xl: 16px;
+  --blur-2xl: 24px;
+  --blur-3xl: 40px;
+
+  /* ==========================================================================
+     5. BORDER STROKES & PRESETS
+     ========================================================================== */
+  --border-width-hair: 0.5px;
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 4px;
+
+  /* ==========================================================================
+     6. ANIMATION & EASING
+     ========================================================================== */
+  --duration-instant: 0ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --duration-slower: 500ms;
+
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ==========================================================================
+     7. Z-INDEX LAYERING
+     ========================================================================== */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-popover: 300;
+  --z-tooltip: 400;
+  --z-overlay: 500;
+  --z-modal: 600;
+  --z-toast: 700;
+  --z-maximum: 9999;
+
+  /* ==========================================================================
+     8. OPACITY STATES
+     ========================================================================== */
+  --opacity-disabled: 0.38;
+  --opacity-muted: 0.6;
+  --opacity-hover: 0.8;
+  --opacity-active: 0.9;
+
+  /* ==========================================================================
+     9. SEMANTIC LIGHT THEME TOKENS (Default)
+     ========================================================================== */
+  --color-bg: #fdfdfd;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f9f9f9;
+  --color-border: #eeeeee;
+  --color-border-subtle: #f5f5f5;
+
+  --color-text-primary: #111111;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+
+  --color-accent: #111111;
+  --color-accent-hover: #333333;
+  --color-accent-foreground: #ffffff;
+
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-error: #f43f5e;
+  --color-error-bg: #fff1f2;
+  --color-info: #0ea5e9;
+  --color-info-bg: #f0f9ff;
+
+  --color-overlay: rgba(0, 0, 0, 0.4);
+  --color-shadow: rgba(0, 0, 0, 0.05);
+
+  --shadow-low: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-high: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-floating: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   10. SEMANTIC DARK THEME OVERRIDES
+   ========================================================================== */
+.dark, [data-theme='dark'] {
+  --color-bg: #09090b;
+  --color-surface: #121215;
+  --color-surface-elevated: #18181b;
+  --color-border: #27272a;
+  --color-border-subtle: #1f1f23;
+
+  --color-text-primary: #f4f4f5;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  --color-accent: #ffffff;
+  --color-accent-hover: #e4e4e7;
+  --color-accent-foreground: #09090b;
+
+  --color-success: #34d399;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-error: #f87171;
+  --color-error-bg: rgba(244, 63, 94, 0.1);
+  --color-info: #38bdf8;
+  --color-info-bg: rgba(14, 165, 233, 0.1);
+
+  --color-overlay: rgba(0, 0, 0, 0.75);
+  --color-shadow: rgba(0, 0, 0, 0.5);
+
+  --shadow-low: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-high: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-floating: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   11. COMPONENT TOKENS (Layer 3 mapping)
+   ========================================================================== */
+:root {
+  --button-primary-bg: var(--color-accent);
+  --button-primary-text: var(--color-accent-foreground);
+  --button-secondary-bg: var(--color-surface-elevated);
+  --button-secondary-text: var(--color-text-primary);
+  --button-secondary-border: var(--color-border);
+
+  --sidebar-bg: var(--color-surface-elevated);
+  --sidebar-border: var(--color-border);
+  --sidebar-active-bg: var(--color-surface);
+  --sidebar-active-text: var(--color-text-primary);
+  --sidebar-inactive-text: var(--color-text-secondary);
+
+  --input-bg: var(--color-surface);
+  --input-border: var(--color-border);
+  --input-focus-border: var(--color-text-primary);
+  --input-placeholder: var(--color-text-muted);
+
+  --card-bg: var(--color-surface);
+  --card-border: var(--color-border);
+
+  --modal-bg: var(--color-surface);
+  --modal-border: var(--color-border);
+  --modal-overlay-bg: var(--color-overlay);
+
+  --tooltip-bg: var(--color-text-primary);
+  --tooltip-text: var(--color-bg);
+
+  --navigation-bg: var(--color-surface);
+  --navigation-border: var(--color-border);
+
+  --command-palette-bg: var(--color-surface);
+  --command-palette-border: var(--color-border);
+  --command-palette-hover-bg: var(--color-surface-elevated);
+}
