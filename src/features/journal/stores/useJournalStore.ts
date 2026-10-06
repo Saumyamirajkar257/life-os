@@ -58,10 +58,10 @@ interface JournalState {
 export const useJournalStore = create<JournalState>()(
   persist(
     (set, get) => ({
-      journals: SEED_JOURNALS,
-      notes: SEED_NOTES,
-      folders: SEED_FOLDERS,
-      tags: SEED_TAGS,
+      journals: [],
+      notes: [],
+      folders: [],
+      tags: [],
       isLoading: false,
       error: null,
 

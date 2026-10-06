@@ -64,6 +64,7 @@ const ViewFallback = () => (
 import { CloudSyncProvider } from '@/features/cloud/providers/CloudSyncProvider';
 import { GlobalErrorBoundary, ModuleIsolationBoundary } from '@/production';
 import { AmbientBackground } from '@/components/ambient/AmbientBackground';
+import { GuestMigrationDialog } from '@/features/auth/components/GuestMigrationDialog';
 import { usePolishStore } from '@/stores/usePolishStore';
 import {
   CommandPaletteModal,
@@ -621,6 +622,7 @@ export default function App() {
       <CommandPaletteModal onNavigate={(path) => setActiveSection(path.replace('/', ''))} />
       <NotificationCenterDrawer />
       <NotificationToast />
+      <GuestMigrationDialog />
     </AppShell>
     </>
   );

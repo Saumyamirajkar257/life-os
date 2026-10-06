@@ -67,11 +67,11 @@ interface FinanceState {
 export const useFinanceStore = create<FinanceState>()(
   persist(
     (set, get) => ({
-      accounts: SEED_ACCOUNTS,
-      transactions: SEED_TRANSACTIONS,
-      budgets: SEED_BUDGETS,
-      bills: SEED_BILLS,
-      savingsGoals: SEED_SAVINGS_GOALS,
+      accounts: [],
+      transactions: [],
+      budgets: [],
+      bills: [],
+      savingsGoals: [],
       isLoading: false,
       error: null,
 
@@ -92,13 +92,12 @@ export const useFinanceStore = create<FinanceState>()(
               financeFirestoreService.fetchSavingsGoals(activeUid),
             ]);
 
-          // Merge or use remote if non-empty
           set({
-            accounts: fetchedAccounts.length > 0 ? fetchedAccounts : get().accounts,
-            transactions: fetchedTx.length > 0 ? fetchedTx : get().transactions,
-            budgets: fetchedBudgets.length > 0 ? fetchedBudgets : get().budgets,
-            bills: fetchedBills.length > 0 ? fetchedBills : get().bills,
-            savingsGoals: fetchedGoals.length > 0 ? fetchedGoals : get().savingsGoals,
+            accounts: fetchedAccounts,
+            transactions: fetchedTx,
+            budgets: fetchedBudgets,
+            bills: fetchedBills,
+            savingsGoals: fetchedGoals,
             isLoading: false,
           });
         } catch (err) {

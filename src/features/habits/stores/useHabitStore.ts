@@ -44,7 +44,7 @@ interface HabitState {
 }
 
 export const useHabitStore = create<HabitState>((set, get) => ({
-  habits: PRESET_HABIT_TEMPLATES.map((tmpl) => sanitizeHabitItem(tmpl, 'guest_aura_user')),
+  habits: [],
   logs: [],
   isLoading: false,
   isSyncedWithFirestore: false,
@@ -71,15 +71,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       subscribeToHabits(
         activeUid,
         (fetchedHabits) => {
-          if (fetchedHabits.length === 0 && get().habits.length === 0 && !auth.currentUser) {
-            // Seed initial preset habits only for guest user
-            const seeded = PRESET_HABIT_TEMPLATES.map((tmpl) =>
-              sanitizeHabitItem(tmpl, activeUid)
-            );
-            set({ habits: seeded, isLoading: false });
-          } else {
-            set({ habits: fetchedHabits, isLoading: false });
-          }
+          set({ habits: fetchedHabits, isLoading: false });
         },
         (err) => console.warn('Habits Firestore subscribe error:', err)
       );

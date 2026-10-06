@@ -28,4 +28,6 @@ export interface AuthContextType {
   currentPage: AuthPageMode;
   navigateToPage: (page: AuthPageMode) => void;
   reloadUser: () => Promise<void>;
+  needsMigration: boolean;
+  resolveMigration: (importData: boolean) => Promise<void>;
 }

@@ -33,7 +33,7 @@ interface CalendarState {
 export const useCalendarStore = create<CalendarState>()(
   persist(
     (set, get) => ({
-      events: INITIAL_EVENTS,
+      events: [],
       isLoading: false,
       error: null,
       lastSyncedAt: null,

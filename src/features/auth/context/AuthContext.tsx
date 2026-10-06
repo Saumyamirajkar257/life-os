@@ -49,12 +49,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, initialPag
             import('@/features/finance/stores/useFinanceStore'),
           ]);
 
-          useTaskStore.getState().initializeStore(uid);
-          useHabitStore.getState().initializeHabits(uid);
-          useGoalStore.getState().loadGoals(uid);
-          useJournalStore.getState().loadModuleData(uid);
-          useCalendarStore.getState().loadEvents(uid);
-          useFinanceStore.getState().loadModuleData(uid);
+          const tasks = useTaskStore.getState().tasks;
+          const habits = useHabitStore.getState().habits;
+          const hasGuestData = tasks.some(t => t.userId === 'guest-user' || t.userId === 'guest_aura_user') ||
+                               habits.some(h => h.userId === 'guest-user' || h.userId === 'guest_aura_user');
+          
+          if (hasGuestData && !sessionStorage.getItem('aura_migration_checked')) {
+            // Delay initialization until migration is resolved
+            console.log('[AuthProvider] Delaying store initialization for migration prompt');
+          } else {
+            useTaskStore.getState().initializeStore(uid);
+            useHabitStore.getState().initializeHabits(uid);
+            useGoalStore.getState().loadGoals(uid);
+            useJournalStore.getState().loadModuleData(uid);
+            useCalendarStore.getState().loadEvents(uid);
+            useFinanceStore.getState().loadModuleData(uid);
+          }
         } catch (e) {
           console.warn('[AuthProvider] Error initializing stores for user:', e);
         }

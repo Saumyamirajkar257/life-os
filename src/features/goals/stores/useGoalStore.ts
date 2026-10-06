@@ -64,7 +64,7 @@ const SEED_GOALS: GoalItem[] = [
 export const useGoalStore = create<GoalState>()(
   persist(
     (set, get) => ({
-      goals: SEED_GOALS,
+      goals: [],
       projects: [],
       milestones: [],
       activeGoalViewMode: 'dashboard',
@@ -91,9 +91,9 @@ export const useGoalStore = create<GoalState>()(
             goalsFirestoreService.fetchMilestones(uid),
           ]);
           set({
-            goals: fetchedGoals.length > 0 ? fetchedGoals : get().goals,
-            projects: fetchedProjects.length > 0 ? fetchedProjects : get().projects,
-            milestones: fetchedMilestones.length > 0 ? fetchedMilestones : get().milestones,
+            goals: fetchedGoals,
+            projects: fetchedProjects,
+            milestones: fetchedMilestones,
             isLoading: false,
           });
         } catch (err) {

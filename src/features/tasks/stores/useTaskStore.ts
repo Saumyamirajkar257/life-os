@@ -45,7 +45,7 @@ interface TaskStoreState {
 }
 
 export const useTaskStore = create<TaskStoreState>((set, get) => ({
-  tasks: INITIAL_DEMO_TASKS,
+  tasks: [],
   isLoading: false,
   isSyncedWithFirestore: false,
   lastError: null,
