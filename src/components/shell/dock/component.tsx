@@ -14,6 +14,7 @@ import { useCommandPaletteStore } from '@/stores/useCommandPaletteStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useTheme } from '@/hooks/use-theme';
 import { springTransitions } from '@/animations/transitions';
+import { preloadRoute } from '@/lib/router/prefetch';
 import { DockProps, DockItem } from './types';
 
 export const Dock: React.FC<DockProps> = ({
@@ -88,6 +89,9 @@ export const Dock: React.FC<DockProps> = ({
                 type="button"
                 whileHover={enableMagnification ? { scale: 1.25, y: -6 } : { scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onMouseEnter={() => preloadRoute(item.id)}
+                onFocus={() => preloadRoute(item.id)}
+                onPointerDown={() => preloadRoute(item.id)}
                 onClick={() => {
                   if (item.disabled) return;
                   if (item.onClick) item.onClick();

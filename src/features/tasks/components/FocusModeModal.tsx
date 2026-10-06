@@ -13,7 +13,7 @@ import { PomodoroTimer } from './PomodoroTimer';
 
 export const FocusModeModal: React.FC = () => {
   const { isFocusModalOpen, closeFocusModal, focusedTaskId } = useTaskUIStore();
-  const { tasks } = useTaskStore();
+  const { tasks, toggleSubtask } = useTaskStore();
   const { completeTask, undoComplete } = useTaskMutations();
 
   if (!isFocusModalOpen) return null;
@@ -64,6 +64,40 @@ export const FocusModeModal: React.FC = () => {
               <p className="text-xs text-neutral-400 leading-relaxed max-w-md mx-auto line-clamp-3">
                 {task.description}
               </p>
+            )}
+
+            {/* Interactive Subtask Execution Checklist */}
+            {task.subtasks && task.subtasks.length > 0 && (
+              <div className="text-left bg-neutral-950/60 p-4 rounded-xl border border-neutral-800 space-y-2 max-h-40 overflow-y-auto">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-semibold block mb-1">
+                  Subtask Progression ({task.subtasks.filter((s) => s.completed).length}/{task.subtasks.length})
+                </span>
+                {task.subtasks.map((subtask) => (
+                  <div
+                    key={subtask.id}
+                    onClick={() => toggleSubtask(task.id, subtask.id)}
+                    className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                  >
+                    <button
+                      type="button"
+                      className={`shrink-0 ${subtask.completed ? 'text-emerald-400' : 'text-neutral-500'}`}
+                    >
+                      {subtask.completed ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <Circle className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <span
+                      className={`text-xs font-mono ${
+                        subtask.completed ? 'line-through text-neutral-500' : 'text-neutral-200'
+                      }`}
+                    >
+                      {subtask.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
 
             <div className="pt-2 flex items-center justify-center gap-3">

@@ -16,7 +16,7 @@ import {
   User as FirebaseUser,
   AuthError,
 } from 'firebase/auth';
-import { auth, googleProvider } from './config';
+import { auth, googleProvider, appleProvider } from './config';
 
 export interface AuraUserStub {
   uid: string;
@@ -47,6 +47,9 @@ export function formatAuthError(error: unknown): string {
       return 'This user account has been disabled.';
     case 'auth/popup-closed-by-user':
       return 'Sign-in window was closed before completion.';
+    case 'auth/operation-not-supported-in-this-app':
+    case 'auth/configuration-not-found':
+      return 'Apple Sign-In requires Apple Services ID configuration in the Firebase Console. Use Google or Email sign-in in the meantime.';
     case 'auth/too-many-requests':
       return 'Access to this account has been temporarily disabled due to many failed login attempts. Reset your password or try again later.';
     case 'auth/requires-recent-login':
@@ -78,6 +81,13 @@ export async function loginWithGoogleStub(): Promise<AuraUserStub> {
   const result = await signInWithPopup(auth, googleProvider);
   const mapped = mapFirebaseUser(result.user);
   if (!mapped) throw new Error('Failed to retrieve Google user profile.');
+  return mapped;
+}
+
+export async function loginWithAppleStub(): Promise<AuraUserStub> {
+  const result = await signInWithPopup(auth, appleProvider);
+  const mapped = mapFirebaseUser(result.user);
+  if (!mapped) throw new Error('Failed to retrieve Apple user profile.');
   return mapped;
 }
 

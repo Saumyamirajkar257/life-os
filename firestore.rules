@@ -177,6 +177,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Cloud-First Personal OS 2.0: /users/{userId} and all subcollections (/profile, /tasks, /finance, etc.)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
     match /tasks/{taskId} {
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && isValidTask(request.resource.data);

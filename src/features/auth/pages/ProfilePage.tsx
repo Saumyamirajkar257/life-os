@@ -7,11 +7,14 @@
 import React from 'react';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { UserProfileCard } from '../components/UserProfileCard';
+import { SocialAuthButton } from '../components/SocialAuthButton';
 import { useAuth } from '../hooks/useAuth';
+import { useAuthActions } from '../hooks/useAuthActions';
 import { Button } from '@/components/ui/button';
 
 export const ProfilePage: React.FC = () => {
   const { user, navigateToPage } = useAuth();
+  const { loginWithGoogle, loginWithApple, isSubmitting } = useAuthActions();
 
   return (
     <div className="min-h-screen w-full bg-[var(--color-bg)] p-4 sm:p-6 md:p-8 space-y-6">
@@ -65,23 +68,40 @@ export const ProfilePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => navigateToPage('login')}
-              className="w-full sm:flex-1 h-10"
-            >
-              Sign In to Aura
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigateToPage('signup')}
-              className="w-full sm:flex-1 h-10"
-            >
-              Create Account
-            </Button>
+          <div className="space-y-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <SocialAuthButton
+                provider="google"
+                onClick={loginWithGoogle}
+                isLoading={isSubmitting}
+                label="Sign in with Google"
+              />
+              <SocialAuthButton
+                provider="apple"
+                onClick={loginWithApple}
+                isLoading={isSubmitting}
+                label="Sign in with Apple"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => navigateToPage('login')}
+                className="w-full h-10"
+              >
+                Sign In with Email
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigateToPage('signup')}
+                className="w-full h-10"
+              >
+                Create Account
+              </Button>
+            </div>
           </div>
         </div>
       )}

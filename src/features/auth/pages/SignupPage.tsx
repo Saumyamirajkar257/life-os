@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 
 export const SignupPage: React.FC = () => {
   const { error, navigateToPage, setError } = useAuth();
-  const { signupWithEmail, loginWithGoogle, isSubmitting } = useAuthActions();
+  const { signupWithEmail, loginWithGoogle, loginWithApple, isSubmitting } = useAuthActions();
 
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,17 +39,27 @@ export const SignupPage: React.FC = () => {
   return (
     <AuthLayout
       title="Create Account"
-      subtitle="Register your identity to initialize personalized Aura Life OS workspace."
+      subtitle="Initialize your cloud-backed Aura Personal OS."
+      badge="Aura 2.0"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* Social Registration */}
-        <SocialAuthButton
-          onClick={loginWithGoogle}
-          isLoading={isSubmitting}
-          label="Sign up with Google"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <SocialAuthButton
+            provider="google"
+            onClick={loginWithGoogle}
+            isLoading={isSubmitting}
+            label="Google"
+          />
+          <SocialAuthButton
+            provider="apple"
+            onClick={loginWithApple}
+            isLoading={isSubmitting}
+            label="Apple"
+          />
+        </div>
 
-        <div className="relative flex items-center justify-center my-4">
+        <div className="relative flex items-center justify-center my-3">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-[var(--color-border)]" />
           </div>

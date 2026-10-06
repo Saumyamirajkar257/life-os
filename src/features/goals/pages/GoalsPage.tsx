@@ -1,31 +1,36 @@
 /**
  * @file GoalsPage.tsx
- * @description Master page component for Goals & Projects OS (Milestone 14).
+ * @description Master page component for Goals & Projects OS with clean editorial hierarchy for Aura Life OS 2.0.
  * @module Features/Goals/Pages
  */
 
 import React from 'react';
-import { Target, Flag, Sparkles, Plus, Layers, Circle, Play, CheckCircle2 } from 'lucide-react';
+import { Target, Flag, Sparkles, Plus, Layers, Circle, Play, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useGoalStore } from '../stores/useGoalStore';
 import { GoalCard } from '../components/GoalCard';
 import { GoalDetailDrawer } from '../components/GoalDetailDrawer';
+import { GoalFormModal } from '../components/GoalFormModal';
 
 export const GoalsPage: React.FC = () => {
-  const { goals, projects, milestones, openFormModal } = useGoalStore();
+  const { goals, projects, milestones, openFormModal, loadGoals } = useGoalStore();
 
-  const activeGoals = goals.filter(g => g.status !== 'completed' && g.status !== 'archived');
-  const activeProjects = projects.filter(p => p.status !== 'completed' && p.status !== 'archived');
+  React.useEffect(() => {
+    loadGoals();
+  }, [loadGoals]);
+
+  const activeGoals = goals.filter((g) => g.status !== 'completed' && g.status !== 'archived');
+  const activeProjects = projects.filter((p) => p.status !== 'completed' && p.status !== 'archived');
   const upcomingMilestones = milestones
-    .filter(m => m.status !== 'completed')
+    .filter((m) => m.status !== 'completed')
     .sort((a, b) => new Date(a.dueDate || '').getTime() - new Date(b.dueDate || '').getTime())
-    .slice(0, 5); // Just show top 5 upcoming
+    .slice(0, 5);
 
-  const overallProgress = activeGoals.length > 0 
-    ? Math.round(activeGoals.reduce((sum, g) => sum + g.progress, 0) / activeGoals.length) 
-    : 0;
+  const overallProgress =
+    activeGoals.length > 0
+      ? Math.round(activeGoals.reduce((sum, g) => sum + g.progress, 0) / activeGoals.length)
+      : 0;
 
-  // Retrieve the first vision statement available for display, or show empty state if none
-  const mainVision = activeGoals.find(g => g.visionStatement)?.visionStatement;
+  const mainVision = activeGoals.find((g) => g.visionStatement)?.visionStatement;
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '';
@@ -33,195 +38,213 @@ export const GoalsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto w-full min-h-screen space-y-12">
-      
+    <div className="flex flex-col p-4 sm:p-6 md:p-8 max-w-6xl mx-auto w-full min-h-screen space-y-8">
       {/* 1. PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-border)]/60 pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">GOALS</h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">Turn long-term plans into measurable progress.</p>
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
+            Life Strategy & Alignment
+          </div>
+          <h1 className="text-3xl font-light tracking-tight text-white">
+            Goals & <span className="font-semibold">Milestones</span>
+          </h1>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+            Turn long-term aspirations into tangible weekly executions.
+          </p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <div className="flex gap-4 sm:gap-6 text-xs font-mono">
+
+        <div className="flex items-center gap-4">
+          <div className="flex gap-4 text-xs font-mono border-r border-[var(--color-border)] pr-4">
             <div className="flex flex-col">
-              <span className="text-[var(--color-text-secondary)] uppercase">Active</span>
-              <span className="text-white font-bold">{activeGoals.length} goals</span>
+              <span className="text-[var(--color-text-muted)] uppercase text-[10px]">Active Goals</span>
+              <span className="text-white font-medium">{activeGoals.length}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[var(--color-text-secondary)] uppercase">Projects</span>
-              <span className="text-white font-bold">{activeProjects.length}</span>
+              <span className="text-[var(--color-text-muted)] uppercase text-[10px]">Projects</span>
+              <span className="text-white font-medium">{activeProjects.length}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[var(--color-text-secondary)] uppercase">Progress</span>
-              <span className="text-[var(--color-accent)] font-bold">{overallProgress}%</span>
+              <span className="text-[var(--color-text-muted)] uppercase text-[10px]">Average</span>
+              <span className="text-white font-medium">{overallProgress}%</span>
             </div>
           </div>
-          
+
           <button
             onClick={() => openFormModal()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-bold text-sm hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-black hover:bg-neutral-200 transition-colors text-xs font-semibold cursor-pointer shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>New Goal</span>
           </button>
         </div>
       </div>
 
-      {/* 2. VISION */}
-      <section className="space-y-4">
-        <h2 className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">My Direction</h2>
+      {/* 2. VISION STATEMENT — "WHERE AM I GOING?" */}
+      <section className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+            WHERE AM I GOING? · Vision
+          </h2>
+        </div>
         {mainVision ? (
-          <div className="p-6 md:p-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm">
-            <p className="text-xl md:text-2xl text-white font-serif italic leading-relaxed">
-              "{mainVision}"
-            </p>
-          </div>
+          <p className="text-base sm:text-lg text-neutral-200 font-serif italic leading-relaxed">
+            "{mainVision}"
+          </p>
         ) : (
-          <div className="p-6 md:p-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] border-dashed text-center space-y-4 max-w-xl mx-auto">
-            <h3 className="text-lg font-bold text-white">DEFINE YOUR DIRECTION</h3>
-            <p className="text-sm text-[var(--color-text-secondary)]">Start with the bigger picture. Why are you setting these goals?</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <p className="text-[var(--color-text-secondary)]">
+              No vision statement defined yet. Frame your guiding purpose to orient daily decisions.
+            </p>
             <button
               onClick={() => openFormModal()}
-              className="inline-flex px-4 py-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)] text-white text-xs font-bold hover:border-[var(--color-text-secondary)] transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-elevated)] hover:bg-[var(--color-border)] text-white text-xs font-medium border border-[var(--color-border)] transition-colors cursor-pointer shrink-0"
             >
-              Create Vision
+              Set Vision
             </button>
           </div>
         )}
       </section>
 
-      {/* Empty States Handling */}
+      {/* EMPTY STATE */}
       {goals.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] border-dashed text-center space-y-4 max-w-2xl mx-auto w-full">
-          <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] flex items-center justify-center mx-auto mb-2">
+        <div className="py-16 px-4 rounded-2xl bg-[var(--color-surface)] border border-dashed border-[var(--color-border)] text-center space-y-3 max-w-lg mx-auto">
+          <div className="w-12 h-12 rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border)] text-neutral-300 flex items-center justify-center mx-auto mb-2">
             <Target className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">START WITH A DIRECTION</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">Goals turn your long-term vision into something you can act on.</p>
+          <h3 className="text-sm font-semibold text-white">Define Your First Goal</h3>
+          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+            Connect high-level aspirations to projects, milestones, and daily habits.
+          </p>
           <button
             onClick={() => openFormModal()}
-            className="mt-4 px-6 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-bold text-sm hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+            className="mt-2 px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Create Goal</span>
           </button>
         </div>
       ) : (
         <>
-          {/* 3. ACTIVE GOALS */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Active Goals</h2>
+          {/* 3. ACTIVE GOALS GRID — BALANCED 3-COLUMN */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-1 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Active Goals
+              </h2>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-              {activeGoals.map(goal => (
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeGoals.map((goal) => (
                 <GoalCard key={goal.id} goal={goal} />
               ))}
             </div>
-
-            {/* If there are goals, but no projects */}
-            {activeGoals.length > 0 && projects.length === 0 && (
-              <div className="p-6 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] border-dashed flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-white mb-1">YOUR GOAL NEEDS A PROJECT</h3>
-                  <p className="text-xs text-[var(--color-text-secondary)]">Break this goal into a project to start moving forward.</p>
-                </div>
-                <button
-                  className="px-4 py-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)] text-white text-xs font-bold hover:border-[var(--color-text-secondary)] transition-colors shrink-0"
-                >
-                  + Add Project
-                </button>
-              </div>
-            )}
           </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
-            {/* 6. PROJECTS */}
-            <section className="space-y-4">
-              <h2 className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Active Projects</h2>
-              <div className="space-y-3">
-                {activeProjects.map(project => {
-                  const parentGoal = goals.find(g => g.id === project.goalId);
-                  return (
-                    <div key={project.id} className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-accent)]/50 transition-colors cursor-pointer group flex items-center justify-between">
-                      <div className="flex flex-col gap-1.5 w-full pr-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-bold text-white group-hover:text-[var(--color-accent)] transition-colors line-clamp-1">{project.title}</h4>
-                          <span className="text-[10px] text-white font-bold">{project.progress}%</span>
+          {/* 4. SPLIT HIERARCHY: WHAT AM I WORKING ON? & WHAT IS NEXT? */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-2">
+            {/* PROJECTS — WHAT AM I WORKING ON? (6 cols) */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-[var(--color-border)]">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                  WHAT AM I WORKING ON? · Projects
+                </h2>
+              </div>
+
+              {activeProjects.length > 0 ? (
+                <div className="space-y-2.5">
+                  {activeProjects.map((project) => {
+                    const parentGoal = goals.find((g) => g.id === project.goalId);
+                    return (
+                      <div
+                        key={project.id}
+                        className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 transition-colors cursor-pointer group space-y-2"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-medium text-neutral-200 group-hover:text-white truncate">
+                            {project.title}
+                          </span>
+                          <span className="font-mono text-[var(--color-text-muted)]">
+                            {project.progress}%
+                          </span>
                         </div>
-                        <div className="h-1.5 w-full bg-[var(--color-surface-elevated)] rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-[var(--color-accent)] transition-all duration-500" 
-                            style={{ width: `${project.progress}%` }} 
+
+                        <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-white transition-all duration-500"
+                            style={{ width: `${project.progress}%` }}
                           />
                         </div>
+
                         {parentGoal && (
-                          <span className="text-[10px] text-[var(--color-text-secondary)] mt-1 line-clamp-1">Goal: {parentGoal.title}</span>
+                          <div className="text-[10px] text-[var(--color-text-muted)] truncate">
+                            Goal: {parentGoal.title}
+                          </div>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                  No active projects currently linked to goals.
+                </div>
+              )}
+            </div>
 
-                {activeProjects.length === 0 && projects.length > 0 && (
-                  <p className="text-sm text-[var(--color-text-secondary)] italic">No active projects found.</p>
-                )}
+            {/* MILESTONES — WHAT IS NEXT? (6 cols) */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-[var(--color-border)]">
+                <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                  WHAT IS NEXT? · Milestones
+                </h2>
               </div>
-            </section>
 
-            {/* 7. MILESTONES */}
-            <section className="space-y-4">
-              <h2 className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Upcoming Milestones</h2>
-              <div className="space-y-3">
-                {upcomingMilestones.map(milestone => {
-                  const isCompleted = milestone.status === 'completed';
-                  const isInProgress = milestone.status === 'in_progress';
-                  return (
-                    <div key={milestone.id} className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm hover:border-[var(--color-accent)]/50 transition-colors cursor-pointer flex items-start gap-3 group">
-                      <div className="mt-0.5">
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        ) : isInProgress ? (
-                          <Play className="w-4 h-4 text-[var(--color-accent)]" />
-                        ) : (
-                          <Circle className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              {upcomingMilestones.length > 0 ? (
+                <div className="space-y-2.5">
+                  {upcomingMilestones.map((milestone) => {
+                    const isCompleted = milestone.status === 'completed';
+                    const isInProgress = milestone.status === 'in_progress';
+                    return (
+                      <div
+                        key={milestone.id}
+                        className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 transition-colors flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          ) : isInProgress ? (
+                            <Play className="w-4 h-4 text-white shrink-0" />
+                          ) : (
+                            <Circle className="w-4 h-4 text-neutral-600 shrink-0" />
+                          )}
+                          <span className="font-medium text-neutral-200 truncate">
+                            {milestone.title}
+                          </span>
+                        </div>
+
+                        {milestone.dueDate && (
+                          <span className="text-[11px] font-mono text-[var(--color-text-muted)] shrink-0">
+                            Due {formatDate(milestone.dueDate)}
+                          </span>
                         )}
                       </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-white group-hover:text-[var(--color-accent)] transition-colors">{milestone.title}</h4>
-                        <p className="text-xs text-[var(--color-text-secondary)] mt-1">Due {formatDate(milestone.dueDate)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* If there are projects, but no milestones */}
-                {upcomingMilestones.length === 0 && projects.length > 0 && milestones.length === 0 && (
-                  <div className="p-5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] border-dashed flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-sm font-bold text-white mb-1">ADD YOUR NEXT MILESTONE</h3>
-                      <p className="text-xs text-[var(--color-text-secondary)]">Define the next measurable step.</p>
-                    </div>
-                    <button
-                      className="px-4 py-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)] text-white text-xs font-bold hover:border-[var(--color-text-secondary)] transition-colors shrink-0"
-                    >
-                      + Add Milestone
-                    </button>
-                  </div>
-                )}
-                
-                {upcomingMilestones.length === 0 && milestones.length > 0 && (
-                  <p className="text-sm text-[var(--color-text-secondary)] italic">No upcoming milestones found.</p>
-                )}
-              </div>
-            </section>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                  No upcoming milestones scheduled.
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
 
       <GoalDetailDrawer />
+      <GoalFormModal />
     </div>
   );
 };
+
+export default GoalsPage;

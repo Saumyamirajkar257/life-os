@@ -6,6 +6,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { auth } from '@/lib/firebase/config';
 import { JournalEntry, NoteItem, FolderItem, TagItem, MoodType, EnergyLevel } from '../types/journal.types';
 import { SEED_JOURNALS, SEED_NOTES, SEED_FOLDERS, SEED_TAGS } from '../constants/journalConstants';
 import { journalFirestoreService } from '../services/journalFirestore.service';
@@ -64,14 +65,21 @@ export const useJournalStore = create<JournalState>()(
       isLoading: false,
       error: null,
 
-      loadModuleData: async (userId = 'default_user') => {
-        set({ isLoading: true, error: null });
+      loadModuleData: async (userId) => {
+        const activeUid = userId || auth.currentUser?.uid;
+        if (!activeUid) {
+          set({ isLoading: false });
+          return;
+        }
+        if (get().journals.length === 0 && get().notes.length === 0) {
+          set({ isLoading: true, error: null });
+        }
         try {
           const [fetchedJournals, fetchedNotes, fetchedFolders, fetchedTags] = await Promise.all([
-            journalFirestoreService.fetchJournals(userId),
-            journalFirestoreService.fetchNotes(userId),
-            journalFirestoreService.fetchFolders(userId),
-            journalFirestoreService.fetchTags(userId),
+            journalFirestoreService.fetchJournals(activeUid),
+            journalFirestoreService.fetchNotes(activeUid),
+            journalFirestoreService.fetchFolders(activeUid),
+            journalFirestoreService.fetchTags(activeUid),
           ]);
           set({
             journals: fetchedJournals,
@@ -92,10 +100,11 @@ export const useJournalStore = create<JournalState>()(
         const content = payload.content || '<p>Start writing your reflection...</p>';
         const wordCount = calculateWordCount(content);
         const readingTimeMinutes = calculateReadingTime(wordCount);
+        const activeUid = auth.currentUser?.uid || payload.userId || 'default_user';
 
         const newJournal: JournalEntry = {
           id,
-          userId: payload.userId || 'default_user',
+          userId: activeUid,
           title: payload.title || 'Untitled Journal Entry',
           content,
           contentJson: payload.contentJson || '',
@@ -215,10 +224,11 @@ export const useJournalStore = create<JournalState>()(
         const content = payload.content || '<p>Quick note draft...</p>';
         const wordCount = calculateWordCount(content);
         const readingTimeMinutes = calculateReadingTime(wordCount);
+        const activeUid = auth.currentUser?.uid || payload.userId || 'default_user';
 
         const newNote: NoteItem = {
           id,
-          userId: payload.userId || 'default_user',
+          userId: activeUid,
           title: payload.title || 'Quick Note',
           content,
           contentJson: payload.contentJson || '',

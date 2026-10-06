@@ -28,7 +28,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   sidebarGroups,
   breadcrumbs,
   title = 'Aura Core',
-  showDock = true,
+  showDock = false,
   showFooter = true,
   showWindowSafeSpacing = false,
   secondaryPaneContent,

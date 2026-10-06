@@ -6,6 +6,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { auth } from '@/lib/firebase/config';
 import { CalendarEventItem } from '../types/calendar.types';
 import { INITIAL_EVENTS } from '../constants/calendarConstants';
 import { fetchUserEvents, saveUserEvent, deleteUserEvent } from '../services/calendarFirestore.service';
@@ -37,10 +38,17 @@ export const useCalendarStore = create<CalendarState>()(
       error: null,
       lastSyncedAt: null,
 
-      loadEvents: async (userId = 'default_user') => {
-        set({ isLoading: true, error: null });
+      loadEvents: async (userId) => {
+        const activeUid = userId || auth.currentUser?.uid;
+        if (!activeUid) {
+          set({ isLoading: false });
+          return;
+        }
+        if (get().events.length === 0) {
+          set({ isLoading: true, error: null });
+        }
         try {
-          const fetched = await fetchUserEvents(userId);
+          const fetched = await fetchUserEvents(activeUid);
           set({
             events: fetched,
             isLoading: false,
@@ -55,10 +63,11 @@ export const useCalendarStore = create<CalendarState>()(
       createEvent: async (payload) => {
         const id = `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const now = new Date().toISOString();
+        const activeUid = auth.currentUser?.uid || payload.userId || 'default_user';
         const newEvent: CalendarEventItem = {
           ...payload,
           id,
-          userId: payload.userId || 'default_user',
+          userId: activeUid,
           createdAt: now,
           updatedAt: now,
         };

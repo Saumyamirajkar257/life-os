@@ -22,22 +22,23 @@ import { TRANSACTION_CATEGORIES } from '../constants/financeConstants';
  */
 export function formatCurrency(amount: number, currencyCode = 'USD', compact = false): string {
   try {
+    const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en-US';
     if (compact && Math.abs(amount) >= 1000) {
-      return new Intl.NumberFormat('en-US', {
+      return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currencyCode,
         notation: 'compact',
         maximumFractionDigits: 1,
       }).format(amount);
     }
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currencyCode,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
   } catch (err) {
-    return `$${amount.toFixed(2)}`;
+    return `${currencyCode} ${amount.toFixed(2)}`;
   }
 }
 

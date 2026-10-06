@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 
 export const LoginPage: React.FC = () => {
   const { error, navigateToPage } = useAuth();
-  const { loginWithEmail, loginWithGoogle, isSubmitting } = useAuthActions();
+  const { loginWithEmail, loginWithGoogle, loginWithApple, isSubmitting } = useAuthActions();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,18 +29,28 @@ export const LoginPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title="Welcome Back"
-      subtitle="Sign in to your Aura Life OS account to access system controls."
+      title="AURA"
+      subtitle="Your life, in one place."
+      badge="Personal OS 2.0"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* Social Authentication */}
-        <SocialAuthButton
-          onClick={loginWithGoogle}
-          isLoading={isSubmitting}
-          label="Sign in with Google"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <SocialAuthButton
+            provider="google"
+            onClick={loginWithGoogle}
+            isLoading={isSubmitting}
+            label="Google"
+          />
+          <SocialAuthButton
+            provider="apple"
+            onClick={loginWithApple}
+            isLoading={isSubmitting}
+            label="Apple"
+          />
+        </div>
 
-        <div className="relative flex items-center justify-center my-4">
+        <div className="relative flex items-center justify-center my-3">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-[var(--color-border)]" />
           </div>

@@ -28,10 +28,11 @@ interface TaskItemProps {
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const { togglePinTask, toggleFavouriteTask } = useTaskStore();
-  const { openDetailDrawer, openFormModal, openFocusModal, selectedTaskIds, toggleSelectTask } = useTaskUIStore();
+  const { openDetailDrawer, openFormModal, openFocusModal, selectedTaskIds, toggleSelectTask, focusedTaskId, setFocusedTask } = useTaskUIStore();
   const { completeTask, undoComplete, deleteTask, duplicateTask, archiveTask } = useTaskMutations();
 
   const isSelected = selectedTaskIds.includes(task.id);
+  const isFocused = focusedTaskId === task.id;
   const overdue = isOverdue(task.dueDate, task.status);
 
   return (
@@ -40,10 +41,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      onClick={() => openDetailDrawer(task.id)}
+      onClick={() => {
+        setFocusedTask(task.id);
+        openDetailDrawer(task.id);
+      }}
       className={`group flex items-start gap-3 p-3 sm:px-4 rounded-xl transition-all duration-200 cursor-pointer ${
         task.status === 'done' ? 'opacity-50 hover:opacity-100' : ''
-      } ${isSelected ? 'bg-[var(--color-surface-elevated)] ring-1 ring-[var(--color-accent)]' : 'hover:bg-[var(--color-surface)] border border-transparent hover:border-[var(--color-border)]/50'}`}
+      } ${
+        isFocused
+          ? 'bg-[var(--color-surface-elevated)] ring-2 ring-[var(--color-accent)] shadow-md'
+          : isSelected
+          ? 'bg-[var(--color-surface-elevated)] ring-1 ring-[var(--color-accent)]/50'
+          : 'hover:bg-[var(--color-surface)] border border-transparent hover:border-[var(--color-border)]/50'
+      }`}
       id={`task-item-row-${task.id}`}
     >
       {/* Checkbox (Complete) */}
@@ -132,15 +142,31 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
             {task.priority === 'high' && <span className="w-2 h-2 rounded-full bg-amber-500" title="High Priority" />}
             {task.priority === 'medium' && <span className="w-2 h-2 rounded-full bg-blue-500" title="Medium Priority" />}
             
-            {/* Actions visible on hover (or touch on mobile) */}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+            {/* Actions visible on hover or keyboard focus */}
+            <div className={`flex items-center gap-1 transition-opacity ${isFocused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+              {isFocused && (
+                <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)]">
+                  ↵ view · x done
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFocusModal(task.id);
+                }}
+                className="px-2 py-1 text-xs font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-md transition-colors cursor-pointer"
+                title="Deep Focus Mode"
+              >
+                Focus
+              </button>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   openFormModal(task);
                 }}
-                className="px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] rounded-md transition-colors"
+                className="px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] rounded-md transition-colors cursor-pointer"
               >
                 Edit
               </button>

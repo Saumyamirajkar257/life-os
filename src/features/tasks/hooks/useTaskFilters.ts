@@ -26,6 +26,7 @@ export function useTaskFilters() {
       calendar: 0,
       kanban: 0,
       timeline: 0,
+      matrix: 0,
       list: 0,
     };
 
@@ -40,6 +41,7 @@ export function useTaskFilters() {
         'calendar',
         'kanban',
         'timeline',
+        'matrix',
         'list',
       ] as TaskViewMode[]
     ).forEach((view) => {

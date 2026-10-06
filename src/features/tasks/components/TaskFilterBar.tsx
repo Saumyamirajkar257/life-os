@@ -44,7 +44,7 @@ export const TaskFilterBar: React.FC = () => {
   ].filter(Boolean).length;
 
   const primaryViews = TASK_VIEW_TABS.filter(t => ['today', 'upcoming', 'inbox', 'completed'].includes(t.id));
-  const advancedViews = TASK_VIEW_TABS.filter(t => ['list', 'kanban', 'calendar', 'timeline', 'archived', 'overdue'].includes(t.id));
+  const advancedViews = TASK_VIEW_TABS.filter(t => ['list', 'kanban', 'matrix', 'calendar', 'timeline', 'archived', 'overdue'].includes(t.id));
   const activeViewLabel = TASK_VIEW_TABS.find(t => t.id === activeView)?.label || 'View';
 
   return (

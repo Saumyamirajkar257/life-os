@@ -78,9 +78,10 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
     }
     // We visually insert the user's request
     setTimeout(() => {
-      // Simulate sending the prompt and then running the workflow
       sendMessage(promptText);
-      runWorkflow(workflowId as any);
+      if (!['add_salary', 'create_task', 'complete_task', 'log_expense', 'check_habit'].includes(workflowId)) {
+        runWorkflow(workflowId as any);
+      }
     }, 100);
   };
 
@@ -98,12 +99,12 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
   };
 
   const QUICK_ACTIONS = [
-    { id: 'plan_my_day', label: 'Plan my day', icon: Calendar, prompt: 'Plan my day' },
-    { id: 'review_my_week', label: 'Review my week', icon: Zap, prompt: 'Review my week' },
-    { id: 'analyze_spending', label: 'Analyze my spending', icon: Wallet, prompt: 'Analyze my spending' },
-    { id: 'suggest_focus_time', label: 'Prepare for tomorrow', icon: Target, prompt: 'Prepare for tomorrow' },
-    { id: 'goal_progress', label: 'Review my goals', icon: Target, prompt: 'Review my goals' },
-    { id: 'review_habits', label: 'Check my habits', icon: Flame, prompt: 'Check my habits' },
+    { id: 'add_salary', label: 'Add Salary $1,000', icon: Wallet, prompt: 'add money i got salary 1000' },
+    { id: 'create_task', label: 'Create Task (!high)', icon: CheckCircle2, prompt: 'add a new task buy groceries !high' },
+    { id: 'complete_task', label: 'Complete Task', icon: CheckCircle2, prompt: 'I completed this task' },
+    { id: 'log_expense', label: 'Log $50 Expense', icon: Wallet, prompt: 'spent 50 on groceries' },
+    { id: 'check_habit', label: 'Check Habit Streak', icon: Flame, prompt: 'checked habit meditation' },
+    { id: 'plan_my_day', label: 'Plan My Day', icon: Calendar, prompt: "Plan my day based on today's tasks and schedule" },
   ];
 
   return (
@@ -114,83 +115,78 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
           <div className="flex items-center gap-3">
             <button
               onClick={() => createConversation()}
-              className="p-2 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white transition-colors"
+              className="p-2 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white transition-colors cursor-pointer"
               title="New Chat"
             >
               <Plus className="w-4 h-4" />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[var(--color-accent)]" />
+                <Sparkles className="w-4 h-4 text-white" />
                 <h2 className="text-sm font-semibold text-white">
                   {activeConversation.title || 'Aura Intelligence'}
                 </h2>
               </div>
-              <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 flex items-center gap-1.5">
+              <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1.5 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                {activeProvider.name} • {activeModel.name}
+                Aura Personal Intelligence · Active
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-[10px] font-medium tracking-wide uppercase text-[var(--color-text-tertiary)]">
+          <div className="flex items-center gap-3 text-[10px] font-mono tracking-wide uppercase text-[var(--color-text-muted)]">
             <span className="hidden sm:inline">Context:</span>
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[var(--color-accent)]" /> Tasks</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[var(--color-accent)]" /> Calendar</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[var(--color-accent)]" /> Habits</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[var(--color-accent)]" /> Goals</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[var(--color-accent)]" /> Finance</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-neutral-400" /> Tasks</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-neutral-400" /> Calendar</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-neutral-400" /> Habits</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-neutral-400" /> Goals</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-neutral-400" /> Finance</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Message Stream or Empty State */}
-      <div className="flex-1 overflow-y-auto pt-8 pb-4 space-y-6 scrollbar-none">
+      <div className="flex-1 overflow-y-auto pt-6 pb-4 space-y-6 scrollbar-none">
         {!activeConversation || activeConversation.messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center space-y-8 max-w-2xl mx-auto px-4 mt-8">
-            <div className="space-y-4 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-[var(--color-accent)] to-teal-500 shadow-2xl flex items-center justify-center text-white mb-2">
-                <Sparkles className="w-8 h-8" />
+          <div className="h-full flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto px-4 mt-4">
+            <div className="space-y-2 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-elevated)] border border-[var(--color-border)] flex items-center justify-center text-white mb-2 shadow-sm">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">How can I help today?</h1>
-              <p className="text-sm text-[var(--color-text-secondary)] max-w-sm mx-auto">
-                Aura Intelligence is connected to your tasks, calendar, goals, and habits. Ask me anything to get started.
+              <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-white">Ask Aura</h1>
+              <p className="text-xs text-[var(--color-text-secondary)] max-w-sm mx-auto leading-relaxed">
+                Aura is connected to your tasks, calendar, habits, goals, and finances.
               </p>
             </div>
 
             <div className="w-full relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)] rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden focus-within:border-[var(--color-accent-muted)] transition-colors">
+              <div className="relative flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden focus-within:border-neutral-600 transition-colors">
                 <textarea
                   rows={3}
-                  placeholder="Ask Aura anything..."
+                  placeholder="Ask Aura anything... (e.g. 'What are my top priorities today?')"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="w-full p-4 bg-transparent text-sm text-white placeholder-[var(--color-text-tertiary)] focus:outline-none resize-none"
+                  className="w-full p-4 bg-transparent text-sm text-white placeholder-[var(--color-text-muted)] focus:outline-none resize-none"
                 />
-                <div className="flex items-center justify-between p-3 border-t border-[var(--color-border)]/50 bg-[var(--color-background)]/50">
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-[var(--color-text-tertiary)] hover:text-white rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors" title="Voice Input">
-                      <Mic className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-[var(--color-text-tertiary)] hover:text-white rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors" title="Attach Image">
-                      <ImageIcon className="w-4 h-4" />
-                    </button>
+                <div className="flex items-center justify-between p-3 border-t border-[var(--color-border)] bg-[var(--color-bg)]/40">
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] font-mono">
+                    <span>Press Enter to send</span>
                   </div>
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isGenerating}
-                    className="px-4 py-2 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50 text-white font-medium text-sm flex items-center gap-2 transition-all"
+                    className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 disabled:opacity-40 text-black font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer"
                   >
-                    Send <Send className="w-3.5 h-3.5" />
+                    <span>Ask</span>
+                    <Send className="w-3 h-3" />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-3 pt-4">
+            <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
               {QUICK_ACTIONS.map((action) => {
                 const Icon = action.icon;
                 return (
@@ -198,11 +194,11 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
                     key={action.id}
                     onClick={() => handleRunWorkflow(action.id, action.prompt)}
                     disabled={activeRunningWorkflowId === action.id || isGenerating}
-                    className="p-4 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] text-left transition-all group disabled:opacity-50"
+                    className="p-3.5 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border)] hover:border-neutral-700 text-left transition-all group disabled:opacity-50 cursor-pointer"
                   >
-                    <div className="flex flex-col gap-3">
-                      <div className="p-2 w-fit rounded-lg bg-[var(--color-background)] text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] group-hover:bg-[var(--color-accent)]/10 transition-colors">
-                        <Icon className="w-4 h-4" />
+                    <div className="flex flex-col gap-2">
+                      <div className="p-1.5 w-fit rounded-lg bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] group-hover:text-white transition-colors">
+                        <Icon className="w-3.5 h-3.5" />
                       </div>
                       <span className="text-xs font-medium text-[var(--color-text-secondary)] group-hover:text-white transition-colors">
                         {action.label}
@@ -277,6 +273,27 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
                           });
                         };
 
+                        if (line.startsWith('> ⚡') || line.startsWith('> **Action Executed:')) {
+                          return (
+                            <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold my-1 shadow-sm">
+                              {renderInline(line.replace(/^>\s*/, ''))}
+                            </div>
+                          );
+                        }
+                        if (line.startsWith('> ⚠️')) {
+                          return (
+                            <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold my-1 shadow-sm">
+                              {renderInline(line.replace(/^>\s*/, ''))}
+                            </div>
+                          );
+                        }
+                        if (line.startsWith('> ')) {
+                          return (
+                            <blockquote key={i} className="border-l-2 border-[var(--color-accent)] pl-3 text-xs text-[var(--color-text-secondary)] italic my-2">
+                              {renderInline(line.replace(/^>\s*/, ''))}
+                            </blockquote>
+                          );
+                        }
                         if (line.startsWith('# ')) {
                           return <h1 key={i} className="text-lg font-bold text-white mt-3 mb-1">{renderInline(line.replace('# ', ''))}</h1>;
                         }
@@ -309,7 +326,7 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
                   <Sparkles className="w-4 h-4 animate-pulse" />
                 </div>
                 <div className="flex items-center text-sm text-[var(--color-text-tertiary)] italic animate-pulse">
-                  Aura is thinking...
+                  Aura is executing...
                 </div>
               </div>
             )}
@@ -329,7 +346,7 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({ initialPrompt, onNavigat
             </div>
             <textarea
               rows={1}
-              placeholder="Ask Aura anything..."
+              placeholder="Ask Aura anything or give commands (e.g. 'add money i got salary 1000', 'completed this task', 'add task Buy groceries !high')..."
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);

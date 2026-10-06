@@ -1,12 +1,14 @@
 /**
  * @file useGoalStore.ts
- * @description Main Zustand store managing Goals, Projects, and Milestones.
+ * @description Main Zustand store managing Goals, Projects, and Milestones with Firestore persistence.
  * @module Features/Goals/Stores
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { GoalItem, ProjectItem, MilestoneItem } from '../types/goal.types';
+import { auth } from '@/lib/firebase/config';
+import { goalsFirestoreService } from '../services/goalsFirestoreService';
 
 interface GoalState {
   goals: GoalItem[];
@@ -17,6 +19,7 @@ interface GoalState {
   activeDetailGoalId: string | null;
   isFormModalOpen: boolean;
   editingGoalId: string | null;
+  isLoading: boolean;
 
   // Actions
   setGoalViewMode: (mode: string) => void;
@@ -25,6 +28,7 @@ interface GoalState {
   openFormModal: (goalId?: string) => void;
   closeFormModal: () => void;
   
+  loadGoals: (userId?: string) => Promise<void>;
   createGoal: (goal: Omit<GoalItem, 'id' | 'createdAt' | 'updatedAt'>) => GoalItem;
   updateGoal: (id: string, updates: Partial<GoalItem>) => void;
   deleteGoal: (id: string) => void;
@@ -68,6 +72,7 @@ export const useGoalStore = create<GoalState>()(
       activeDetailGoalId: null,
       isFormModalOpen: false,
       editingGoalId: null,
+      isLoading: false,
 
       setGoalViewMode: (mode) => set({ activeGoalViewMode: mode }),
       openDetailDrawer: (goalId) => set({ isDetailDrawerOpen: true, activeDetailGoalId: goalId }),
@@ -75,28 +80,71 @@ export const useGoalStore = create<GoalState>()(
       openFormModal: (goalId) => set({ isFormModalOpen: true, editingGoalId: goalId || null }),
       closeFormModal: () => set({ isFormModalOpen: false, editingGoalId: null }),
 
+      loadGoals: async (userId?: string) => {
+        const uid = userId || auth.currentUser?.uid;
+        if (!uid) return;
+        set({ isLoading: true });
+        try {
+          const [fetchedGoals, fetchedProjects, fetchedMilestones] = await Promise.all([
+            goalsFirestoreService.fetchGoals(uid),
+            goalsFirestoreService.fetchProjects(uid),
+            goalsFirestoreService.fetchMilestones(uid),
+          ]);
+          set({
+            goals: fetchedGoals.length > 0 ? fetchedGoals : get().goals,
+            projects: fetchedProjects.length > 0 ? fetchedProjects : get().projects,
+            milestones: fetchedMilestones.length > 0 ? fetchedMilestones : get().milestones,
+            isLoading: false,
+          });
+        } catch (err) {
+          console.warn('[useGoalStore] Firestore sync fallback:', err);
+          set({ isLoading: false });
+        }
+      },
+
       createGoal: (payload) => {
         const id = `goal_${Date.now()}`;
         const now = new Date().toISOString();
+        const userId = auth.currentUser?.uid || payload.userId || 'default_user';
         const newGoal: GoalItem = {
           ...payload,
+          priority: payload.priority || 'medium',
+          status: payload.status || 'not_started',
+          category: payload.category || 'Personal',
           id,
+          userId,
           createdAt: now,
           updatedAt: now,
         };
         set((state) => ({ goals: [newGoal, ...state.goals] }));
+        if (auth.currentUser) {
+          goalsFirestoreService.saveGoal(newGoal);
+        }
         return newGoal;
       },
 
       updateGoal: (id, updates) => {
         const now = new Date().toISOString();
+        let updated: GoalItem | undefined;
         set((state) => ({
-          goals: state.goals.map((g) => (g.id === id ? { ...g, ...updates, updatedAt: now } : g)),
+          goals: state.goals.map((g) => {
+            if (g.id === id) {
+              updated = { ...g, ...updates, updatedAt: now };
+              return updated;
+            }
+            return g;
+          }),
         }));
+        if (updated && auth.currentUser) {
+          goalsFirestoreService.saveGoal(updated);
+        }
       },
 
       deleteGoal: (id) => {
         set((state) => ({ goals: state.goals.filter((g) => g.id !== id) }));
+        if (auth.currentUser) {
+          goalsFirestoreService.deleteGoal(id);
+        }
       },
     }),
     {

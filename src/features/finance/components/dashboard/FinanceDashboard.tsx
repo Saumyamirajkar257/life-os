@@ -7,6 +7,7 @@
 import React from 'react';
 import { Plus, ArrowRightLeft, Wallet, MoreHorizontal, TrendingUp } from 'lucide-react';
 import { useFinance } from '../../hooks/useFinance';
+import { useFinanceStore } from '../../stores/useFinanceStore';
 import { formatCurrency } from '../../utils/financeUtils';
 import { NetWorthCard } from './NetWorthCard';
 import { CashFlowSummaryCard } from './CashFlowSummaryCard';
@@ -35,33 +36,47 @@ export const FinanceDashboard: React.FC = () => {
     markBillAsPaid,
   } = useFinance();
 
+  const clearLedger = useFinanceStore((state) => state.clearLedger);
+  const loadSeedData = useFinanceStore((state) => state.loadSeedData);
+
+  // Detect whether current data is simulated demo data
+  const isDemoData = accounts.some(
+    (a) => a.id.startsWith('acc_chk_') || a.id.startsWith('acc_sav_') || a.id.startsWith('acc_inv_')
+  );
+
   // Use the primary account's currency or fallback to USD
   const baseCurrency = accounts.length > 0 ? accounts[0].currency : 'USD';
 
   if (accounts.length === 0 && transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-16 text-center gap-4 h-[60vh]">
-        <div className="w-16 h-16 rounded-full bg-[var(--color-surface-elevated)] flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center p-16 text-center gap-4 h-[60vh] max-w-xl mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center">
           <Wallet className="w-8 h-8 text-[var(--color-text-secondary)]" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Start Your Money Space</h3>
-          <p className="text-xs text-[var(--color-text-secondary)] max-w-sm mx-auto">
-            Add your first account or transaction to understand your finances.
+          <h3 className="text-base font-semibold text-white tracking-tight mb-1.5">Personal Finance Ledger</h3>
+          <p className="text-xs text-[var(--color-text-secondary)] max-w-sm mx-auto leading-relaxed">
+            Connect your accounts or add your first transaction to begin tracking net worth, cash flow, and budgets.
           </p>
         </div>
-        <div className="flex items-center gap-4 mt-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
           <button
             onClick={() => openModal('account')}
-            className="px-5 py-2.5 rounded-lg bg-[var(--color-surface-elevated)] text-white text-xs font-bold hover:bg-[var(--color-surface)] border border-[var(--color-border)] transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors cursor-pointer"
           >
-            Add Account
+            Add First Account
           </button>
           <button
             onClick={() => openModal('transaction')}
-            className="px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-white text-xs font-bold transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border)] text-xs font-medium transition-colors cursor-pointer"
           >
-            Add Transaction
+            Record Transaction
+          </button>
+          <button
+            onClick={() => loadSeedData()}
+            className="px-4 py-2.5 rounded-xl text-neutral-400 hover:text-white text-xs font-mono transition-colors cursor-pointer"
+          >
+            Preview Demo Ledger
           </button>
         </div>
       </div>
@@ -69,7 +84,26 @@ export const FinanceDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-8 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <div className="flex flex-col gap-6 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      {/* DEMO SANDBOX BANNER */}
+      {isDemoData && (
+        <div className="p-3 px-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-neutral-800 text-neutral-300 border border-neutral-700 font-semibold tracking-wider">
+              DEMO PREVIEW
+            </span>
+            <span className="text-[var(--color-text-secondary)]">
+              Displaying simulated sandbox ledger. Start your clean personal ledger anytime.
+            </span>
+          </div>
+          <button
+            onClick={() => clearLedger()}
+            className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-elevated)] hover:bg-neutral-800 text-white text-xs font-medium border border-[var(--color-border)] transition-colors cursor-pointer shrink-0"
+          >
+            Start Clean Ledger
+          </button>
+        </div>
+      )}
       
       {/* 1. PAGE HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

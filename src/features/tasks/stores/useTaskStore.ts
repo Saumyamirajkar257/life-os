@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import { TaskItem, TaskPriority, TaskStatus } from '../types/task.types';
 import { INITIAL_DEMO_TASKS } from '../constants/taskConstants';
+import { auth } from '@/lib/firebase/config';
 import {
   saveTaskToFirestore,
   deleteTaskFromFirestore,
@@ -51,19 +52,25 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
 
   setTasks: (tasks) => set({ tasks }),
 
-  initializeStore: (userId = 'default-user') => {
-    set({ isLoading: true });
+  initializeStore: (userId) => {
+    const activeUid = userId || auth.currentUser?.uid;
+    if (!activeUid) {
+      set({ isLoading: false, isSyncedWithFirestore: false });
+      return () => {};
+    }
+    if (get().tasks.length === 0) {
+      set({ isLoading: true });
+    }
 
     // Set up real-time listener from Firestore
     const unsubscribe = subscribeToTasks(
-      userId,
+      activeUid,
       (remoteTasks) => {
         if (remoteTasks.length > 0) {
           set({ tasks: remoteTasks, isSyncedWithFirestore: true, isLoading: false });
         } else {
-          // If no remote tasks exist yet, seed initial tasks to Firestore
-          INITIAL_DEMO_TASKS.forEach((t) => saveTaskToFirestore({ ...t, userId }));
-          set({ tasks: INITIAL_DEMO_TASKS, isSyncedWithFirestore: true, isLoading: false });
+          // Empty list for clean user or fallback
+          set({ tasks: [], isSyncedWithFirestore: true, isLoading: false });
         }
       },
       (error) => {
@@ -76,10 +83,11 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
   },
 
   createTask: (taskData) => {
+    const activeUid = auth.currentUser?.uid || (taskData as any).userId || 'guest-user';
     const newTask: TaskItem = {
       ...taskData,
       id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      userId: 'default-user',
+      userId: activeUid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       subtasks: taskData.subtasks || [],

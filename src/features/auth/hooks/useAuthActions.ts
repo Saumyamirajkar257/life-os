@@ -14,7 +14,7 @@ import {
   sendEmailVerification,
   updateProfile as firebaseUpdateProfile,
 } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase/config';
+import { auth, googleProvider, appleProvider } from '@/lib/firebase/config';
 import { formatAuthError } from '@/lib/firebase/auth';
 import { useAuthContext } from '../context/AuthContext';
 import { useNotificationStore } from '@/stores/useNotificationStore';
@@ -99,6 +99,31 @@ export function useAuthActions() {
         title: 'Google Sign-In Error',
         message: msg,
         type: 'error',
+      });
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleLogin = async (): Promise<boolean> => {
+    setIsSubmitting(true);
+    clearError();
+    try {
+      await signInWithPopup(auth, appleProvider);
+      addNotification({
+        title: 'Apple Sign-In Successful',
+        message: 'Authenticated via Apple ID.',
+        type: 'success',
+      });
+      return true;
+    } catch (err) {
+      const msg = formatAuthError(err);
+      setError(msg);
+      addNotification({
+        title: 'Apple Sign-In Notice',
+        message: msg,
+        type: 'info',
       });
       return false;
     } finally {
@@ -215,6 +240,7 @@ export function useAuthActions() {
     loginWithEmail: handleLogin,
     signupWithEmail: handleSignup,
     loginWithGoogle: handleGoogleLogin,
+    loginWithApple: handleAppleLogin,
     resetPassword: handlePasswordReset,
     resendVerificationEmail: handleResendVerification,
     updateUserProfile: handleUpdateProfile,

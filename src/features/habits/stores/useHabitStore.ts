@@ -5,6 +5,7 @@
  */
 
 import { create } from 'zustand';
+import { auth } from '@/lib/firebase/config';
 import { HabitItem, HabitLog } from '../types/habit.types';
 import { PRESET_HABIT_TEMPLATES } from '../constants/habitConstants';
 import { sanitizeHabitItem } from '../validation/habitValidation';
@@ -43,14 +44,22 @@ interface HabitState {
 }
 
 export const useHabitStore = create<HabitState>((set, get) => ({
-  habits: [],
+  habits: PRESET_HABIT_TEMPLATES.map((tmpl) => sanitizeHabitItem(tmpl, 'guest_aura_user')),
   logs: [],
-  isLoading: true,
+  isLoading: false,
   isSyncedWithFirestore: false,
   activeUserId: 'guest_aura_user',
 
-  initializeHabits: async (userId = 'guest_aura_user') => {
-    set({ activeUserId: userId, isLoading: true });
+  initializeHabits: async (userId) => {
+    const activeUid = userId || auth.currentUser?.uid;
+    if (!activeUid) {
+      set({ isLoading: false, isSyncedWithFirestore: false, activeUserId: 'guest_aura_user' });
+      return;
+    }
+    set({ activeUserId: activeUid });
+    if (get().habits.length === 0) {
+      set({ isLoading: true });
+    }
 
     // Test Firestore connection
     const isOnline = await testHabitsConnection();
@@ -60,15 +69,14 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
       // Subscribe to real-time Firestore changes for habits
       subscribeToHabits(
-        userId,
+        activeUid,
         (fetchedHabits) => {
-          if (fetchedHabits.length === 0 && get().habits.length === 0) {
-            // Seed initial preset habits for new user
+          if (fetchedHabits.length === 0 && get().habits.length === 0 && !auth.currentUser) {
+            // Seed initial preset habits only for guest user
             const seeded = PRESET_HABIT_TEMPLATES.map((tmpl) =>
-              sanitizeHabitItem(tmpl, userId)
+              sanitizeHabitItem(tmpl, activeUid)
             );
             set({ habits: seeded, isLoading: false });
-            seeded.forEach((h) => saveHabitToFirestore(h));
           } else {
             set({ habits: fetchedHabits, isLoading: false });
           }
@@ -78,27 +86,22 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
       // Subscribe to real-time logs
       subscribeToHabitLogs(
-        userId,
+        activeUid,
         (fetchedLogs) => {
           set({ logs: fetchedLogs });
         },
         (err) => console.warn('Habit logs Firestore subscribe error:', err)
       );
     } else {
-      // Offline fallback with seeded defaults if empty
+      // Offline fallback
       set({ isSyncedWithFirestore: false, isLoading: false });
-      if (get().habits.length === 0) {
-        const seeded = PRESET_HABIT_TEMPLATES.map((tmpl) =>
-          sanitizeHabitItem(tmpl, userId)
-        );
-        set({ habits: seeded });
-      }
     }
   },
 
   addHabit: async (partial) => {
-    const userId = get().activeUserId;
-    const newHabit = sanitizeHabitItem(partial, userId);
+    const userId = auth.currentUser?.uid || get().activeUserId;
+    set({ activeUserId: userId });
+    const newHabit = sanitizeHabitItem({ ...partial, userId }, userId);
 
     // Optimistic local update
     set((state) => ({ habits: [newHabit, ...state.habits] }));

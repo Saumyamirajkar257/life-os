@@ -50,7 +50,7 @@ export const JournalDetailModal: React.FC = () => {
   const [tagInput, setTagInput] = useState('');
   const [isLocked, setIsLocked] = useState(false);
   
-  const [isMetadataOpen, setIsMetadataOpen] = useState(true);
+  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
 
   useEffect(() => {
     if (activeItem) {
@@ -132,8 +132,11 @@ export const JournalDetailModal: React.FC = () => {
             <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--color-text-secondary)] mr-4 hidden sm:block">
               Saving...
             </span>
-            <button onClick={() => setIsMetadataOpen(!isMetadataOpen)} className="lg:hidden px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-xs font-bold text-[var(--color-text-secondary)]">
-              Details
+            <button
+              onClick={() => setIsMetadataOpen(!isMetadataOpen)}
+              className="px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors cursor-pointer"
+            >
+              {isMetadataOpen ? 'Hide Details' : 'Details'}
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 /**
  * @file PersonalDashboardView.tsx
- * @description Master personal dashboard assembling Today's Command Center.
+ * @description Master personal dashboard assembling Today's Command Center for Aura Life OS 2.0.
  * @module Features/Analytics/Dashboard
  */
 
@@ -11,40 +11,53 @@ import { useCalendarStore } from '../../calendar/stores/useCalendarStore';
 import { useGoalStore } from '../../goals/stores/useGoalStore';
 import { useLifeScore } from '../hooks/useLifeScore';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { 
-  CheckCircle2, 
-  Clock, 
-  Calendar as CalendarIcon, 
-  Target, 
-  Sparkles, 
-  Plus, 
+import { useSidebarStore } from '@/stores/useSidebarStore';
+import { useFinance } from '../../finance/hooks/useFinance';
+import { formatCurrency } from '../../finance/utils/financeUtils';
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  Calendar as CalendarIcon,
+  Target,
+  Sparkles,
+  Plus,
   ArrowRight,
   TrendingUp,
   BrainCircuit,
-  Activity
+  Activity,
+  Wallet,
+  Flame,
 } from 'lucide-react';
-
 
 export const PersonalDashboardView: React.FC = () => {
   const { user } = useAuth();
-  const userName = user?.displayName?.split(' ')[0] || 'Saumya';
+  const userName = user?.displayName?.split(' ')[0] || 'Architect';
   const today = new Date();
-  const dateString = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const dateString = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 
-  const { tasks } = useTaskStore();
-  const { habits, logs } = useHabitStore();
+  const { tasks, completeTask } = useTaskStore();
+  const { habits, logs, checkInHabit } = useHabitStore();
   const { events } = useCalendarStore();
   const { goals } = useGoalStore();
   const { summary } = useLifeScore();
+  const setActiveSection = useSidebarStore((state) => state.setActiveSection);
+
+  const { accounts, netWorthSummary, monthlyCashFlow } = useFinance();
+  const baseCurrency = accounts.length > 0 ? accounts[0].currency : 'USD';
 
   // 1. Data Processing
   const todayStr = today.toISOString().split('T')[0];
 
   // Tasks
-  const allTodayTasks = tasks.filter(t => t.dueDate === todayStr && t.status !== 'archived');
-  const completedTasks = allTodayTasks.filter(t => t.status === 'done');
+  const allTodayTasks = tasks.filter((t) => t.dueDate === todayStr && t.status !== 'archived');
+  const completedTasks = allTodayTasks.filter((t) => t.status === 'done');
   const focusTasks = allTodayTasks
-    .filter(t => t.status !== 'done')
+    .filter((t) => t.status !== 'done')
     .sort((a, b) => {
       const priorityWeight: Record<string, number> = { urgent: 4, high: 3, medium: 2, low: 1, none: 0 };
       return priorityWeight[b.priority] - priorityWeight[a.priority];
@@ -52,284 +65,415 @@ export const PersonalDashboardView: React.FC = () => {
     .slice(0, 3);
 
   // Habits
-  const activeHabits = habits.filter(h => h.status === 'active');
-  const todayLogs = logs.filter(l => l.date === todayStr);
-  const completedHabitsCount = activeHabits.filter(h => {
-    const log = todayLogs.find(l => l.habitId === h.id);
+  const activeHabits = habits.filter((h) => h.status === 'active');
+  const todayLogs = logs.filter((l) => l.date === todayStr);
+  const completedHabitsCount = activeHabits.filter((h) => {
+    const log = todayLogs.find((l) => l.habitId === h.id);
     return log && log.status === 'completed';
   }).length;
   const displayHabits = activeHabits.slice(0, 4);
 
   // Calendar
   const todayEvents = events
-    .filter(e => e.startDate === todayStr && e.status !== 'archived' && e.status !== 'cancelled')
+    .filter((e) => e.startDate === todayStr && e.status !== 'archived' && e.status !== 'cancelled')
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  
+
   // Focus Time
   const focusTime = allTodayTasks.reduce((acc, t) => acc + (t.estimatedDuration || 0), 0);
 
   // Goals
-  const displayGoals = goals.filter(g => g.status === 'in_progress').slice(0, 3);
+  const displayGoals = goals.filter((g) => g.status === 'in_progress').slice(0, 3);
 
   // Dynamic Status Message
   const getDynamicStatus = () => {
-    if (focusTasks.length > 0) return `You have ${focusTasks.length} priorities today.`;
-    if (allTodayTasks.length > 0 && completedTasks.length === allTodayTasks.length) return "You've crushed all your tasks today!";
-    return "You're on track today.";
+    if (focusTasks.length > 0) return `${focusTasks.length} high-priority tasks requiring attention.`;
+    if (allTodayTasks.length > 0 && completedTasks.length === allTodayTasks.length)
+      return "All daily commitments fulfilled. Excellent cadence.";
+    return "Schedule and focus priorities calibrated for today.";
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-      
-      {/* 1. HERO / TODAY HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-2">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-1">
-            Good morning, {userName}.
+    <div className="w-full max-w-6xl mx-auto space-y-10 py-2">
+      {/* 1. EDITORIAL HEADER & CURRENT CONTEXT */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--color-border)]/60 pb-8">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Today's Command Center</span>
+            <span>·</span>
+            <span>{dateString}</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-light tracking-tight text-[var(--color-text-primary)]">
+            Good morning, <span className="font-semibold text-white">{userName}</span>.
           </h1>
-          <p className="text-slate-400 text-lg font-medium">{dateString}</p>
-          <div className="flex items-center gap-2 mt-4 text-emerald-400 text-sm font-medium bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full w-fit">
-            <Sparkles className="w-4 h-4" />
+
+          <p className="text-sm text-[var(--color-text-secondary)] font-normal max-w-xl">
             {getDynamicStatus()}
-          </div>
+          </p>
         </div>
-        
-        {/* 9. QUICK ACTIONS */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-sm font-medium whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Task
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-sm font-medium whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Habit
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-sm font-medium whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Event
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-sm font-medium whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Note
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--color-accent)] text-white hover:opacity-90 transition-opacity text-sm font-medium whitespace-nowrap border border-[var(--color-accent)]/20 ml-2">
-            <BrainCircuit className="w-4 h-4" /> Aura AI
-          </button>
-        </div>
-      </div>
 
-      {/* GRID LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* ROW 1: Progress (8) & Life Score (4) */}
-        <div className="lg:col-span-8 bg-[var(--color-surface)]/40 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <h2 className="text-xs font-bold text-slate-500 tracking-wider mb-5 uppercase">Today's Progress</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Tasks
-              </div>
-              <div className="text-2xl font-semibold text-white">
-                {completedTasks.length} <span className="text-slate-600 text-lg">/ {allTodayTasks.length || 0}</span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
-                <Target className="w-4 h-4 text-blue-400" /> Habits
-              </div>
-              <div className="text-2xl font-semibold text-white">
-                {completedHabitsCount} <span className="text-slate-600 text-lg">/ {activeHabits.length || 0}</span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
-                <Clock className="w-4 h-4 text-amber-400" /> Focus
-              </div>
-              <div className="text-2xl font-semibold text-white">
-                {focusTime} <span className="text-slate-600 text-sm font-medium">min</span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
-                <CalendarIcon className="w-4 h-4 text-purple-400" /> Events
-              </div>
-              <div className="text-2xl font-semibold text-white">
-                {todayEvents.length}
-              </div>
-            </div>
+        {/* QUICK ACTIONS */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setActiveSection('tasks')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Task</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('calendar')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Event</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('habits')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Habit</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('journal')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Note</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('ai')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black hover:bg-neutral-200 transition-colors text-xs font-semibold cursor-pointer ml-1"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Aura AI</span>
+          </button>
+        </div>
+      </header>
+
+      {/* 2. TODAY'S SUMMARY — MINIMAL METRICS ROW (NO CARD WALL) */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-6 py-2">
+        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" /> Tasks Done
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+            {completedTasks.length} <span className="text-sm text-[var(--color-text-muted)] font-mono">/ {allTodayTasks.length}</span>
           </div>
         </div>
 
-        <div className="lg:col-span-4 bg-gradient-to-br from-[var(--color-surface)]/60 to-emerald-950/20 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-center shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xs font-bold text-slate-500 tracking-wider mb-1 uppercase">Life Score</h2>
-              <div className="text-4xl font-black text-white tracking-tight">{summary.overallScore}</div>
-              <div className="text-sm font-medium text-emerald-400 flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3.5 h-3.5" /> +{summary.netChange} this week
-              </div>
-            </div>
-            <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 flex items-center justify-center relative">
-               <div className="absolute inset-0 rounded-full border-4 border-emerald-500 border-l-transparent border-b-transparent transform rotate-45" />
-               <Activity className="w-6 h-6 text-emerald-400" />
-            </div>
+        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-neutral-400" /> Habits
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+            {completedHabitsCount} <span className="text-sm text-[var(--color-text-muted)] font-mono">/ {activeHabits.length}</span>
           </div>
         </div>
 
-        {/* ROW 2: Focus Today (Full Width or 12) */}
-        <div className="lg:col-span-12 bg-[var(--color-surface)]/40 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xs font-bold text-slate-500 tracking-wider uppercase">Focus Today</h2>
+        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-neutral-400" /> Focus Time
           </div>
-          
-          {focusTasks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {focusTasks.map(task => (
-                <div key={task.id} className="p-4 rounded-2xl bg-[var(--color-surface-elevated)]/50 border border-[var(--color-border)]/50 hover:border-[var(--color-border)] transition-colors group cursor-pointer flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0 group-hover:border-emerald-500 transition-colors" />
-                      {task.priority === 'urgent' && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">URGENT</span>}
-                      {task.priority === 'high' && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">HIGH</span>}
+          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+            {focusTime} <span className="text-xs text-[var(--color-text-muted)] font-mono">min</span>
+          </div>
+        </div>
+
+        <div className="space-y-1 border-l-2 border-[var(--color-border)] pl-4">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-neutral-400" /> Life Score
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-white tracking-tight flex items-baseline gap-2">
+            {summary.overallScore}
+            <span className="text-xs font-mono text-emerald-400 font-normal">+{summary.netChange}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PRIMARY CONTENT GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+        {/* LEFT COLUMN: FOCUS TASKS & CALENDAR (7 cols) */}
+        <div className="lg:col-span-7 space-y-10">
+          {/* IMPORTANT TASKS */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Focus Today
+              </h2>
+              <button
+                onClick={() => setActiveSection('tasks')}
+                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>View all</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {focusTasks.length > 0 ? (
+              <div className="space-y-2">
+                {focusTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 transition-all flex items-center justify-between gap-4 group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        onClick={() => completeTask(task.id)}
+                        className="text-neutral-500 hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+                        title="Mark complete"
+                      >
+                        <Circle className="w-4 h-4" />
+                      </button>
+                      <span className="text-sm text-neutral-200 group-hover:text-white truncate">
+                        {task.title}
+                      </span>
                     </div>
-                    <h3 className="font-semibold text-slate-200 line-clamp-2 leading-snug">{task.title}</h3>
-                  </div>
-                  <div className="mt-4 flex items-center gap-3 text-xs font-medium text-slate-500">
-                    {task.dueTime && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {task.dueTime}</span>}
-                    {task.estimatedDuration && <span>{task.estimatedDuration} min</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]/20">
-              <CheckCircle2 className="w-8 h-8 text-slate-600 mb-3" />
-              <p className="text-slate-400 font-medium mb-1">No priorities yet.</p>
-              <button className="text-sm font-medium text-[var(--color-accent)] hover:opacity-80">Create Task</button>
-            </div>
-          )}
-        </div>
 
-        {/* ROW 3: Timeline (6) & Habits (6) */}
-        <div className="lg:col-span-6 bg-[var(--color-surface)]/40 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <h2 className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-5">Today's Timeline</h2>
-          {todayEvents.length > 0 ? (
-            <div className="space-y-4">
-              {todayEvents.map((event, idx) => (
-                <div key={event.id} className="flex gap-4 items-start group cursor-pointer">
-                  <div className="text-xs font-mono font-medium text-slate-400 pt-1 w-12 shrink-0">{event.startTime}</div>
-                  <div className="relative pb-4 flex-1">
-                    {idx !== todayEvents.length - 1 && <div className="absolute left-[11px] top-6 bottom-0 w-px bg-slate-800" />}
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-slate-950 border border-slate-700 flex items-center justify-center shrink-0 mt-0.5 z-10 group-hover:border-[var(--color-accent)] transition-colors">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color || 'var(--color-accent)' }} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-200">{event.title}</div>
-                        {(event.location || event.category) && (
-                          <div className="text-xs text-slate-500 mt-0.5">{event.location || event.category}</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]/20">
-              <CalendarIcon className="w-8 h-8 text-slate-600 mb-3" />
-              <p className="text-slate-400 font-medium mb-1">Your day is clear.</p>
-              <button className="text-sm font-medium text-[var(--color-accent)] hover:opacity-80">Add Event</button>
-            </div>
-          )}
-        </div>
-
-        <div className="lg:col-span-6 bg-[var(--color-surface)]/40 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <h2 className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-5">Today's Habits</h2>
-          {displayHabits.length > 0 ? (
-            <div className="space-y-3">
-              {displayHabits.map(habit => {
-                const log = todayLogs.find(l => l.habitId === habit.id);
-                const isCompleted = log?.status === 'completed';
-                
-                return (
-                  <div key={habit.id} className="flex items-center justify-between p-3 rounded-2xl bg-[var(--color-surface-elevated)]/50 border border-[var(--color-border)]/50 hover:border-[var(--color-border)] transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${isCompleted ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-800/50 border border-slate-700/50'}`}>
-                        {habit.emoji || '✨'}
-                      </div>
-                      <div>
-                        <div className="font-medium text-slate-200">{habit.name}</div>
-                        <div className="text-xs text-slate-500">{habit.dailyGoal} {habit.dailyGoalUnit}</div>
-                      </div>
-                    </div>
-                    <div>
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-slate-600 group-hover:border-slate-400 transition-colors" />
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      {task.priority === 'urgent' && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">
+                          urgent
+                        </span>
+                      )}
+                      {task.priority === 'high' && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                          high
+                        </span>
+                      )}
+                      {task.estimatedDuration && (
+                        <span className="text-xs font-mono text-[var(--color-text-muted)]">
+                          {task.estimatedDuration}m
+                        </span>
                       )}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]/20">
-              <Target className="w-8 h-8 text-slate-600 mb-3" />
-              <p className="text-slate-400 font-medium mb-1">No habits scheduled today.</p>
-              <button className="text-sm font-medium text-[var(--color-accent)] hover:opacity-80">Add Habit</button>
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                No pending focus tasks for today.
+              </div>
+            )}
+          </section>
 
-        {/* ROW 4: Goals (6) & Aura Insight (6) */}
-        <div className="lg:col-span-6 bg-[var(--color-surface)]/40 border border-[var(--color-border)]/50 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-[var(--color-border)] transition-colors">
-          <div className="flex items-center justify-between mb-5">
-             <h2 className="text-xs font-bold text-slate-500 tracking-wider uppercase">Active Goals</h2>
-             <button className="text-xs font-medium text-slate-500 hover:text-white flex items-center gap-1">View All <ArrowRight className="w-3 h-3" /></button>
-          </div>
-          {displayGoals.length > 0 ? (
-            <div className="space-y-4">
-              {displayGoals.map(goal => (
-                <div key={goal.id} className="cursor-pointer group">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-slate-300 group-hover:text-white transition-colors">{goal.title}</span>
-                    <span className="text-xs font-medium text-slate-500">{goal.progress}%</span>
+          {/* SCHEDULE / TIMELINE */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Today's Schedule
+              </h2>
+              <button
+                onClick={() => setActiveSection('calendar')}
+                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Calendar</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {todayEvents.length > 0 ? (
+              <div className="space-y-2">
+                {todayEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="p-3.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-between gap-4 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[var(--color-text-muted)] w-14 shrink-0">
+                        {event.startTime}
+                      </span>
+                      <span className="font-medium text-neutral-200">{event.title}</span>
+                    </div>
+                    {event.location && (
+                      <span className="text-[var(--color-text-muted)] text-[11px] truncate">
+                        {event.location}
+                      </span>
+                    )}
                   </div>
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000" 
-                      style={{ width: `${goal.progress}%`, backgroundColor: goal.color || 'var(--color-accent)' }}
-                    />
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                No events scheduled on today's calendar.
+              </div>
+            )}
+          </section>
+
+          {/* FINANCE SNAPSHOT */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Finance Snapshot
+              </h2>
+              <button
+                onClick={() => setActiveSection('finance')}
+                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Ledger</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {accounts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-1">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                    Total Net Worth
+                  </div>
+                  <div className="text-xl font-light text-white">
+                    {formatCurrency(netWorthSummary.totalNetWorth, baseCurrency)}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-6 px-4 text-center border border-dashed border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]/20">
-              <Target className="w-8 h-8 text-slate-600 mb-3" />
-              <p className="text-slate-400 font-medium mb-1">Set a goal to start tracking progress.</p>
-              <button className="text-sm font-medium text-[var(--color-accent)] hover:opacity-80">Create Goal</button>
-            </div>
-          )}
+
+                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-1">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                    Monthly Cash Flow
+                  </div>
+                  <div className="text-xl font-light text-emerald-400">
+                    {formatCurrency(monthlyCashFlow.netSavings, baseCurrency)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-4 h-4 text-neutral-400 shrink-0" />
+                  <span className="text-xs text-[var(--color-text-secondary)]">
+                    No accounts linked yet. Start your clean personal ledger.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setActiveSection('finance')}
+                  className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors cursor-pointer shrink-0"
+                >
+                  Open Finance
+                </button>
+              </div>
+            )}
+          </section>
         </div>
 
-        <div className="lg:col-span-6 bg-gradient-to-br from-indigo-950/20 to-[var(--color-surface)]/40 border border-indigo-500/20 rounded-3xl p-6 relative overflow-hidden backdrop-blur-sm shadow-sm hover:border-indigo-500/40 transition-colors">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500" />
-          <h2 className="text-xs font-bold text-indigo-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">
-            <BrainCircuit className="w-4 h-4" /> Aura Insight
-          </h2>
-          <div className="mt-4 space-y-4">
-            <p className="text-slate-200 text-base leading-relaxed">
-              {focusTasks.length > 0 
-                ? `You have ${focusTasks.length} unfinished tasks due today. Prioritize "${focusTasks[0].title}" as it is marked ${focusTasks[0].priority}.` 
-                : "Your schedule is clear today. It's a great opportunity to review your active goals or capture new thoughts in your journal."}
+        {/* RIGHT COLUMN: HABITS, GOALS, AURA RECOMMENDATION (5 cols) */}
+        <div className="lg:col-span-5 space-y-10">
+          {/* AURA RECOMMENDATION */}
+          <section className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-3 relative overflow-hidden">
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+              <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
+              <span>Aura Intelligence</span>
+            </div>
+
+            <p className="text-sm text-neutral-300 leading-relaxed font-normal">
+              {focusTasks.length > 0
+                ? `You have ${focusTasks.length} priority items due today. Suggest completing "${focusTasks[0].title}" first during your peak focus window.`
+                : 'Your schedule is clear. Ideal moment for deep work on quarterly milestones or a mindfulness check-in.'}
             </p>
-            <button className="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/20 hover:text-white transition-colors text-sm font-medium">
-              {focusTasks.length > 0 ? 'Plan My Day' : 'View Goals'}
-            </button>
-          </div>
-        </div>
 
+            <div className="pt-1">
+              <button
+                onClick={() => setActiveSection('ai')}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-white hover:underline cursor-pointer"
+              >
+                <span>Consult Aura Assistant</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </section>
+
+          {/* HABIT PROGRESS */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Habit Cadence
+              </h2>
+              <button
+                onClick={() => setActiveSection('habits')}
+                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Habits</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {displayHabits.length > 0 ? (
+              <div className="space-y-2">
+                {displayHabits.map((habit) => {
+                  const log = todayLogs.find((l) => l.habitId === habit.id);
+                  const isCompleted = log?.status === 'completed';
+
+                  return (
+                    <div
+                      key={habit.id}
+                      onClick={() => !isCompleted && checkInHabit(habit.id, todayStr)}
+                      className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-neutral-700 flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-sm shrink-0">{habit.emoji || '✨'}</span>
+                        <span className="text-neutral-200 group-hover:text-white truncate">
+                          {habit.name}
+                        </span>
+                      </div>
+
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400 shrink-0" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                No habits configured.
+              </div>
+            )}
+          </section>
+
+          {/* GOALS PROGRESS */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
+                Active Goals
+              </h2>
+              <button
+                onClick={() => setActiveSection('goals')}
+                className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Goals</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {displayGoals.length > 0 ? (
+              <div className="space-y-3">
+                {displayGoals.map((goal) => (
+                  <div key={goal.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-neutral-200 truncate">{goal.title}</span>
+                      <span className="font-mono text-[var(--color-text-muted)]">{goal.progress}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-500"
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 px-4 rounded-xl bg-[var(--color-surface)]/50 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-text-muted)]">
+                No active goals in progress.
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
 };
+
+export default PersonalDashboardView;

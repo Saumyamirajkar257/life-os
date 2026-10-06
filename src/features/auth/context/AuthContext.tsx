@@ -24,12 +24,76 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, initialPag
   const [currentPage, setCurrentPage] = useState<AuthPageMode>(initialPage);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const mapped = mapFirebaseUser(firebaseUser);
         setUser(mapped ? { ...mapped } : null);
+
+        // Synchronize all domain stores with authenticated user UID
+        try {
+          const uid = firebaseUser.uid;
+          const [
+            { useTaskStore },
+            { useHabitStore },
+            { useGoalStore },
+            { useJournalStore },
+            { useCalendarStore },
+            { useFinanceStore },
+          ] = await Promise.all([
+            import('@/features/tasks/stores/useTaskStore'),
+            import('@/features/habits/stores/useHabitStore'),
+            import('@/features/goals/stores/useGoalStore'),
+            import('@/features/journal/stores/useJournalStore'),
+            import('@/features/calendar/stores/useCalendarStore'),
+            import('@/features/finance/stores/useFinanceStore'),
+          ]);
+
+          useTaskStore.getState().initializeStore(uid);
+          useHabitStore.getState().initializeHabits(uid);
+          useGoalStore.getState().loadGoals(uid);
+          useJournalStore.getState().loadModuleData(uid);
+          useCalendarStore.getState().loadEvents(uid);
+          useFinanceStore.getState().loadModuleData(uid);
+        } catch (e) {
+          console.warn('[AuthProvider] Error initializing stores for user:', e);
+        }
       } else {
         setUser(null);
+        // Purge private user data from memory and localStorage upon sign out
+        try {
+          const [
+            { useTaskStore },
+            { useHabitStore },
+            { useGoalStore },
+            { useJournalStore },
+            { useCalendarStore },
+            { useFinanceStore },
+          ] = await Promise.all([
+            import('@/features/tasks/stores/useTaskStore'),
+            import('@/features/habits/stores/useHabitStore'),
+            import('@/features/goals/stores/useGoalStore'),
+            import('@/features/journal/stores/useJournalStore'),
+            import('@/features/calendar/stores/useCalendarStore'),
+            import('@/features/finance/stores/useFinanceStore'),
+          ]);
+
+          useTaskStore.setState({ tasks: [], isSyncedWithFirestore: false });
+          useHabitStore.setState({ habits: [], logs: [], isSyncedWithFirestore: false });
+          useGoalStore.setState({ goals: [], projects: [], milestones: [] });
+          useJournalStore.setState({ journals: [], notes: [], folders: [], tags: [] });
+          useCalendarStore.setState({ events: [] });
+          useFinanceStore.setState({ accounts: [], transactions: [], budgets: [], bills: [], savingsGoals: [] });
+
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.removeItem('aura-goals-storage');
+            localStorage.removeItem('aura-journal-storage');
+            localStorage.removeItem('aura-calendar-storage');
+            localStorage.removeItem('aura-finance-storage');
+            localStorage.removeItem('aura-planner-storage');
+          }
+        } catch (e) {
+          console.warn('[AuthProvider] Error clearing stores on signout:', e);
+        }
       }
       setLoading(false);
     });

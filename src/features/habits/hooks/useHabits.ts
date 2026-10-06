@@ -16,10 +16,8 @@ export function useHabits() {
   const uiStore = useHabitUIStore();
 
   useEffect(() => {
-    if (store.isLoading && store.habits.length === 0) {
-      store.initializeHabits();
-    }
-  }, [store.isLoading, store.habits.length]);
+    store.initializeHabits();
+  }, []);
 
   const todayStr = getTodayDateString();
   const todayDayCode = getDayOfWeekCode(todayStr);

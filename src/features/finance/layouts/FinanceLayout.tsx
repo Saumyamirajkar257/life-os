@@ -44,18 +44,18 @@ export const FinanceLayout: React.FC = () => {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="w-full min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] flex flex-col font-sans">
       {/* Module Header */}
-      <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="sticky top-0 z-30 bg-[var(--color-bg)]/80 backdrop-blur-md border-b border-[var(--color-border)] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-lg shadow-md">
+            <div className="p-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-lg">
               <Wallet className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-lg font-extrabold tracking-tight text-white">Finance & Wealth OS</h1>
+            <h1 className="text-base font-semibold tracking-tight text-white">Finance & Ledger</h1>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Unified personal ledger, automated cash flow tracking, and financial health intelligence.
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+            Personal net worth, cash flow, upcoming obligations, and budgeting.
           </p>
         </div>
 
@@ -63,17 +63,17 @@ export const FinanceLayout: React.FC = () => {
           <button
             onClick={() => openModal('transaction')}
             id="btn-quick-add-tx"
-            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl shadow-lg flex items-center gap-1.5 transition-all"
+            className="px-3.5 py-2 bg-white text-black hover:bg-neutral-200 font-medium text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Log Transaction</span>
+            <span>Record Transaction</span>
           </button>
         </div>
       </header>
 
       {/* Navigation Sub-Header */}
-      <nav className="bg-slate-900/60 border-b border-slate-800 px-6 py-2 overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-1 min-w-max">
+      <nav className="bg-[var(--color-surface)]/50 border-b border-[var(--color-border)] px-6 py-2 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 min-w-max">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -81,10 +81,10 @@ export const FinanceLayout: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 id={`tab-finance-${tab.id}`}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'bg-white text-black font-semibold'
+                    : 'text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-surface-elevated)]'
                 }`}
               >
                 {tab.icon}

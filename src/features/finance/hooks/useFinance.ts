@@ -5,6 +5,7 @@
  */
 
 import { useEffect } from 'react';
+import { auth } from '@/lib/firebase/config';
 import { useFinanceStore } from '../stores/useFinanceStore';
 import { useFinanceUIStore } from '../stores/useFinanceUIStore';
 import { useFinanceCalculations } from './useFinanceCalculations';
@@ -57,7 +58,10 @@ export function useFinance() {
   const calculations = useFinanceCalculations();
 
   useEffect(() => {
-    loadModuleData('default_user');
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      loadModuleData(uid);
+    }
   }, [loadModuleData]);
 
   const insights = generateInsights(accounts, transactions, budgets, bills, savingsGoals);

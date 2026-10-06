@@ -63,13 +63,13 @@ export const ContentContainer: React.FC<ContentContainerProps> = ({
       )}
     >
       <div className={cn('w-full mx-auto flex-1 flex flex-col', maxWidthMap[maxWidth], paddingMap[padding])}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           <motion.div
             key={viewKey || 'content-view'}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={tweenTransitions.normal}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             className="flex-1 w-full flex flex-col"
           >
             {children}

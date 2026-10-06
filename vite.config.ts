@@ -22,7 +22,7 @@ export default defineConfig(() => {
             if (id.includes('node_modules/@tiptap') || id.includes('node_modules/prosemirror')) {
               return 'vendor-editor';
             }
-            if (id.includes('firestore')) {
+            if (id.includes('node_modules/firebase/firestore') || id.includes('node_modules/@firebase/firestore')) {
               return 'vendor-firestore';
             }
             if (id.includes('node_modules/@firebase') || id.includes('node_modules/firebase')) {

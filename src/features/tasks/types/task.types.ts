@@ -20,6 +20,7 @@ export type TaskViewMode =
   | 'calendar'
   | 'kanban'
   | 'timeline'
+  | 'matrix'
   | 'list';
 
 export type TaskSortOption = 'dueDate' | 'priority' | 'title' | 'createdAt' | 'estimatedDuration' | 'progress';

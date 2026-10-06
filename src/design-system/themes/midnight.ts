@@ -15,52 +15,52 @@ export const midnightTheme: ThemeDefinition = {
   isDark: true,
 
   colors: {
-    // Backgrounds & Surfaces (Deep Navy Scale)
-    bg: '#0b1120',
-    surface: '#111827',
-    surfaceElevated: '#1f2937',
-    surfaceMuted: '#162032',
+    // Backgrounds & Surfaces (Monochrome Near-Black Scale)
+    bg: '#050505',
+    surface: '#0A0A0A',
+    surfaceElevated: '#111111',
+    surfaceMuted: '#0D0D0D',
 
     // Borders
-    border: '#1f293d',
-    borderSubtle: '#172236',
-    borderFocus: '#3b82f6',
+    border: 'rgba(255, 255, 255, 0.08)',
+    borderSubtle: 'rgba(255, 255, 255, 0.04)',
+    borderFocus: '#ffffff',
 
     // Typography
-    textPrimary: '#f8fafc',
-    textSecondary: '#94a3b8',
-    textMuted: '#64748b',
-    textInverse: '#0b1120',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255, 255, 255, 0.62)',
+    textMuted: 'rgba(255, 255, 255, 0.38)',
+    textInverse: '#050505',
 
-    // Accent (Subtle Indigo-Blue)
-    accent: '#3b82f6',
-    accentHover: '#2563eb',
-    accentMuted: 'rgba(59, 130, 246, 0.15)',
-    accentForeground: '#ffffff',
+    // Accent (Monochrome Pure White / High Contrast)
+    accent: '#ffffff',
+    accentHover: 'rgba(255, 255, 255, 0.88)',
+    accentMuted: 'rgba(255, 255, 255, 0.1)',
+    accentForeground: '#050505',
 
-    // Status Colors
-    success: '#10b981',
-    successBg: 'rgba(16, 185, 129, 0.12)',
-    warning: '#f59e0b',
-    warningBg: 'rgba(245, 158, 11, 0.12)',
-    error: '#f43f5e',
-    errorBg: 'rgba(244, 63, 94, 0.12)',
-    info: '#0ea5e9',
-    infoBg: 'rgba(14, 165, 233, 0.12)',
+    // Status Colors (Restrained)
+    success: '#34d399',
+    successBg: 'rgba(52, 211, 153, 0.1)',
+    warning: '#fbbf24',
+    warningBg: 'rgba(251, 191, 36, 0.1)',
+    error: '#f87171',
+    errorBg: 'rgba(248, 113, 113, 0.1)',
+    info: '#38bdf8',
+    infoBg: 'rgba(56, 189, 248, 0.1)',
 
     // Overlays & Backdrop
-    overlay: 'rgba(0, 0, 0, 0.75)',
+    overlay: 'rgba(0, 0, 0, 0.82)',
     backdropBlur: '12px',
 
     // Selection & Focus Ring
-    selectionBg: '#2563eb',
-    selectionText: '#ffffff',
-    focusRing: '#3b82f6',
+    selectionBg: '#ffffff',
+    selectionText: '#050505',
+    focusRing: 'rgba(255, 255, 255, 0.25)',
 
     // Scrollbar & Glass Effects
-    scrollbarThumb: '#334155',
-    scrollbarTrack: '#0b1120',
-    glassBg: 'rgba(17, 24, 39, 0.75)',
+    scrollbarThumb: '#222222',
+    scrollbarTrack: '#050505',
+    glassBg: 'rgba(10, 10, 10, 0.85)',
     glassBorder: 'rgba(255, 255, 255, 0.08)',
   },
 

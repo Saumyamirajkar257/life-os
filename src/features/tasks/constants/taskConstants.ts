@@ -98,6 +98,7 @@ export const TASK_VIEW_TABS: { id: TaskViewMode; label: string; icon: string }[]
   { id: 'upcoming', label: 'Upcoming', icon: 'CalendarDays' },
   { id: 'list', label: 'List View', icon: 'ListFilter' },
   { id: 'kanban', label: 'Kanban Board', icon: 'Kanban' },
+  { id: 'matrix', label: 'Matrix', icon: 'Grid2x2' },
   { id: 'calendar', label: 'Calendar View', icon: 'Calendar' },
   { id: 'timeline', label: 'Timeline View', icon: 'Clock' },
   { id: 'completed', label: 'Completed', icon: 'CheckCheck' },

@@ -7,8 +7,10 @@
 import React from 'react';
 import { TasksLayout } from '../layouts/TasksLayout';
 import { TaskFilterBar } from '../components/TaskFilterBar';
+import { TaskQuickAddBar } from '../components/TaskQuickAddBar';
 import { TaskListView } from '../components/TaskListView';
 import { TaskKanbanBoard } from '../components/TaskKanbanBoard';
+import { TaskEisenhowerMatrix } from '../components/TaskEisenhowerMatrix';
 import { TaskCalendarView } from '../components/TaskCalendarView';
 import { TaskTimelineView } from '../components/TaskTimelineView';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
@@ -17,17 +19,25 @@ import { TaskBulkActionBar } from '../components/TaskBulkActionBar';
 import { FocusModeModal } from '../components/FocusModeModal';
 import { useTasks } from '../hooks/useTasks';
 import { useTaskUIStore } from '../stores/useTaskUIStore';
+import { useTaskKeyboardShortcuts } from '../hooks/useTaskKeyboardShortcuts';
 
 export const TasksPage: React.FC = () => {
   const { displayedTasks, isLoading } = useTasks();
   const { activeView } = useTaskUIStore();
 
+  // Active keyboard-first navigation and triage listeners
+  useTaskKeyboardShortcuts(displayedTasks);
+
   const renderActiveView = () => {
-    if (isLoading) {
+    if (isLoading && displayedTasks.length === 0) {
       return (
-        <div className="py-20 text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-mono text-neutral-400">Loading tasks engine state...</p>
+        <div className="py-8 space-y-2.5 max-w-4xl mx-auto">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-12 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] animate-pulse"
+            />
+          ))}
         </div>
       );
     }
@@ -35,6 +45,8 @@ export const TasksPage: React.FC = () => {
     switch (activeView) {
       case 'kanban':
         return <TaskKanbanBoard tasks={displayedTasks} />;
+      case 'matrix':
+        return <TaskEisenhowerMatrix tasks={displayedTasks} />;
       case 'calendar':
         return <TaskCalendarView tasks={displayedTasks} />;
       case 'timeline':
@@ -54,6 +66,7 @@ export const TasksPage: React.FC = () => {
   return (
     <TasksLayout>
       <TaskFilterBar />
+      <TaskQuickAddBar />
       {renderActiveView()}
 
       {/* Global Task Modals and Slide-Over Drawers */}

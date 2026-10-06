@@ -63,6 +63,7 @@ interface TaskUIState {
   closeFormModal: () => void;
   openFocusModal: (taskId?: string) => void;
   closeFocusModal: () => void;
+  setFocusedTask: (taskId: string | null) => void;
 
   // Pomodoro Actions
   setPomodoroActive: (active: boolean) => void;
@@ -145,6 +146,8 @@ export const useTaskUIStore = create<TaskUIState>((set) => ({
     set({ isFocusModalOpen: true, focusedTaskId: taskId || null }),
 
   closeFocusModal: () => set({ isFocusModalOpen: false, focusedTaskId: null }),
+
+  setFocusedTask: (taskId) => set({ focusedTaskId: taskId }),
 
   setPomodoroActive: (active) => set({ isPomodoroActive: active }),
 

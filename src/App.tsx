@@ -44,9 +44,20 @@ const ForgotPasswordPage = React.lazy(() => import('@/features/auth').then(m => 
 const VerifyEmailPage = React.lazy(() => import('@/features/auth').then(m => ({ default: m.VerifyEmailPage })));
 const UnauthorizedPage = React.lazy(() => import('@/features/auth').then(m => ({ default: m.UnauthorizedPage })));
 
+import { startIdleRoutePrefetch } from '@/lib/router/prefetch';
+
 const ViewFallback = () => (
-  <div className="w-full min-h-[400px] flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+  <div className="w-full space-y-6 animate-pulse p-4 sm:p-6 md:p-8">
+    <div className="space-y-2">
+      <div className="h-7 w-40 bg-white/[0.05] rounded-lg" />
+      <div className="h-3.5 w-64 bg-white/[0.03] rounded-md" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+      <div className="h-28 rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
+      <div className="h-28 rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
+      <div className="h-28 rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
+    </div>
+    <div className="h-64 rounded-2xl bg-white/[0.02] border border-white/[0.05]" />
   </div>
 );
 import { CloudSyncProvider } from '@/features/cloud/providers/CloudSyncProvider';
@@ -122,6 +133,8 @@ export default function App() {
 
   useEffect(() => {
     setPlatform(detectPlatform());
+    const stopPrefetch = startIdleRoutePrefetch();
+    return () => stopPrefetch();
   }, []);
 
   // Keyboard shortcut listener tests
@@ -184,53 +197,55 @@ export default function App() {
     <>
       <AmbientBackground timeOverride={ambientMode} showParticles={showParticles} intensity={intensity} />
       <AppShell
+      showDock={false}
       activeSectionId={activeSection}
       onSelectSectionId={(id) => setActiveSection(id)}
       title={
         activeSection === 'tasks' || activeSection === 'tasks-sidebar-main'
-          ? 'Tasks & Projects'
+          ? 'Tasks'
           : activeSection === 'calendar' || activeSection === 'calendar-sidebar-main'
           ? 'Calendar'
           : activeSection === 'habits' || activeSection === 'habits-sidebar-main'
-          ? 'Habits & Routines'
+          ? 'Habits'
           : activeSection === 'journal' || activeSection === 'journal-sidebar-main'
-          ? 'Journal & Notes'
+          ? 'Journal'
           : activeSection === 'finance' || activeSection === 'finance-sidebar-main'
-          ? 'Finance & Wealth'
+          ? 'Finance'
           : activeSection === 'ai' || activeSection === 'ai-sidebar-main'
           ? 'Aura AI'
           : activeSection === 'analytics' || activeSection === 'analytics-sidebar-main'
           ? 'Overview'
           : activeSection === 'goals' || activeSection === 'goals-sidebar-main'
-          ? 'Goals & Vision'
+          ? 'Goals'
           : activeSection === 'cloud' || activeSection === 'cloud-sidebar-main'
-          ? 'Cloud Sync'
+          ? 'Cloud'
           : activeSection === 'auth-portal'
-          ? 'Account & Security'
+          ? 'Account'
           : activeSection === 'user-profile'
-          ? 'User Profile & Security'
+          ? 'Profile'
           : activeSection === 'aura-core-status'
           ? 'System Inspector'
           : activeSection === 'architecture'
           ? 'Architecture Tree'
           : activeSection === 'performance'
-          ? 'Performance Stacks'
+          ? 'Performance'
           : activeSection === 'components'
-          ? 'Component Library'
+          ? 'Components'
           : activeSection === 'tokens'
-          ? 'Design Tokens'
+          ? 'Tokens'
           : activeSection === 'notifications'
-          ? 'Notification Hub'
+          ? 'Notifications'
           : activeSection === 'settings'
           ? 'Settings'
           : 'Aura Life OS'
       }
       breadcrumbs={[
-        { id: '1', label: 'Aura OS', onClick: () => setActiveSection('analytics') },
+        { id: '1', label: 'Aura', onClick: () => setActiveSection('analytics') },
         { id: '2', label: activeSection.toUpperCase().replace(/-/g, ' ') },
       ]}
       secondaryPaneContent={activeSection === 'components' ? secondaryPaneContent : undefined}
     >
+      <React.Suspense fallback={<ViewFallback />}>
       {/* View 0A: Authentication Portal */}
       {activeSection === 'auth-portal' && (
         <div className="space-y-6">
@@ -597,6 +612,8 @@ export default function App() {
         </ModuleIsolationBoundary>
       )}
 
+      </React.Suspense>
+
       {/* Milestone 11 — Global Search, Command Palette (⌘K), & Notification Center Modals */}
       <CommandPaletteModal onNavigate={(path) => setActiveSection(path.replace('/', ''))} />
       <NotificationCenterDrawer />
@@ -608,9 +625,7 @@ export default function App() {
   return (
     <GlobalErrorBoundary>
       <CloudSyncProvider>
-        <React.Suspense fallback={<ViewFallback />}>
-          {shellContent}
-        </React.Suspense>
+        {shellContent}
       </CloudSyncProvider>
     </GlobalErrorBoundary>
   );

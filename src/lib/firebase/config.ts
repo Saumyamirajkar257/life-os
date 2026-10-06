@@ -5,7 +5,7 @@
  */
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, OAuthProvider, Auth } from 'firebase/auth';
 import firebaseAppletConfig from '../../../firebase-applet-config.json';
 import { ENV } from '@/config/env.config';
 
@@ -22,3 +22,7 @@ export const app: FirebaseApp = getApps().length === 0 ? initializeApp(config) :
 export const auth: Auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export const appleProvider = new OAuthProvider('apple.com');
+appleProvider.addScope('email');
+appleProvider.addScope('name');

@@ -11,5 +11,8 @@ export * from './stores/useTaskUIStore';
 export * from './hooks/useTasks';
 export * from './hooks/useTaskMutations';
 export * from './hooks/useFocusMode';
+export * from './hooks/useTaskKeyboardShortcuts';
+export * from './components/TaskQuickAddBar';
+export * from './components/TaskEisenhowerMatrix';
 export * from './pages/TasksPage';
 export * from './module';

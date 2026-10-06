@@ -6,6 +6,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { auth } from '@/lib/firebase/config';
 import { Account, Transaction, Budget, Bill, SavingsGoal } from '../types/finance.types';
 import {
   SEED_ACCOUNTS,
@@ -57,6 +58,10 @@ interface FinanceState {
   updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
   deleteSavingsGoal: (id: string) => void;
   contributeToSavingsGoal: (goalId: string, amount: number) => void;
+
+  // --- SEED / RESET ACTIONS ---
+  clearLedger: () => void;
+  loadSeedData: () => void;
 }
 
 export const useFinanceStore = create<FinanceState>()(
@@ -70,16 +75,21 @@ export const useFinanceStore = create<FinanceState>()(
       isLoading: false,
       error: null,
 
-      loadModuleData: async (userId = 'default_user') => {
+      loadModuleData: async (userId) => {
+        const activeUid = userId || auth.currentUser?.uid;
+        if (!activeUid) {
+          set({ isLoading: false });
+          return;
+        }
         set({ isLoading: true, error: null });
         try {
           const [fetchedAccounts, fetchedTx, fetchedBudgets, fetchedBills, fetchedGoals] =
             await Promise.all([
-              financeFirestoreService.fetchAccounts(userId),
-              financeFirestoreService.fetchTransactions(userId),
-              financeFirestoreService.fetchBudgets(userId),
-              financeFirestoreService.fetchBills(userId),
-              financeFirestoreService.fetchSavingsGoals(userId),
+              financeFirestoreService.fetchAccounts(activeUid),
+              financeFirestoreService.fetchTransactions(activeUid),
+              financeFirestoreService.fetchBudgets(activeUid),
+              financeFirestoreService.fetchBills(activeUid),
+              financeFirestoreService.fetchSavingsGoals(activeUid),
             ]);
 
           // Merge or use remote if non-empty
@@ -100,9 +110,10 @@ export const useFinanceStore = create<FinanceState>()(
       createAccount: (payload) => {
         const id = `acc_${Date.now()}`;
         const now = new Date().toISOString();
+        const activeUid = auth.currentUser?.uid || payload.userId || 'default_user';
         const newAcc: Account = {
           id,
-          userId: payload.userId || 'default_user',
+          userId: activeUid,
           name: payload.name || 'New Account',
           type: payload.type || 'bank',
           balance: payload.balance ?? 0,
@@ -157,10 +168,11 @@ export const useFinanceStore = create<FinanceState>()(
         const now = new Date();
         const dateStr = payload.date || now.toISOString().slice(0, 10);
         const timeStr = payload.time || now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const activeUid = auth.currentUser?.uid || payload.userId || 'default_user';
 
         const newTx: Transaction = {
           id,
-          userId: payload.userId || 'default_user',
+          userId: activeUid,
           amount: payload.amount ?? 0,
           currency: payload.currency || 'USD',
           type: payload.type || 'expense',
@@ -443,6 +455,26 @@ export const useFinanceStore = create<FinanceState>()(
           const newCurrent = goal.currentAmount + amount;
           get().updateSavingsGoal(goalId, { currentAmount: newCurrent });
         }
+      },
+
+      clearLedger: () => {
+        set({
+          accounts: [],
+          transactions: [],
+          budgets: [],
+          bills: [],
+          savingsGoals: [],
+        });
+      },
+
+      loadSeedData: () => {
+        set({
+          accounts: SEED_ACCOUNTS,
+          transactions: SEED_TRANSACTIONS,
+          budgets: SEED_BUDGETS,
+          bills: SEED_BILLS,
+          savingsGoals: SEED_SAVINGS_GOALS,
+        });
       },
     }),
     {

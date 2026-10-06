@@ -40,55 +40,56 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { APP_CONFIG } from '@/config/app.config';
 import { springTransitions } from '@/animations/transitions';
+import { preloadRoute } from '@/lib/router/prefetch';
 import { SidebarProps, SidebarGroup, SidebarItem } from './types';
 
 const DEFAULT_GROUPS: SidebarGroup[] = [
   {
     id: 'home',
-    title: 'Home',
+    title: 'HOME',
     items: [
       { id: 'analytics', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4" />, shortcut: '⌘H' },
-      { id: 'goals', label: 'Goals & Vision', icon: <Target className="w-4 h-4" /> },
     ],
   },
   {
     id: 'plan',
-    title: 'Plan',
+    title: 'PLAN',
     items: [
-      { id: 'tasks', label: 'Tasks & Projects', icon: <CheckSquare className="w-4 h-4" />, badge: '12', badgeVariant: 'accent' },
+      { id: 'tasks', label: 'Tasks', icon: <CheckSquare className="w-4 h-4" /> },
       { id: 'calendar', label: 'Calendar', icon: <Calendar className="w-4 h-4" /> },
+      { id: 'goals', label: 'Goals', icon: <Target className="w-4 h-4" /> },
     ],
   },
   {
     id: 'grow',
-    title: 'Grow',
+    title: 'GROW',
     items: [
-      { id: 'habits', label: 'Habits & Routines', icon: <Flame className="w-4 h-4" /> },
-      { id: 'journal', label: 'Journal & Notes', icon: <BookOpen className="w-4 h-4" /> },
+      { id: 'habits', label: 'Habits', icon: <Flame className="w-4 h-4" /> },
+      { id: 'journal', label: 'Journal', icon: <BookOpen className="w-4 h-4" /> },
     ],
   },
   {
     id: 'life',
-    title: 'Life',
+    title: 'LIFE',
     items: [
-      { id: 'finance', label: 'Finance & Wealth', icon: <Wallet className="w-4 h-4" /> },
+      { id: 'finance', label: 'Finance', icon: <Wallet className="w-4 h-4" /> },
     ],
   },
   {
     id: 'intelligence',
-    title: 'Intelligence',
+    title: 'INTELLIGENCE',
     items: [
-      { id: 'ai', label: 'Aura AI', icon: <Sparkles className="w-4 h-4 text-teal-400" /> },
+      { id: 'ai', label: 'Aura AI', icon: <Sparkles className="w-4 h-4" /> },
     ],
   },
   {
     id: 'system',
-    title: 'System',
+    title: 'SYSTEM',
     collapsible: true,
-    defaultExpanded: false,
+    defaultExpanded: true,
     items: [
-      { id: 'user-profile', label: 'User Profile & Security', icon: <ShieldCheck className="w-4 h-4" /> },
-      { id: 'cloud', label: 'Cloud Sync', icon: <Cloud className="w-4 h-4" /> },
+      { id: 'user-profile', label: 'Profile', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'cloud', label: 'Cloud', icon: <Cloud className="w-4 h-4" /> },
       { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
       { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     ],
@@ -307,6 +308,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ref={isActive ? activeItemRef : undefined}
                         type="button"
                         onClick={() => handleItemClick(item)}
+                        onMouseEnter={() => preloadRoute(item.id)}
+                        onFocus={() => preloadRoute(item.id)}
+                        onPointerDown={() => preloadRoute(item.id)}
                         onKeyDown={(e) => handleKeyDown(e, item)}
                         disabled={item.disabled}
                         tabIndex={0}
